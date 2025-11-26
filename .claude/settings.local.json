@@ -6,7 +6,9 @@
       "Bash(npm install:*)",
       "Bash(npx tailwindcss init:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__list_tables"
     ]
   },
   "enableAllProjectMcpServers": true,
