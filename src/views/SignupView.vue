@@ -1,11 +1,21 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-12">
     <Toast />
-    <Card class="w-full max-w-md">
-      <template #title>
-        <h2 class="text-2xl font-bold text-center text-gray-900 dark:text-white">Create your account</h2>
-      </template>
-      <template #content>
+    <div class="w-full max-w-md">
+      <!-- Logo and Title -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl mb-4 shadow-lg">
+          <span class="text-white font-bold text-2xl">C</span>
+        </div>
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent mb-2">
+          Coordino
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">Your productivity hub</p>
+      </div>
+
+      <!-- Signup Card -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Create your account</h2>
         <form @submit.prevent="handleSignUp" class="space-y-4">
           <div>
             <label for="fullName" class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Full Name</label>
@@ -84,12 +94,12 @@
         </form>
 
         <div class="mt-6 text-center">
-          <router-link to="/login" class="text-sm text-primary-600 hover:underline dark:text-primary-400">
-            Already have an account? Sign in
+          <router-link to="/login" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
+            Already have an account? <span class="underline">Sign in</span>
           </router-link>
         </div>
-      </template>
-    </Card>
+      </div>
+    </div>
   </div>
 </template>
 
