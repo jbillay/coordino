@@ -85,12 +85,3 @@ body {
   outline-offset: 2px;
   border-radius: 4px;
 }
-
-/* Utility classes */
-.nav-link {
-  @apply px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
-}
-
-.nav-link.router-link-active {
-  @apply bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white;
-}
