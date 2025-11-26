@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme CSS Variables */
+:root {
+  /* Light theme colors */
+  --bg-base: #ffffff;
+  --bg-surface: #f9fafb;
+  --bg-elevated: #ffffff;
+  --bg-interactive: #f3f4f6;
+
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --text-inverse: #ffffff;
+  --text-link: #2563eb;
+
+  --border-default: #e5e7eb;
+  --border-strong: #d1d5db;
+  --border-subtle: #f3f4f6;
+
+  /* Transition durations */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 350ms;
+
+  /* Easing functions */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark {
+  /* Dark theme colors */
+  --bg-base: #111827;
+  --bg-surface: #1f2937;
+  --bg-elevated: #374151;
+  --bg-interactive: #4b5563;
+
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-tertiary: #9ca3af;
+  --text-inverse: #111827;
+  --text-link: #60a5fa;
+
+  --border-default: #374151;
+  --border-strong: #4b5563;
+  --border-subtle: #27272a;
+}
+
+/* Base styles */
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Utility classes */
+.nav-link {
+  @apply px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
+}
+
+.nav-link.router-link-active {
+  @apply bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white;
+}

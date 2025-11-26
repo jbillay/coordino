@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__supabase__get_project_url",
+      "mcp__supabase__get_anon_key",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
+}
