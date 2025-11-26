@@ -9,6 +9,9 @@
   @tailwind utilities;
 }
 
+/* Reference Tailwind utilities for @apply */
+@reference "tailwindcss";
+
 /* Theme CSS Variables */
 :root {
   /* Light theme colors */
