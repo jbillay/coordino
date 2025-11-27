@@ -5,17 +5,11 @@ import Aura from '@primeuix/themes/aura'
 import App from './App.vue'
 import router from './router'
 
-// PrimeVue components used globally
+// Only register essential PrimeVue components globally
+// Other components will be imported locally in components for better code splitting
 import Button from 'primevue/button'
-import InputText from 'primevue/inputtext'
-import Password from 'primevue/password'
-import Card from 'primevue/card'
 import Toast from 'primevue/toast'
 import ToastService from 'primevue/toastservice'
-import Textarea from 'primevue/textarea'
-import Dropdown from 'primevue/dropdown'
-import Calendar from 'primevue/calendar'
-import Dialog from 'primevue/dialog'
 
 // PrimeIcons CSS
 import 'primeicons/primeicons.css'
@@ -25,6 +19,25 @@ import './assets/styles/main.css'
 
 const app = createApp(App)
 const pinia = createPinia()
+
+// Global error handler for Vue errors
+app.config.errorHandler = (err, instance, info) => {
+  console.error('Vue Error:', err)
+  console.error('Component:', instance)
+  console.error('Error Info:', info)
+
+  // You can integrate with error tracking service here (e.g., Sentry)
+  // Example: Sentry.captureException(err)
+}
+
+// Global handler for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled Promise Rejection:', event.reason)
+  event.preventDefault() // Prevent default browser error reporting
+
+  // You can integrate with error tracking service here
+  // Example: Sentry.captureException(event.reason)
+})
 
 app.use(pinia)
 app.use(router)
@@ -43,16 +56,11 @@ app.use(PrimeVue, {
 })
 app.use(ToastService)
 
-// Register global components
+// Register only essential global components
+// Button - Used frequently across the app
+// Toast - Used for notifications
 app.component('Button', Button)
-app.component('InputText', InputText)
-app.component('Password', Password)
-app.component('Card', Card)
 app.component('Toast', Toast)
-app.component('Textarea', Textarea)
-app.component('Dropdown', Dropdown)
-app.component('Calendar', Calendar)
-app.component('Dialog', Dialog)
 
 // Initialize auth store before mounting
 import { useAuthStore } from './stores/auth'

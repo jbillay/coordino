@@ -1,108 +1,164 @@
 <template>
   <AppLayout>
-    <div class="space-y-8">
-      <!-- Welcome Header with gradient -->
-      <div class="bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl p-8 text-white shadow-lg">
-        <h1 class="text-4xl font-bold mb-2">
-          Welcome back, {{ authStore.user?.user_metadata?.full_name || 'there' }}! 👋
-        </h1>
-        <p class="text-primary-100 text-lg">
-          Your productivity hub is ready. Let's get things done!
-        </p>
+    <div class="space-y-6 animate-fade-in">
+      <!-- Header with Greeting and Add Task Button -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+            Good {{ getTimeOfDay() }}, {{ getUserFirstName }}
+          </h1>
+        </div>
+        <button class="add-task-btn">
+          <span>Add New Task</span>
+        </button>
       </div>
 
-      <!-- Feature Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Tasks Card -->
-        <div class="feature-card group cursor-pointer" @click="$router.push('/tasks')">
-          <div class="feature-icon bg-gradient-to-br from-blue-500 to-blue-600">
-            <i class="pi pi-check-square text-3xl text-white"></i>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Tasks</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4 flex-grow">
-            Manage your tasks and stay organized with custom workflows
-          </p>
-          <div class="flex items-center text-primary-600 dark:text-primary-400 font-medium group-hover:gap-3 gap-2 transition-all">
-            Get Started <i class="pi pi-arrow-right text-sm"></i>
-          </div>
+      <!-- Stat Cards: Urgent, High Priority, Overdue -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="stat-card">
+          <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Urgent</div>
+          <div class="text-3xl font-bold text-gray-900 dark:text-white">3</div>
         </div>
 
-        <!-- Notes Card -->
-        <div class="feature-card group cursor-pointer" @click="$router.push('/notes')">
-          <div class="feature-icon bg-gradient-to-br from-purple-500 to-purple-600">
-            <i class="pi pi-book text-3xl text-white"></i>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Notes</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4 flex-grow">
-            Capture ideas and organize your thoughts by topics
-          </p>
-          <div class="flex items-center text-primary-600 dark:text-primary-400 font-medium group-hover:gap-3 gap-2 transition-all">
-            Get Started <i class="pi pi-arrow-right text-sm"></i>
-          </div>
+        <div class="stat-card">
+          <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">High Priority</div>
+          <div class="text-3xl font-bold text-gray-900 dark:text-white">5</div>
         </div>
 
-        <!-- Scheduling Card -->
-        <div class="feature-card group cursor-pointer" @click="$router.push('/scheduling')">
-          <div class="feature-icon bg-gradient-to-br from-green-500 to-green-600">
-            <i class="pi pi-calendar text-3xl text-white"></i>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Scheduling</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4 flex-grow">
-            Coordinate meetings across international time zones
-          </p>
-          <div class="flex items-center text-primary-600 dark:text-primary-400 font-medium group-hover:gap-3 gap-2 transition-all">
-            Get Started <i class="pi pi-arrow-right text-sm"></i>
-          </div>
+        <div class="stat-card">
+          <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Overdue</div>
+          <div class="text-3xl font-bold text-red-600 dark:text-red-500">2</div>
         </div>
       </div>
 
-      <!-- Getting Started Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center">
-            <i class="pi pi-info-circle text-white"></i>
+      <!-- Two Column Layout: My Tasks & Recent Notes -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- My Tasks Section -->
+        <div class="content-card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">My Tasks</h2>
+            <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</a>
           </div>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Getting Started</h2>
+          <div class="space-y-3">
+            <!-- Task Item 1 -->
+            <div class="task-item">
+              <input type="checkbox" class="task-checkbox" />
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">Finalize Q3 report</span>
+                  <span class="priority-badge urgent">Urgent</span>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Today</div>
+              </div>
+            </div>
+
+            <!-- Task Item 2 -->
+            <div class="task-item">
+              <input type="checkbox" class="task-checkbox" />
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">Draft client presentation slides</span>
+                  <span class="priority-badge high">High Priority</span>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Tomorrow</div>
+              </div>
+            </div>
+
+            <!-- Task Item 3 -->
+            <div class="task-item">
+              <input type="checkbox" class="task-checkbox" />
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">Review marketing campaign copy</span>
+                  <span class="priority-badge high">High Priority</span>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Fri, Oct 27</div>
+              </div>
+            </div>
+
+            <!-- Task Item 4 -->
+            <div class="task-item">
+              <input type="checkbox" checked class="task-checkbox" />
+              <div class="flex-1">
+                <div class="text-sm font-medium text-gray-400 dark:text-gray-500 line-through">Enhanced new designs review</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Yesterday</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Notes Section -->
+        <div class="content-card">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Recent Notes</h2>
+            <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</a>
+          </div>
+          <div class="space-y-4">
+            <!-- Note Item 1 -->
+            <div class="note-item">
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Project Alpha Kickoff Ideas</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Updated 2 minutes ago</p>
+            </div>
+
+            <!-- Note Item 2 -->
+            <div class="note-item">
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Q4 Planning Session</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Updated 1 hour ago</p>
+            </div>
+
+            <!-- Note Item 3 -->
+            <div class="note-item">
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Competitor Analysis Summary</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Updated 3 days ago</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming Meetings Section -->
+      <div class="content-card">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">Upcoming Meetings</h2>
+          <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View Calendar</a>
         </div>
         <div class="space-y-4">
-          <p class="text-gray-600 dark:text-gray-400 text-lg">
-            Welcome to Coordino! This is your productivity hub where you can:
-          </p>
-          <div class="grid md:grid-cols-2 gap-4 mt-6">
-            <div class="flex gap-3">
-              <i class="pi pi-check-circle text-green-500 mt-1"></i>
+          <!-- Meeting 1 -->
+          <div class="meeting-item">
+            <div class="flex items-start justify-between mb-2">
               <div>
-                <p class="font-medium text-gray-900 dark:text-white">Task Management</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Create and manage tasks with custom workflows</p>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Weekly Sync with Tokyo Team</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Monday at 8:00 AM EST (9:00 PM JST)</p>
               </div>
             </div>
-            <div class="flex gap-3">
-              <i class="pi pi-check-circle text-green-500 mt-1"></i>
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white">Smart Notes</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Take notes organized by topics</p>
-              </div>
-            </div>
-            <div class="flex gap-3">
-              <i class="pi pi-check-circle text-green-500 mt-1"></i>
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white">Global Scheduling</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Schedule meetings with timezone support</p>
-              </div>
-            </div>
-            <div class="flex gap-3">
-              <i class="pi pi-check-circle text-green-500 mt-1"></i>
-              <div>
-                <p class="font-medium text-gray-900 dark:text-white">Customization</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Personalize with themes and settings</p>
-              </div>
+            <div class="meeting-timeline">
+              <div class="timeline-bar" style="background: linear-gradient(to right, #10b981 0%, #10b981 100%);"></div>
             </div>
           </div>
-          <div class="mt-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
-            <p class="text-sm text-primary-800 dark:text-primary-300">
-              <i class="pi pi-info-circle mr-2"></i>
-              <strong>Phase 1 Complete!</strong> Authentication & Foundation is ready. Phases 2-5 will add full task management, notes, and scheduling features.
-            </p>
+
+          <!-- Meeting 2 -->
+          <div class="meeting-item">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Design Review - London & NYC</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Tuesday at 2:00 PM EST (7:00 PM GMT)</p>
+              </div>
+            </div>
+            <div class="meeting-timeline">
+              <div class="timeline-bar" style="background: linear-gradient(to right, #f59e0b 0%, #f59e0b 100%);"></div>
+            </div>
+          </div>
+
+          <!-- Meeting 3 -->
+          <div class="meeting-item">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Product Strategy Session</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Thu, Oct 26 at 10:00 AM EST (3:00 PM GMT)</p>
+              </div>
+            </div>
+            <div class="meeting-timeline">
+              <div class="timeline-bar" style="background: linear-gradient(to right, #f59e0b 0%, #f59e0b 100%);"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -111,23 +167,181 @@
 </template>
 
 <script setup>
+/**
+ * DashboardView Component
+ *
+ * Main dashboard displaying overview of tasks, notes, and upcoming meetings.
+ * Shows personalized greeting and quick access to key features.
+ *
+ * @component
+ * @example
+ * <DashboardView />
+ *
+ * Features:
+ * - Personalized time-based greeting
+ * - Task statistics (urgent, high priority, overdue)
+ * - Recent tasks list with priority badges
+ * - Recent notes preview
+ * - Upcoming meetings with timezone information
+ */
+import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import AppLayout from '@/components/layout/AppLayout.vue'
 
 const authStore = useAuthStore()
-</script>
 
-<style scoped>
-@reference "tailwindcss";
-
-.feature-card {
-  @apply bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700
-         hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-700
-         transition-all duration-300 flex flex-col
-         hover:-translate-y-1;
+/**
+ * Gets appropriate greeting based on current time of day
+ * @returns {string} 'Morning', 'Afternoon', or 'Evening'
+ */
+const getTimeOfDay = () => {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Morning'
+  if (hour < 18) return 'Afternoon'
+  return 'Evening'
 }
 
-.feature-icon {
-  @apply w-16 h-16 rounded-xl flex items-center justify-center mb-4 shadow-md;
+/**
+ * Gets user's first name for personalized greeting
+ * Falls back to email username or generic greeting
+ * @returns {string} User's first name or fallback
+ */
+const getUserFirstName = computed(() => {
+  const user = authStore.user
+  if (user?.user_metadata?.full_name) {
+    return user.user_metadata.full_name.split(' ')[0]
+  }
+  if (user?.email) {
+    return user.email.split('@')[0]
+  }
+  return 'there'
+})
+</script>
+
+<style>
+@reference "tailwindcss";
+
+/* Add New Task Button */
+.add-task-btn {
+  @apply px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg
+         hover:bg-blue-700 transition-colors duration-200
+         flex items-center gap-2;
+}
+
+.dark .add-task-btn {
+  @apply bg-blue-600 hover:bg-blue-700;
+}
+
+/* Stat Cards */
+.stat-card {
+  @apply bg-white border border-gray-200 rounded-lg p-5
+         hover:shadow-md transition-all duration-200;
+}
+
+.dark .stat-card {
+  @apply bg-gray-800 border-gray-700;
+}
+
+/* Content Cards */
+.content-card {
+  @apply bg-white border border-gray-200 rounded-lg p-5
+         hover:shadow-md transition-all duration-200;
+}
+
+.dark .content-card {
+  @apply bg-gray-800 border-gray-700;
+}
+
+/* Task Items */
+.task-item {
+  @apply flex items-start gap-3 p-3 rounded-lg
+         hover:bg-gray-50 transition-colors duration-150;
+}
+
+.dark .task-item {
+  @apply hover:bg-gray-700/50;
+}
+
+.task-checkbox {
+  @apply mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600
+         focus:ring-blue-500 focus:ring-2
+         cursor-pointer;
+}
+
+.dark .task-checkbox {
+  @apply border-gray-600 bg-gray-700;
+}
+
+/* Priority Badges */
+.priority-badge {
+  @apply px-2 py-0.5 rounded text-xs font-medium;
+}
+
+.priority-badge.urgent {
+  @apply bg-red-50 text-red-700 border border-red-200;
+}
+
+.dark .priority-badge.urgent {
+  @apply bg-red-500/10 text-red-400 border-red-500/20;
+}
+
+.priority-badge.high {
+  @apply bg-orange-50 text-orange-700 border border-orange-200;
+}
+
+.dark .priority-badge.high {
+  @apply bg-orange-500/10 text-orange-400 border-orange-500/20;
+}
+
+/* Note Items */
+.note-item {
+  @apply p-3 rounded-lg hover:bg-gray-50
+         transition-colors duration-150 cursor-pointer;
+}
+
+.dark .note-item {
+  @apply hover:bg-gray-700/50;
+}
+
+/* Meeting Items */
+.meeting-item {
+  @apply pb-4;
+}
+
+.meeting-item:not(:last-child) {
+  @apply border-b border-gray-200;
+}
+
+.dark .meeting-item:not(:last-child) {
+  @apply border-gray-700;
+}
+
+/* Meeting Timeline */
+.meeting-timeline {
+  @apply w-full h-2 bg-gray-200 rounded-full overflow-hidden;
+}
+
+.dark .meeting-timeline {
+  @apply bg-gray-700;
+}
+
+.timeline-bar {
+  @apply h-full rounded-full;
+}
+
+/* Animation */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
