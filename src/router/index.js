@@ -1,6 +1,22 @@
+/**
+ * Vue Router Configuration
+ *
+ * Defines application routes with authentication guards and lazy-loaded components.
+ * Uses history mode for clean URLs and implements navigation guards for protected routes.
+ *
+ * Route Meta Fields:
+ * @property {boolean} requiresAuth - Whether route requires authentication (default: true)
+ * @property {string} layout - Layout type ('empty' for auth pages, default uses AppLayout)
+ *
+ * @see {@link https://router.vuejs.org/guide/|Vue Router Guide}
+ */
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+/**
+ * Router instance with route definitions
+ * All routes except auth pages require authentication by default
+ */
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -59,16 +75,37 @@ const router = createRouter({
   ]
 })
 
-// Navigation guard for authentication
+/**
+ * Global navigation guard for authentication
+ *
+ * Handles route protection and redirects based on authentication state:
+ * - Initializes auth on first navigation
+ * - Redirects unauthenticated users to login page
+ * - Redirects authenticated users away from auth pages
+ * - Preserves intended destination in query params
+ *
+ * @param {import('vue-router').RouteLocationNormalized} to - Target route
+ * @param {import('vue-router').RouteLocationNormalized} from - Source route
+ * @param {import('vue-router').NavigationGuardNext} next - Navigation guard callback
+ */
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+
+  // Wait for auth to be initialized if this is the first navigation
+  if (from.name === undefined) {
+    await authStore.initialize()
+  }
+
   const requiresAuth = to.meta.requiresAuth !== false
 
   if (requiresAuth && !authStore.isAuthenticated) {
+    // Redirect to login with return URL
     next({ name: 'login', query: { redirect: to.fullPath } })
   } else if ((to.name === 'login' || to.name === 'signup') && authStore.isAuthenticated) {
+    // Redirect authenticated users away from auth pages
     next({ name: 'dashboard' })
   } else {
+    // Allow navigation
     next()
   }
 })

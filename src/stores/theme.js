@@ -1,8 +1,21 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 
+/**
+ * Theme Store
+ * Manages application theme (light/dark mode) with localStorage persistence
+ *
+ * @example
+ * const themeStore = useThemeStore()
+ * themeStore.toggleTheme()
+ * themeStore.setTheme('dark')
+ */
 export const useThemeStore = defineStore('theme', () => {
-  // Initialize from localStorage or system preference
+  /**
+   * Gets initial theme from localStorage or system preference
+   * @returns {('light'|'dark')} Theme mode
+   * @private
+   */
   const getInitialTheme = () => {
     const stored = localStorage.getItem('theme')
     if (stored) return stored
@@ -14,25 +27,42 @@ export const useThemeStore = defineStore('theme', () => {
     return 'light'
   }
 
+  /**
+   * Current theme mode
+   * @type {import('vue').Ref<'light'|'dark'>}
+   */
   const currentTheme = ref(getInitialTheme())
 
-  // Apply theme to document
+  /**
+   * Applies theme to document by updating classes and attributes
+   * @param {('light'|'dark')} theme - Theme to apply
+   * @private
+   */
   const applyTheme = (theme) => {
     document.documentElement.classList.remove('light', 'dark')
     document.documentElement.classList.add(theme)
     document.documentElement.setAttribute('data-theme', theme)
   }
 
-  // Watch for theme changes
+  // Watch for theme changes and persist to localStorage
   watch(currentTheme, (newTheme) => {
     localStorage.setItem('theme', newTheme)
     applyTheme(newTheme)
   }, { immediate: true })
 
+  /**
+   * Toggles between light and dark theme
+   * @public
+   */
   const toggleTheme = () => {
     currentTheme.value = currentTheme.value === 'light' ? 'dark' : 'light'
   }
 
+  /**
+   * Sets theme to specific mode
+   * @param {('light'|'dark')} theme - Theme mode to set
+   * @public
+   */
   const setTheme = (theme) => {
     currentTheme.value = theme
   }

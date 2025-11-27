@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-12">
-    <Toast />
+    <Toast aria-live="polite" aria-atomic="true" />
     <div class="w-full max-w-md">
       <!-- Logo and Title -->
       <div class="text-center mb-8">
@@ -26,8 +26,10 @@
               placeholder="John Doe"
               class="w-full"
               :class="{ 'p-invalid': errors.fullName }"
+              :aria-describedby="errors.fullName ? 'fullName-error' : undefined"
+              :aria-invalid="errors.fullName ? 'true' : 'false'"
             />
-            <small v-if="errors.fullName" class="p-error">{{ errors.fullName }}</small>
+            <small v-if="errors.fullName" id="fullName-error" class="p-error" role="alert">{{ errors.fullName }}</small>
           </div>
 
           <div>
@@ -39,8 +41,10 @@
               placeholder="your@email.com"
               class="w-full"
               :class="{ 'p-invalid': errors.email }"
+              :aria-describedby="errors.email ? 'email-error' : undefined"
+              :aria-invalid="errors.email ? 'true' : 'false'"
             />
-            <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
+            <small v-if="errors.email" id="email-error" class="p-error" role="alert">{{ errors.email }}</small>
           </div>
 
           <div>
@@ -53,7 +57,11 @@
               class="w-full"
               :class="{ 'p-invalid': errors.password }"
               :pt="{
-                input: { class: 'w-full' }
+                input: {
+                  class: 'w-full',
+                  'aria-describedby': errors.password ? 'password-error' : undefined,
+                  'aria-invalid': errors.password ? 'true' : 'false'
+                }
               }"
             >
               <template #footer>
@@ -65,7 +73,7 @@
                 </ul>
               </template>
             </Password>
-            <small v-if="errors.password" class="p-error">{{ errors.password }}</small>
+            <small v-if="errors.password" id="password-error" class="p-error" role="alert">{{ errors.password }}</small>
           </div>
 
           <div>
@@ -79,10 +87,14 @@
               class="w-full"
               :class="{ 'p-invalid': errors.confirmPassword }"
               :pt="{
-                input: { class: 'w-full' }
+                input: {
+                  class: 'w-full',
+                  'aria-describedby': errors.confirmPassword ? 'confirmPassword-error' : undefined,
+                  'aria-invalid': errors.confirmPassword ? 'true' : 'false'
+                }
               }"
             />
-            <small v-if="errors.confirmPassword" class="p-error">{{ errors.confirmPassword }}</small>
+            <small v-if="errors.confirmPassword" id="confirmPassword-error" class="p-error" role="alert">{{ errors.confirmPassword }}</small>
           </div>
 
           <Button
@@ -104,21 +116,59 @@
 </template>
 
 <script setup>
+/**
+ * SignupView Component
+ *
+ * User registration page for creating new accounts.
+ * Collects user information and creates authenticated account.
+ *
+ * @component
+ * @example
+ * <SignupView />
+ *
+ * Features:
+ * - Full name, email, and password collection
+ * - Password confirmation validation
+ * - Real-time form validation with accessible error messages
+ * - Password strength suggestions
+ * - Loading states during registration
+ * - Automatic sign-in after successful registration
+ * - WCAG 2.1 Level AA compliant
+ */
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'primevue/usetoast'
+import { isValidEmail } from '@/utils/validation'
+
+// Import PrimeVue components locally for code splitting
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const toast = useToast()
 
+/** @type {import('vue').Ref<string>} User's full name */
 const fullName = ref('')
+
+/** @type {import('vue').Ref<string>} User's email address */
 const email = ref('')
+
+/** @type {import('vue').Ref<string>} User's password */
 const password = ref('')
+
+/** @type {import('vue').Ref<string>} Password confirmation */
 const confirmPassword = ref('')
+
+/** @type {import('vue').Ref<Object>} Form validation errors keyed by field name */
 const errors = ref({})
 
+/**
+ * Validates signup form fields
+ * Checks all required fields, email format, password strength, and password match
+ * @returns {boolean} True if form is valid, false otherwise
+ */
 const validateForm = () => {
   errors.value = {}
 
@@ -128,7 +178,7 @@ const validateForm = () => {
 
   if (!email.value) {
     errors.value.email = 'Email is required'
-  } else if (!/\S+@\S+\.\S+/.test(email.value)) {
+  } else if (!isValidEmail(email.value)) {
     errors.value.email = 'Email is invalid'
   }
 
@@ -147,6 +197,10 @@ const validateForm = () => {
   return Object.keys(errors.value).length === 0
 }
 
+/**
+ * Handles form submission for user registration
+ * Validates form, creates account, shows feedback, and redirects on success
+ */
 const handleSignUp = async () => {
   if (!validateForm()) return
 
