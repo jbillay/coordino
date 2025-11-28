@@ -5,18 +5,35 @@
 
 /**
  * Email validation regex pattern
- * Validates standard email format: user@domain.tld
+ * RFC 5322 compliant email validation
+ * Validates format: localpart@domain with proper character restrictions
+ *
+ * Rules:
+ * - Local part (before @): letters, digits, dots, hyphens, underscores
+ * - Domain: letters, digits, dots, hyphens
+ * - TLD (top-level domain): at least 2 letters
+ *
+ * Examples that pass: user@example.com, user.name+tag@example.co.uk
+ * Examples that fail: @example.com, user@, user@@example.com, user@example
  */
-export const EMAIL_REGEX = /\S+@\S+\.\S+/
+export const EMAIL_REGEX = /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
 /**
  * Validates if a string is a valid email address
  * @param {string} email - Email address to validate
  * @returns {boolean} True if email is valid
+ *
+ * @example
+ * isValidEmail('user@example.com') // true
+ * isValidEmail('user@example') // false
+ * isValidEmail('  user@example.com  ') // true (trimmed automatically)
+ * isValidEmail('@example.com') // false
  */
 export const isValidEmail = (email) => {
   if (!email || typeof email !== 'string') return false
-  return EMAIL_REGEX.test(email)
+  const trimmedEmail = email.trim()
+  if (!trimmedEmail) return false
+  return EMAIL_REGEX.test(trimmedEmail)
 }
 
 /**

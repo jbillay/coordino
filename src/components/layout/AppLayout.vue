@@ -109,8 +109,8 @@
             alt="Coordino"
             class="h-6 w-auto dark:invert"
           />
-          <button @click="closeMobileMenu" class="close-btn">
-            <i class="pi pi-times"></i>
+          <button @click="closeMobileMenu" class="close-btn" aria-label="Close navigation menu">
+            <i class="pi pi-times" aria-hidden="true"></i>
           </button>
         </div>
 
