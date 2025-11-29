@@ -64,6 +64,17 @@ export const getPriorityConfig = (priority) => {
 }
 
 /**
+ * Get priority label for display
+ * @param {string} priority - Priority level
+ * @returns {string} Capitalized priority label
+ */
+export const getPriorityLabel = (priority) => {
+  if (!priority) return ''
+  const config = PRIORITY_CONFIG[priority]
+  return config ? config.label : priority.charAt(0).toUpperCase() + priority.slice(1)
+}
+
+/**
  * Format date for display
  * @param {string|Date} date - Date to format
  * @param {string} formatString - Format string (default: 'MMM d, yyyy')
@@ -78,10 +89,10 @@ export const formatTaskDate = (date, formatString = 'MMM d, yyyy') => {
 /**
  * Calculate days remaining until due date
  * @param {string|Date} dueDate - Due date
- * @returns {number|null} Days remaining (negative if overdue)
+ * @returns {number} Days remaining (negative if overdue, 0 if no date)
  */
 export const calculateDaysRemaining = (dueDate) => {
-  if (!dueDate) return null
+  if (!dueDate) return 0
   const dateObj = typeof dueDate === 'string' ? parseISO(dueDate) : dueDate
   return differenceInCalendarDays(dateObj, new Date())
 }
@@ -92,8 +103,9 @@ export const calculateDaysRemaining = (dueDate) => {
  * @returns {string} Human-readable message
  */
 export const getDaysRemainingText = (dueDate) => {
+  if (!dueDate) return ''
+
   const days = calculateDaysRemaining(dueDate)
-  if (days === null) return ''
 
   if (days < 0) {
     return `${Math.abs(days)} day${Math.abs(days) !== 1 ? 's' : ''} overdue`
@@ -114,7 +126,7 @@ export const getDaysRemainingText = (dueDate) => {
 export const isTaskOverdue = (dueDate) => {
   if (!dueDate) return false
   const days = calculateDaysRemaining(dueDate)
-  return days !== null && days < 0
+  return days < 0
 }
 
 /**
@@ -153,9 +165,9 @@ export const sortTasks = (tasks, sortBy, sortOrder = 'asc') => {
         return bValue - aValue // Higher priority first
 
       case 'due_date':
-        aValue = a.due_date ? new Date(a.due_date).getTime() : Infinity
-        bValue = b.due_date ? new Date(b.due_date).getTime() : Infinity
-        return aValue - bValue
+        aValue = a.due_date ? new Date(a.due_date).getTime() : -Infinity
+        bValue = b.due_date ? new Date(b.due_date).getTime() : -Infinity
+        return bValue - aValue // Latest first (tasks without dates go to the end)
 
       case 'created_at':
         aValue = new Date(a.created_at).getTime()
