@@ -77,19 +77,19 @@ const groupedTasks = computed(() => {
 
     <!-- Grouped tasks -->
     <div v-else-if="groupBy && groupBy !== 'none'" class="space-y-6">
-      <div v-for="(groupTasks, groupName) in groupedTasks" :key="groupName" class="task-group">
+      <div v-for="(tasksInGroup, groupName) in groupedTasks" :key="groupName" class="task-group">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ groupName }}
             <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
-              ({{ groupTasks.length }})
+              ({{ tasksInGroup.length }})
             </span>
           </h3>
         </div>
 
         <div class="space-y-0">
           <TaskCard
-            v-for="task in groupTasks"
+            v-for="task in tasksInGroup"
             :key="task.id"
             :task="task"
             @edit="$emit('edit', $event)"

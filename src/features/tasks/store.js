@@ -9,6 +9,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useSupabase } from '@/composables/useSupabase'
 import { useAuthStore } from '@/stores/auth'
+import { mapSupabaseError } from '@/utils/errors'
 
 /**
  * Task management store
@@ -108,8 +109,7 @@ export const useTaskStore = defineStore('tasks', () => {
         tasks.value = data || []
       }
     } catch (e) {
-      error.value = e.message
-      console.error('Error fetching tasks:', e)
+      error.value = mapSupabaseError(e, 'tasks')
     } finally {
       loading.value = false
     }
@@ -153,7 +153,7 @@ export const useTaskStore = defineStore('tasks', () => {
 
       statuses.value = data || []
     } catch (e) {
-      console.error('Error fetching statuses:', e)
+      error.value = mapSupabaseError(e, 'statuses')
     }
   }
 
@@ -174,20 +174,13 @@ export const useTaskStore = defineStore('tasks', () => {
 
       categories.value = data || []
     } catch (e) {
-      console.error('Error fetching categories:', e)
+      error.value = mapSupabaseError(e, 'categories')
     }
   }
 
   /**
    * Create a new task
    * @param {Object} taskData - Task data to create
-   * @param {string} taskData.title - Task title (required)
-   * @param {string} taskData.description - Task description
-   * @param {string} taskData.status_id - Status ID (required)
-   * @param {string} taskData.category_id - Category ID
-   * @param {string} taskData.priority - Priority level
-   * @param {string} taskData.owner - Task owner
-   * @param {string} taskData.due_date - Due date (YYYY-MM-DD format)
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
   const createTask = async (taskData) => {
@@ -214,8 +207,7 @@ export const useTaskStore = defineStore('tasks', () => {
       tasks.value.unshift(data)
       return { success: true, data }
     } catch (e) {
-      console.error('Error creating task:', e)
-      return { success: false, error: e.message }
+      return { success: false, error: mapSupabaseError(e, 'task') }
     }
   }
 
@@ -251,8 +243,7 @@ export const useTaskStore = defineStore('tasks', () => {
 
       return { success: true, data }
     } catch (e) {
-      console.error('Error updating task:', e)
-      return { success: false, error: e.message }
+      return { success: false, error: mapSupabaseError(e, 'task') }
     }
   }
 
@@ -287,17 +278,13 @@ export const useTaskStore = defineStore('tasks', () => {
       tasks.value = tasks.value.filter((t) => t.id !== taskId)
       return { success: true }
     } catch (e) {
-      console.error('Error deleting task:', e)
-      return { success: false, error: e.message }
+      return { success: false, error: mapSupabaseError(e, 'task') }
     }
   }
 
   /**
    * Create a custom status
    * @param {Object} statusData - Status data
-   * @param {string} statusData.name - Status name
-   * @param {string} statusData.color - Hex color code
-   * @param {number} statusData.display_order - Display order
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
   const createStatus = async (statusData) => {
@@ -319,8 +306,7 @@ export const useTaskStore = defineStore('tasks', () => {
       statuses.value.push(data)
       return { success: true, data }
     } catch (e) {
-      console.error('Error creating status:', e)
-      return { success: false, error: e.message }
+      return { success: false, error: mapSupabaseError(e, 'status') }
     }
   }
 
@@ -350,8 +336,7 @@ export const useTaskStore = defineStore('tasks', () => {
 
       return { success: true, data }
     } catch (e) {
-      console.error('Error updating status:', e)
-      return { success: false, error: e.message }
+      return { success: false, error: mapSupabaseError(e, 'status') }
     }
   }
 
@@ -374,17 +359,13 @@ export const useTaskStore = defineStore('tasks', () => {
       statuses.value = statuses.value.filter((s) => s.id !== statusId)
       return { success: true }
     } catch (e) {
-      console.error('Error deleting status:', e)
-      return { success: false, error: e.message }
+      return { success: false, error: mapSupabaseError(e, 'status') }
     }
   }
 
   /**
    * Create a category
    * @param {Object} categoryData - Category data
-   * @param {string} categoryData.name - Category name
-   * @param {string} categoryData.color - Hex color code
-   * @param {number} categoryData.display_order - Display order
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
   const createCategory = async (categoryData) => {
@@ -405,8 +386,7 @@ export const useTaskStore = defineStore('tasks', () => {
       categories.value.push(data)
       return { success: true, data }
     } catch (e) {
-      console.error('Error creating category:', e)
-      return { success: false, error: e.message }
+      return { success: false, error: mapSupabaseError(e, 'category') }
     }
   }
 
@@ -436,8 +416,7 @@ export const useTaskStore = defineStore('tasks', () => {
 
       return { success: true, data }
     } catch (e) {
-      console.error('Error updating category:', e)
-      return { success: false, error: e.message }
+      return { success: false, error: mapSupabaseError(e, 'category') }
     }
   }
 
@@ -460,8 +439,7 @@ export const useTaskStore = defineStore('tasks', () => {
       categories.value = categories.value.filter((c) => c.id !== categoryId)
       return { success: true }
     } catch (e) {
-      console.error('Error deleting category:', e)
-      return { success: false, error: e.message }
+      return { success: false, error: mapSupabaseError(e, 'category') }
     }
   }
 

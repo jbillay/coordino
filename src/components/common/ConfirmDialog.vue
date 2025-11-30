@@ -128,7 +128,7 @@ const handleCancel = () => {
     </template>
 
     <div class="py-4">
-      <p class="text-gray-700 dark:text-gray-300" v-html="message"></p>
+      <p class="text-gray-700 dark:text-gray-300">{{ message }}</p>
     </div>
 
     <template #footer>
