@@ -1,21 +1,3 @@
-<template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-    <Card class="w-full max-w-md">
-      <template #content>
-        <div class="text-center py-8">
-          <i class="pi pi-spin pi-spinner text-4xl text-primary-600 dark:text-primary-400 mb-4"></i>
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            {{ message }}
-          </h2>
-          <p class="text-gray-600 dark:text-gray-400">
-            {{ subMessage }}
-          </p>
-        </div>
-      </template>
-    </Card>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -55,3 +37,21 @@ onMounted(async () => {
   }
 })
 </script>
+
+<template>
+  <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <Card class="w-full max-w-md">
+      <template #content>
+        <div class="text-center py-8">
+          <i class="pi pi-spin pi-spinner text-4xl text-primary-600 dark:text-primary-400 mb-4"></i>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            {{ message }}
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400">
+            {{ subMessage }}
+          </p>
+        </div>
+      </template>
+    </Card>
+  </div>
+</template>

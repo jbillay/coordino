@@ -6,7 +6,24 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "format": "prettier --write \"src/**/*.{js,vue,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,vue,json,css,md}\"",
+    "test": "vitest",
+    "test:unit": "vitest run",
+    "test:watch": "vitest watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:ci": "vitest run --coverage --reporter=default --reporter=json",
+    "test:debug": "vitest --inspect-brk --inspect --single-thread",
+    "test:changed": "vitest related --run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report",
+    "prepare": "husky"
   },
   "dependencies": {
     "@primeuix/themes": "^2.0.0",
@@ -21,10 +38,31 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@vitejs/plugin-vue": "^6.0.1",
+    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/ui": "^4.0.14",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.22",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-vue": "^10.6.2",
+    "happy-dom": "^20.0.11",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "postcss": "^8.5.6",
+    "prettier": "^3.7.2",
     "tailwindcss": "^4.1.17",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vitest": "^4.0.14"
+  },
+  "lint-staged": {
+    "*.{js,vue}": [
+      "eslint --fix",
+      "prettier --write",
+      "vitest related --run --reporter=verbose"
+    ]
   }
 }

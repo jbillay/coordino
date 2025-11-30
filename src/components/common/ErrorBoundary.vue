@@ -1,33 +1,3 @@
-<template>
-  <div v-if="error" class="error-boundary">
-    <div class="error-container">
-      <div class="error-icon">
-        <i class="pi pi-exclamation-triangle"></i>
-      </div>
-      <h2 class="error-title">Something went wrong</h2>
-      <p class="error-message">{{ displayMessage }}</p>
-      <div class="error-actions">
-        <Button
-          label="Try Again"
-          icon="pi pi-refresh"
-          @click="handleRetry"
-          class="p-button-outlined"
-        />
-        <Button
-          label="Go to Dashboard"
-          icon="pi pi-home"
-          @click="goToDashboard"
-        />
-      </div>
-      <details v-if="showDetails" class="error-details">
-        <summary>Technical Details</summary>
-        <pre>{{ error }}</pre>
-      </details>
-    </div>
-  </div>
-  <slot v-else />
-</template>
-
 <script setup>
 import { ref, onErrorCaptured, computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -68,7 +38,9 @@ const error = ref(null)
  * Computed display message based on error type
  */
 const displayMessage = computed(() => {
-  if (!error.value) return ''
+  if (!error.value) {
+    return ''
+  }
 
   // Check for common error types and provide specific messages
   const errorMessage = error.value?.message || error.value?.toString() || ''
@@ -78,7 +50,7 @@ const displayMessage = computed(() => {
   }
 
   if (errorMessage.includes('permission') || errorMessage.includes('unauthorized')) {
-    return 'You don\'t have permission to access this resource.'
+    return "You don't have permission to access this resource."
   }
 
   return props.fallbackMessage
@@ -117,6 +89,32 @@ const goToDashboard = () => {
   router.push('/dashboard')
 }
 </script>
+
+<template>
+  <div v-if="error" class="error-boundary">
+    <div class="error-container">
+      <div class="error-icon">
+        <i class="pi pi-exclamation-triangle"></i>
+      </div>
+      <h2 class="error-title">Something went wrong</h2>
+      <p class="error-message">{{ displayMessage }}</p>
+      <div class="error-actions">
+        <Button
+          label="Try Again"
+          icon="pi pi-refresh"
+          class="p-button-outlined"
+          @click="handleRetry"
+        />
+        <Button label="Go to Dashboard" icon="pi pi-home" @click="goToDashboard" />
+      </div>
+      <details v-if="showDetails" class="error-details">
+        <summary>Technical Details</summary>
+        <pre>{{ error }}</pre>
+      </details>
+    </div>
+  </div>
+  <slot v-else />
+</template>
 
 <style scoped>
 .error-boundary {

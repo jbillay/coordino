@@ -8,6 +8,8 @@ Coordino is a productivity application that unifies task management, note-taking
 
 This application prioritizes user experience above all else. Every feature should feel intuitive, every interaction should be smooth, and the design should surprise and delight while remaining highly functional. The application respects WCAG 2.1 Level AA accessibility standards, ensuring it works well for all users regardless of their abilities or tools they use to access the web.
 
+Always use context7 when I need code generation, setup or configuration steps, or library/API documentation. This means you should automatically use the Context7 MCP tools to resolve library id and get library docs without me having to explicitly ask.
+
 ## Technical Stack
 
 **Frontend Framework:**

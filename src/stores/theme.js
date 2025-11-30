@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
+import { THEME_STORAGE_KEY } from '@/constants'
 
 /**
  * Theme Store
@@ -11,65 +12,52 @@ import { ref, watch } from 'vue'
  * themeStore.setTheme('dark')
  */
 export const useThemeStore = defineStore('theme', () => {
-  /**
-   * Gets initial theme from localStorage or system preference
-   * @returns {('light'|'dark')} Theme mode
-   * @private
-   */
-  const getInitialTheme = () => {
-    const stored = localStorage.getItem('theme')
-    if (stored) return stored
+  const currentTheme = ref(null)
 
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  function getInitialTheme() {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY)
+    if (stored) {
+      return stored
+    }
+    if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
       return 'dark'
     }
-
     return 'light'
   }
 
-  /**
-   * Current theme mode
-   * @type {import('vue').Ref<'light'|'dark'>}
-   */
-  const currentTheme = ref(getInitialTheme())
-
-  /**
-   * Applies theme to document by updating classes and attributes
-   * @param {('light'|'dark')} theme - Theme to apply
-   * @private
-   */
-  const applyTheme = (theme) => {
+  function applyTheme(theme) {
     document.documentElement.classList.remove('light', 'dark')
     document.documentElement.classList.add(theme)
     document.documentElement.setAttribute('data-theme', theme)
   }
 
-  // Watch for theme changes and persist to localStorage
-  watch(currentTheme, (newTheme) => {
-    localStorage.setItem('theme', newTheme)
-    applyTheme(newTheme)
-  }, { immediate: true })
-
-  /**
-   * Toggles between light and dark theme
-   * @public
-   */
-  const toggleTheme = () => {
-    currentTheme.value = currentTheme.value === 'light' ? 'dark' : 'light'
+  function setTheme(theme) {
+    if (currentTheme.value !== theme) {
+      currentTheme.value = theme
+    }
   }
 
-  /**
-   * Sets theme to specific mode
-   * @param {('light'|'dark')} theme - Theme mode to set
-   * @public
-   */
-  const setTheme = (theme) => {
-    currentTheme.value = theme
+  function toggleTheme() {
+    setTheme(currentTheme.value === 'light' ? 'dark' : 'light')
+  }
+
+  function init() {
+    const initialTheme = getInitialTheme()
+    setTheme(initialTheme)
+    applyTheme(initialTheme)
+
+    watch(currentTheme, (newTheme) => {
+      if (newTheme) {
+        localStorage.setItem(THEME_STORAGE_KEY, newTheme)
+        applyTheme(newTheme)
+      }
+    })
   }
 
   return {
     currentTheme,
     toggleTheme,
-    setTheme
+    setTheme,
+    init
   }
 })

@@ -13,7 +13,7 @@ const AUTH_ERRORS = {
   'Invalid email': 'Please enter a valid email address.',
   'Password should be at least 6 characters': 'Password must be at least 6 characters long.',
   'Network request failed': 'Network error. Please check your connection and try again.',
-  'Failed to fetch': 'Network error. Please check your internet connection.',
+  'Failed to fetch': 'Network error. Please check your internet connection.'
 }
 
 /**
@@ -21,8 +21,10 @@ const AUTH_ERRORS = {
  * @param {Error} error - The error object from Supabase
  * @returns {string} User-friendly error message
  */
-const getErrorMessage = (error) => {
-  if (!error) return 'An unexpected error occurred'
+export const getErrorMessage = (error) => {
+  if (!error) {
+    return 'An unexpected error occurred'
+  }
 
   const message = error.message || error.error_description || error.toString()
 
@@ -65,7 +67,10 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const initialize = async () => {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      const {
+        data: { session },
+        error: sessionError
+      } = await supabase.auth.getSession()
 
       if (sessionError) {
         console.error('Error getting session:', sessionError)
@@ -93,10 +98,12 @@ export const useAuthStore = defineStore('auth', () => {
    * Creates profile if it doesn't exist
    */
   const ensureUserProfile = async () => {
-    if (!user.value) return
+    if (!user.value) {
+      return
+    }
 
     try {
-      const { data: profile, error: profileError } = await supabase
+      const { data: _profile, error: profileError } = await supabase
         .from('users_extended')
         .select('*')
         .eq('id', user.value.id)
@@ -104,12 +111,10 @@ export const useAuthStore = defineStore('auth', () => {
 
       // Create profile if it doesn't exist (PGRST116 = no rows returned)
       if (profileError && profileError.code === 'PGRST116') {
-        const { error: insertError } = await supabase
-          .from('users_extended')
-          .insert({
-            id: user.value.id,
-            full_name: user.value.user_metadata?.full_name || ''
-          })
+        const { error: insertError } = await supabase.from('users_extended').insert({
+          id: user.value.id,
+          full_name: user.value.user_metadata?.full_name || ''
+        })
 
         if (insertError) {
           console.error('Error creating user profile:', insertError)
@@ -142,7 +147,9 @@ export const useAuthStore = defineStore('auth', () => {
         }
       })
 
-      if (signUpError) throw signUpError
+      if (signUpError) {
+        throw signUpError
+      }
 
       user.value = data.user
       await ensureUserProfile()
@@ -174,7 +181,9 @@ export const useAuthStore = defineStore('auth', () => {
         password
       })
 
-      if (signInError) throw signInError
+      if (signInError) {
+        throw signInError
+      }
 
       user.value = data.user
       await ensureUserProfile()
@@ -207,7 +216,9 @@ export const useAuthStore = defineStore('auth', () => {
         }
       })
 
-      if (magicLinkError) throw magicLinkError
+      if (magicLinkError) {
+        throw magicLinkError
+      }
 
       return { success: true }
     } catch (e) {

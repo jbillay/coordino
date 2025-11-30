@@ -1,180 +1,3 @@
-<template>
-  <div class="app-container" style="background-color: var(--bg-base);">
-    <!-- Skip to main content link for keyboard users -->
-    <a href="#main-content" class="skip-link">
-      Skip to main content
-    </a>
-
-    <!-- Left Sidebar -->
-    <aside class="app-sidebar" :class="{ 'sidebar-dark': themeStore.currentTheme === 'dark' }">
-      <!-- Logo -->
-      <div class="sidebar-logo">
-        <img
-          src="/coordino-logo.png"
-          alt="Coordino"
-          class="h-6 w-auto dark:invert"
-        />
-      </div>
-
-      <!-- Navigation -->
-      <nav class="sidebar-nav">
-        <router-link to="/dashboard" class="sidebar-link">
-          <i class="pi pi-th-large"></i>
-          <span>Dashboard</span>
-        </router-link>
-        <router-link to="/tasks" class="sidebar-link">
-          <i class="pi pi-check-circle"></i>
-          <span>Tasks</span>
-        </router-link>
-        <router-link to="/notes" class="sidebar-link">
-          <i class="pi pi-file"></i>
-          <span>Notes</span>
-        </router-link>
-        <router-link to="/scheduling" class="sidebar-link">
-          <i class="pi pi-users"></i>
-          <span>Meetings</span>
-        </router-link>
-        <router-link to="/settings" class="sidebar-link">
-          <i class="pi pi-cog"></i>
-          <span>Settings</span>
-        </router-link>
-      </nav>
-
-      <!-- User Profile at Bottom -->
-      <div class="sidebar-user">
-        <div class="user-profile" @click="toggleUserMenu">
-          <div class="user-avatar">
-            <span>{{ getUserInitials }}</span>
-          </div>
-          <div class="user-info">
-            <div class="user-name">{{ getUserName }}</div>
-            <div class="user-action">View Profile</div>
-          </div>
-        </div>
-
-        <!-- User Dropdown Menu -->
-        <transition name="menu-slide">
-          <div v-if="showUserMenu" class="user-dropdown">
-            <button @click="themeStore.toggleTheme" class="dropdown-link">
-              <i :class="themeStore.currentTheme === 'light' ? 'pi pi-moon' : 'pi pi-sun'"></i>
-              <span>{{ themeStore.currentTheme === 'light' ? 'Dark Mode' : 'Light Mode' }}</span>
-            </button>
-            <button @click="handleSignOut" class="dropdown-link danger">
-              <i class="pi pi-sign-out"></i>
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </transition>
-      </div>
-    </aside>
-
-    <!-- Main Content Area -->
-    <div class="app-main" :class="{ 'main-dark': themeStore.currentTheme === 'dark' }">
-      <!-- Optional Top Header for Actions -->
-      <header class="main-header" v-if="$route.meta.showHeader !== false">
-        <slot name="header">
-          <!-- Default header content can go here -->
-        </slot>
-      </header>
-
-      <!-- Page Content -->
-      <main id="main-content" class="main-content" tabindex="-1">
-        <slot />
-      </main>
-    </div>
-
-    <!-- Mobile Menu Overlay -->
-    <div
-      v-if="showMobileMenu"
-      class="mobile-overlay"
-      @click="closeMobileMenu"
-    ></div>
-
-    <!-- Mobile Sidebar -->
-    <transition name="mobile-slide">
-      <aside
-        v-if="showMobileMenu"
-        id="mobile-menu"
-        ref="mobileMenuRef"
-        class="mobile-sidebar"
-        :class="{ 'sidebar-dark': themeStore.currentTheme === 'dark' }"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Navigation menu"
-      >
-        <!-- Logo -->
-        <div class="sidebar-logo">
-          <img
-            src="/coordino-logo.png"
-            alt="Coordino"
-            class="h-6 w-auto dark:invert"
-          />
-          <button @click="closeMobileMenu" class="close-btn">
-            <i class="pi pi-times"></i>
-          </button>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="sidebar-nav">
-          <router-link to="/dashboard" class="sidebar-link" @click="closeMobileMenu">
-            <i class="pi pi-th-large"></i>
-            <span>Dashboard</span>
-          </router-link>
-          <router-link to="/tasks" class="sidebar-link" @click="closeMobileMenu">
-            <i class="pi pi-check-circle"></i>
-            <span>Tasks</span>
-          </router-link>
-          <router-link to="/notes" class="sidebar-link" @click="closeMobileMenu">
-            <i class="pi pi-file"></i>
-            <span>Notes</span>
-          </router-link>
-          <router-link to="/scheduling" class="sidebar-link" @click="closeMobileMenu">
-            <i class="pi pi-users"></i>
-            <span>Meetings</span>
-          </router-link>
-          <router-link to="/settings" class="sidebar-link" @click="closeMobileMenu">
-            <i class="pi pi-cog"></i>
-            <span>Settings</span>
-          </router-link>
-        </nav>
-
-        <!-- User Profile -->
-        <div class="sidebar-user">
-          <div class="user-profile">
-            <div class="user-avatar">
-              <span>{{ getUserInitials }}</span>
-            </div>
-            <div class="user-info">
-              <div class="user-name">{{ getUserName }}</div>
-              <div class="user-action">{{ authStore.user?.email }}</div>
-            </div>
-          </div>
-          <button @click="themeStore.toggleTheme" class="dropdown-link">
-            <i :class="themeStore.currentTheme === 'light' ? 'pi pi-moon' : 'pi pi-sun'"></i>
-            <span>{{ themeStore.currentTheme === 'light' ? 'Dark Mode' : 'Light Mode' }}</span>
-          </button>
-          <button @click="handleSignOut" class="dropdown-link danger">
-            <i class="pi pi-sign-out"></i>
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </aside>
-    </transition>
-
-    <!-- Mobile Menu Button -->
-    <button
-      ref="mobileMenuButtonRef"
-      class="mobile-menu-btn"
-      @click="toggleMobileMenu"
-      :aria-label="showMobileMenu ? 'Close menu' : 'Open menu'"
-      :aria-expanded="showMobileMenu"
-      aria-controls="mobile-menu"
-    >
-      <i :class="showMobileMenu ? 'pi pi-times' : 'pi pi-bars'" aria-hidden="true"></i>
-    </button>
-  </div>
-</template>
-
 <script setup>
 /**
  * AppLayout Component
@@ -224,7 +47,7 @@ const lastFocusedElement = ref(null)
  * @returns {string} User's display name
  */
 const getUserName = computed(() => {
-  const user = authStore.user
+  const { user } = authStore
   if (user?.user_metadata?.full_name) {
     return user.user_metadata.full_name.split(' ')[0]
   }
@@ -239,7 +62,7 @@ const getUserName = computed(() => {
  * @returns {string} User's initials (1-2 characters)
  */
 const getUserInitials = computed(() => {
-  const user = authStore.user
+  const { user } = authStore
   if (user?.user_metadata?.full_name) {
     const names = user.user_metadata.full_name.split(' ')
     if (names.length >= 2) {
@@ -278,7 +101,9 @@ const toggleMobileMenu = () => {
 
     // Focus the first focusable element in menu after it opens
     setTimeout(() => {
-      const firstFocusable = mobileMenuRef.value?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      const firstFocusable = mobileMenuRef.value?.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
       firstFocusable?.focus()
     }, 100)
   } else {
@@ -317,7 +142,7 @@ const handleSignOut = async () => {
  * @param {MouseEvent} event - Click event
  */
 const handleClickOutside = (event) => {
-  const target = event.target
+  const { target } = event
   // Close user menu if clicking outside of sidebar-user area
   if (!target.closest('.sidebar-user')) {
     showUserMenu.value = false
@@ -336,6 +161,169 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
+
+<template>
+  <div class="app-container" style="background-color: var(--bg-base)">
+    <!-- Skip to main content link for keyboard users -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Left Sidebar -->
+    <aside class="app-sidebar" :class="{ 'sidebar-dark': themeStore.currentTheme === 'dark' }">
+      <!-- Logo -->
+      <div class="sidebar-logo">
+        <img src="/coordino-logo.png" alt="Coordino" class="h-6 w-auto dark:invert" />
+      </div>
+
+      <!-- Navigation -->
+      <nav class="sidebar-nav">
+        <router-link to="/dashboard" class="sidebar-link">
+          <i class="pi pi-th-large"></i>
+          <span>Dashboard</span>
+        </router-link>
+        <router-link to="/tasks" class="sidebar-link">
+          <i class="pi pi-check-circle"></i>
+          <span>Tasks</span>
+        </router-link>
+        <router-link to="/notes" class="sidebar-link">
+          <i class="pi pi-file"></i>
+          <span>Notes</span>
+        </router-link>
+        <router-link to="/scheduling" class="sidebar-link">
+          <i class="pi pi-users"></i>
+          <span>Meetings</span>
+        </router-link>
+        <router-link to="/settings" class="sidebar-link">
+          <i class="pi pi-cog"></i>
+          <span>Settings</span>
+        </router-link>
+      </nav>
+
+      <!-- User Profile at Bottom -->
+      <div class="sidebar-user">
+        <div class="user-profile" @click="toggleUserMenu">
+          <div class="user-avatar">
+            <span>{{ getUserInitials }}</span>
+          </div>
+          <div class="user-info">
+            <div class="user-name">{{ getUserName }}</div>
+            <div class="user-action">View Profile</div>
+          </div>
+        </div>
+
+        <!-- User Dropdown Menu -->
+        <transition name="menu-slide">
+          <div v-if="showUserMenu" class="user-dropdown">
+            <button class="dropdown-link" @click="themeStore.toggleTheme">
+              <i :class="themeStore.currentTheme === 'light' ? 'pi pi-moon' : 'pi pi-sun'"></i>
+              <span>{{ themeStore.currentTheme === 'light' ? 'Dark Mode' : 'Light Mode' }}</span>
+            </button>
+            <button class="dropdown-link danger" @click="handleSignOut">
+              <i class="pi pi-sign-out"></i>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </transition>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="app-main" :class="{ 'main-dark': themeStore.currentTheme === 'dark' }">
+      <!-- Optional Top Header for Actions -->
+      <header v-if="$route.meta.showHeader !== false" class="main-header">
+        <slot name="header">
+          <!-- Default header content can go here -->
+        </slot>
+      </header>
+
+      <!-- Page Content -->
+      <main id="main-content" class="main-content" tabindex="-1">
+        <slot />
+      </main>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div v-if="showMobileMenu" class="mobile-overlay" @click="closeMobileMenu"></div>
+
+    <!-- Mobile Sidebar -->
+    <transition name="mobile-slide">
+      <aside
+        v-if="showMobileMenu"
+        id="mobile-menu"
+        ref="mobileMenuRef"
+        class="mobile-sidebar"
+        :class="{ 'sidebar-dark': themeStore.currentTheme === 'dark' }"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+      >
+        <!-- Logo -->
+        <div class="sidebar-logo">
+          <img src="/coordino-logo.png" alt="Coordino" class="h-6 w-auto dark:invert" />
+          <button class="close-btn" aria-label="Close navigation menu" @click="closeMobileMenu">
+            <i class="pi pi-times" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+          <router-link to="/dashboard" class="sidebar-link" @click="closeMobileMenu">
+            <i class="pi pi-th-large"></i>
+            <span>Dashboard</span>
+          </router-link>
+          <router-link to="/tasks" class="sidebar-link" @click="closeMobileMenu">
+            <i class="pi pi-check-circle"></i>
+            <span>Tasks</span>
+          </router-link>
+          <router-link to="/notes" class="sidebar-link" @click="closeMobileMenu">
+            <i class="pi pi-file"></i>
+            <span>Notes</span>
+          </router-link>
+          <router-link to="/scheduling" class="sidebar-link" @click="closeMobileMenu">
+            <i class="pi pi-users"></i>
+            <span>Meetings</span>
+          </router-link>
+          <router-link to="/settings" class="sidebar-link" @click="closeMobileMenu">
+            <i class="pi pi-cog"></i>
+            <span>Settings</span>
+          </router-link>
+        </nav>
+
+        <!-- User Profile -->
+        <div class="sidebar-user">
+          <div class="user-profile">
+            <div class="user-avatar">
+              <span>{{ getUserInitials }}</span>
+            </div>
+            <div class="user-info">
+              <div class="user-name">{{ getUserName }}</div>
+              <div class="user-action">{{ authStore.user?.email }}</div>
+            </div>
+          </div>
+          <button class="dropdown-link" @click="themeStore.toggleTheme">
+            <i :class="themeStore.currentTheme === 'light' ? 'pi pi-moon' : 'pi pi-sun'"></i>
+            <span>{{ themeStore.currentTheme === 'light' ? 'Dark Mode' : 'Light Mode' }}</span>
+          </button>
+          <button class="dropdown-link danger" @click="handleSignOut">
+            <i class="pi pi-sign-out"></i>
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </aside>
+    </transition>
+
+    <!-- Mobile Menu Button -->
+    <button
+      ref="mobileMenuButtonRef"
+      class="mobile-menu-btn"
+      :aria-label="showMobileMenu ? 'Close menu' : 'Open menu'"
+      :aria-expanded="showMobileMenu"
+      aria-controls="mobile-menu"
+      @click="toggleMobileMenu"
+    >
+      <i :class="showMobileMenu ? 'pi pi-times' : 'pi pi-bars'" aria-hidden="true"></i>
+    </button>
+  </div>
+</template>
 
 <style scoped>
 @reference "tailwindcss";

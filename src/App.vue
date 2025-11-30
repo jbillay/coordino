@@ -1,14 +1,19 @@
+<script setup>
+import { onMounted } from 'vue'
+import { useThemeStore } from '@/stores/theme'
+
+const themeStore = useThemeStore()
+
+onMounted(() => {
+  themeStore.init()
+})
+</script>
+
 <template>
   <div :class="themeStore.currentTheme">
     <router-view />
   </div>
 </template>
-
-<script setup>
-import { useThemeStore } from '@/stores/theme'
-
-const themeStore = useThemeStore()
-</script>
 
 <style>
 /* Global styles are imported in main.js */
