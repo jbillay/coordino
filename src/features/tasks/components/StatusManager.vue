@@ -1,3 +1,142 @@
+<script setup>
+import { ref, computed } from 'vue'
+import Dialog from 'primevue/dialog'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import ColorPicker from 'primevue/colorpicker'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import { useTaskStore } from '../store'
+import { useToast } from 'primevue/usetoast'
+import { generateRandomColor } from '../utils'
+
+/**
+ * StatusManager Component
+ * Manage custom task statuses
+ *
+ * @component
+ */
+
+defineProps({
+  /**
+   * Dialog visibility
+   */
+  visible: {
+    type: Boolean,
+    default: false
+  }
+})
+
+defineEmits(['update:visible'])
+
+const taskStore = useTaskStore()
+const toast = useToast()
+
+const adding = ref(false)
+const deleting = ref(null)
+const showDeleteConfirm = ref(false)
+const statusToDelete = ref(null)
+
+const newStatus = ref({
+  name: '',
+  color: generateRandomColor().replace('#', '')
+})
+
+/**
+ * Default statuses (system-provided)
+ */
+const defaultStatuses = computed(() => taskStore.statuses.filter((s) => s.is_default || !s.user_id))
+
+/**
+ * Custom user-created statuses
+ */
+const customStatuses = computed(() => taskStore.statuses.filter((s) => !s.is_default && s.user_id))
+
+/**
+ * Add new status
+ */
+const handleAddStatus = async () => {
+  if (!newStatus.value.name || !newStatus.value.color) {
+    return
+  }
+
+  adding.value = true
+
+  const result = await taskStore.createStatus({
+    name: newStatus.value.name.trim(),
+    color: `#${newStatus.value.color}`,
+    display_order: taskStore.statuses.length + 1
+  })
+
+  adding.value = false
+
+  if (result.success) {
+    toast.add({
+      severity: 'success',
+      summary: 'Status Created',
+      detail: `"${newStatus.value.name}" has been added`,
+      life: 3000
+    })
+
+    // Reset form
+    newStatus.value = {
+      name: '',
+      color: generateRandomColor().replace('#', '')
+    }
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: result.error || 'Failed to create status',
+      life: 5000
+    })
+  }
+}
+
+/**
+ * Delete status - show confirmation dialog
+ */
+const handleDeleteStatus = (status) => {
+  statusToDelete.value = status
+  showDeleteConfirm.value = true
+}
+
+/**
+ * Confirm delete status - actually perform deletion
+ */
+const confirmDelete = async () => {
+  if (!statusToDelete.value) {
+    return
+  }
+
+  const status = statusToDelete.value
+  deleting.value = status.id
+
+  const result = await taskStore.deleteStatus(status.id)
+
+  deleting.value = null
+  showDeleteConfirm.value = false
+
+  if (result.success) {
+    toast.add({
+      severity: 'success',
+      summary: 'Status Deleted',
+      detail: `"${status.name}" has been removed`,
+      life: 3000
+    })
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: result.error || 'Failed to delete status',
+      life: 5000
+    })
+  }
+
+  statusToDelete.value = null
+}
+</script>
+
 <template>
   <Dialog
     :visible="visible"
@@ -121,145 +260,6 @@
     @confirm="confirmDelete"
   />
 </template>
-
-<script setup>
-import { ref, computed } from 'vue'
-import Dialog from 'primevue/dialog'
-import Card from 'primevue/card'
-import Button from 'primevue/button'
-import InputText from 'primevue/inputtext'
-import ColorPicker from 'primevue/colorpicker'
-import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
-import { useTaskStore } from '../store'
-import { useToast } from 'primevue/usetoast'
-import { generateRandomColor } from '../utils'
-
-/**
- * StatusManager Component
- * Manage custom task statuses
- *
- * @component
- */
-
-const props = defineProps({
-  /**
-   * Dialog visibility
-   */
-  visible: {
-    type: Boolean,
-    default: false
-  }
-})
-
-const emit = defineEmits(['update:visible'])
-
-const taskStore = useTaskStore()
-const toast = useToast()
-
-const adding = ref(false)
-const deleting = ref(null)
-const showDeleteConfirm = ref(false)
-const statusToDelete = ref(null)
-
-const newStatus = ref({
-  name: '',
-  color: generateRandomColor().replace('#', '')
-})
-
-/**
- * Default statuses (system-provided)
- */
-const defaultStatuses = computed(() =>
-  taskStore.statuses.filter((s) => s.is_default || !s.user_id)
-)
-
-/**
- * Custom user-created statuses
- */
-const customStatuses = computed(() =>
-  taskStore.statuses.filter((s) => !s.is_default && s.user_id)
-)
-
-/**
- * Add new status
- */
-const handleAddStatus = async () => {
-  if (!newStatus.value.name || !newStatus.value.color) return
-
-  adding.value = true
-
-  const result = await taskStore.createStatus({
-    name: newStatus.value.name.trim(),
-    color: '#' + newStatus.value.color,
-    display_order: taskStore.statuses.length + 1
-  })
-
-  adding.value = false
-
-  if (result.success) {
-    toast.add({
-      severity: 'success',
-      summary: 'Status Created',
-      detail: `"${newStatus.value.name}" has been added`,
-      life: 3000
-    })
-
-    // Reset form
-    newStatus.value = {
-      name: '',
-      color: generateRandomColor().replace('#', '')
-    }
-  } else {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: result.error || 'Failed to create status',
-      life: 5000
-    })
-  }
-}
-
-/**
- * Delete status - show confirmation dialog
- */
-const handleDeleteStatus = (status) => {
-  statusToDelete.value = status
-  showDeleteConfirm.value = true
-}
-
-/**
- * Confirm delete status - actually perform deletion
- */
-const confirmDelete = async () => {
-  if (!statusToDelete.value) return
-
-  const status = statusToDelete.value
-  deleting.value = status.id
-
-  const result = await taskStore.deleteStatus(status.id)
-
-  deleting.value = null
-  showDeleteConfirm.value = false
-
-  if (result.success) {
-    toast.add({
-      severity: 'success',
-      summary: 'Status Deleted',
-      detail: `"${status.name}" has been removed`,
-      life: 3000
-    })
-  } else {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: result.error || 'Failed to delete status',
-      life: 5000
-    })
-  }
-
-  statusToDelete.value = null
-}
-</script>
 
 <style scoped>
 :deep(.p-colorpicker-preview) {

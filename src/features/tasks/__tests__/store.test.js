@@ -90,15 +90,15 @@ describe('useTaskStore', () => {
     it('activeTasks returns only non-completed tasks', () => {
       const active = store.activeTasks
       expect(active).toHaveLength(2)
-      expect(active.every(t => !t.completed_at)).toBe(true)
-      expect(active.map(t => t.id)).toEqual([1, 3])
+      expect(active.every((t) => !t.completed_at)).toBe(true)
+      expect(active.map((t) => t.id)).toEqual([1, 3])
     })
 
     it('completedTasks returns only completed tasks', () => {
       const completed = store.completedTasks
       expect(completed).toHaveLength(2)
-      expect(completed.every(t => t.completed_at)).toBe(true)
-      expect(completed.map(t => t.id)).toEqual([2, 4])
+      expect(completed.every((t) => t.completed_at)).toBe(true)
+      expect(completed.map((t) => t.id)).toEqual([2, 4])
     })
 
     it('activeTasks updates when tasks change', () => {
@@ -124,7 +124,7 @@ describe('useTaskStore', () => {
         { id: 3, name: 'Done', is_default: false }
       ]
 
-      const defaultStatus = store.defaultStatus
+      const { defaultStatus } = store
       expect(defaultStatus).toBeDefined()
       expect(defaultStatus.name).toBe('Open')
       expect(defaultStatus.is_default).toBe(true)
@@ -151,7 +151,7 @@ describe('useTaskStore', () => {
         { id: 2, name: 'Todo', is_default: true }
       ]
 
-      const defaultStatus = store.defaultStatus
+      const { defaultStatus } = store
       expect(defaultStatus.id).toBe(1)
     })
   })

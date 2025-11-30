@@ -55,7 +55,7 @@ test.describe('Authentication Flow', () => {
     // Check if we need to click login or if already on login page
     const isLoginPage = page.url().includes('/login')
 
-    if (!isLoginPage && await loginLink.isVisible()) {
+    if (!isLoginPage && (await loginLink.isVisible())) {
       await loginLink.click()
       await expect(page).toHaveURL(/.*login/)
     }
@@ -100,7 +100,7 @@ test.describe('Accessibility', () => {
     const skipLink = page.locator('a[href="#main-content"]').first()
 
     // Skip link might be hidden until focused
-    if (await skipLink.count() > 0) {
+    if ((await skipLink.count()) > 0) {
       await expect(skipLink).toBeDefined()
     }
   })
@@ -134,12 +134,13 @@ test.describe('Theme Switching', () => {
     await page.goto('/')
 
     // Look for theme toggle button
-    const themeToggle = page.locator('[aria-label*="theme"]').or(
-      page.getByRole('button', { name: /dark|light/i })
-    ).first()
+    const themeToggle = page
+      .locator('[aria-label*="theme"]')
+      .or(page.getByRole('button', { name: /dark|light/i }))
+      .first()
 
     // If theme toggle exists, test it
-    if (await themeToggle.count() > 0) {
+    if ((await themeToggle.count()) > 0) {
       // Get initial state
       const htmlElement = page.locator('html')
       const initialTheme = await htmlElement.getAttribute('class')

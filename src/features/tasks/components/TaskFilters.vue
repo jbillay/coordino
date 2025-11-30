@@ -1,150 +1,3 @@
-<template>
-  <Card class="filters-card">
-    <template #content>
-      <div class="space-y-4">
-        <!-- Search -->
-        <div class="w-full">
-          <label for="task-search" class="sr-only">Search tasks</label>
-          <span class="p-input-icon-left w-full">
-            <i class="pi pi-search" />
-            <InputText
-              id="task-search"
-              v-model="searchQuery"
-              placeholder="Search tasks..."
-              class="w-full"
-            />
-          </span>
-        </div>
-
-        <!-- Filters row -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Status filter -->
-          <div>
-            <label for="filter-status" class="block text-sm font-medium mb-2">Status</label>
-            <Select
-              id="filter-status"
-              v-model="filters.status"
-              :options="taskStore.statuses"
-              option-label="name"
-              option-value="id"
-              placeholder="All Statuses"
-              class="w-full"
-              show-clear
-            >
-              <template #option="slotProps">
-                <div class="flex items-center gap-2">
-                  <span
-                    class="w-3 h-3 rounded-full"
-                    :style="{ backgroundColor: slotProps.option.color }"
-                  ></span>
-                  <span>{{ slotProps.option.name }}</span>
-                </div>
-              </template>
-            </Select>
-          </div>
-
-          <!-- Category filter -->
-          <div>
-            <label for="filter-category" class="block text-sm font-medium mb-2">Category</label>
-            <Select
-              id="filter-category"
-              v-model="filters.category"
-              :options="taskStore.categories"
-              option-label="name"
-              option-value="id"
-              placeholder="All Categories"
-              class="w-full"
-              show-clear
-            >
-              <template #option="slotProps">
-                <div class="flex items-center gap-2">
-                  <span
-                    class="w-3 h-3 rounded-full"
-                    :style="{ backgroundColor: slotProps.option.color }"
-                  ></span>
-                  <span>{{ slotProps.option.name }}</span>
-                </div>
-              </template>
-            </Select>
-          </div>
-
-          <!-- Priority filter -->
-          <div>
-            <label for="filter-priority" class="block text-sm font-medium mb-2">Priority</label>
-            <Select
-              id="filter-priority"
-              v-model="filters.priority"
-              :options="priorityOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="All Priorities"
-              class="w-full"
-              show-clear
-            >
-              <template #option="slotProps">
-                <span class="px-2 py-1 rounded text-xs font-medium" :class="slotProps.option.class">
-                  {{ slotProps.option.label }}
-                </span>
-              </template>
-            </Select>
-          </div>
-
-          <!-- Show completed toggle -->
-          <div class="flex items-end">
-            <div class="flex items-center">
-              <Checkbox
-                id="show-completed"
-                v-model="filters.showCompleted"
-                :binary="true"
-              />
-              <label for="show-completed" class="ml-2 text-sm font-medium cursor-pointer">
-                Show Completed
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sort and Group row -->
-        <div class="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-200 dark:border-gray-700">
-          <!-- Sort by -->
-          <div class="flex items-center gap-2">
-            <label for="sort-by" class="text-sm font-medium whitespace-nowrap">Sort by:</label>
-            <Select
-              id="sort-by"
-              v-model="sorting.sortBy"
-              :options="sortOptions"
-              option-label="label"
-              option-value="value"
-              class="w-48"
-            />
-          </div>
-
-          <!-- Group by -->
-          <div class="flex items-center gap-2">
-            <label for="group-by" class="text-sm font-medium whitespace-nowrap">Group by:</label>
-            <Select
-              id="group-by"
-              v-model="sorting.groupBy"
-              :options="groupOptions"
-              option-label="label"
-              option-value="value"
-              class="w-48"
-            />
-          </div>
-
-          <!-- Clear all filters -->
-          <Button
-            label="Clear Filters"
-            icon="pi pi-filter-slash"
-            class="p-button-sm p-button-text"
-            @click="clearAllFilters"
-          />
-        </div>
-      </div>
-    </template>
-  </Card>
-</template>
-
 <script setup>
 import { ref, watch, computed } from 'vue'
 import Card from 'primevue/card'
@@ -286,6 +139,151 @@ const clearAllFilters = () => {
   }
 }
 </script>
+
+<template>
+  <Card class="filters-card">
+    <template #content>
+      <div class="space-y-4">
+        <!-- Search -->
+        <div class="w-full">
+          <label for="task-search" class="sr-only">Search tasks</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-search" />
+            <InputText
+              id="task-search"
+              v-model="searchQuery"
+              placeholder="Search tasks..."
+              class="w-full"
+            />
+          </span>
+        </div>
+
+        <!-- Filters row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Status filter -->
+          <div>
+            <label for="filter-status" class="block text-sm font-medium mb-2">Status</label>
+            <Select
+              id="filter-status"
+              v-model="filters.status"
+              :options="taskStore.statuses"
+              option-label="name"
+              option-value="id"
+              placeholder="All Statuses"
+              class="w-full"
+              show-clear
+            >
+              <template #option="slotProps">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="w-3 h-3 rounded-full"
+                    :style="{ backgroundColor: slotProps.option.color }"
+                  ></span>
+                  <span>{{ slotProps.option.name }}</span>
+                </div>
+              </template>
+            </Select>
+          </div>
+
+          <!-- Category filter -->
+          <div>
+            <label for="filter-category" class="block text-sm font-medium mb-2">Category</label>
+            <Select
+              id="filter-category"
+              v-model="filters.category"
+              :options="taskStore.categories"
+              option-label="name"
+              option-value="id"
+              placeholder="All Categories"
+              class="w-full"
+              show-clear
+            >
+              <template #option="slotProps">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="w-3 h-3 rounded-full"
+                    :style="{ backgroundColor: slotProps.option.color }"
+                  ></span>
+                  <span>{{ slotProps.option.name }}</span>
+                </div>
+              </template>
+            </Select>
+          </div>
+
+          <!-- Priority filter -->
+          <div>
+            <label for="filter-priority" class="block text-sm font-medium mb-2">Priority</label>
+            <Select
+              id="filter-priority"
+              v-model="filters.priority"
+              :options="priorityOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="All Priorities"
+              class="w-full"
+              show-clear
+            >
+              <template #option="slotProps">
+                <span class="px-2 py-1 rounded text-xs font-medium" :class="slotProps.option.class">
+                  {{ slotProps.option.label }}
+                </span>
+              </template>
+            </Select>
+          </div>
+
+          <!-- Show completed toggle -->
+          <div class="flex items-end">
+            <div class="flex items-center">
+              <Checkbox id="show-completed" v-model="filters.showCompleted" :binary="true" />
+              <label for="show-completed" class="ml-2 text-sm font-medium cursor-pointer">
+                Show Completed
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sort and Group row -->
+        <div
+          class="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-200 dark:border-gray-700"
+        >
+          <!-- Sort by -->
+          <div class="flex items-center gap-2">
+            <label for="sort-by" class="text-sm font-medium whitespace-nowrap">Sort by:</label>
+            <Select
+              id="sort-by"
+              v-model="sorting.sortBy"
+              :options="sortOptions"
+              option-label="label"
+              option-value="value"
+              class="w-48"
+            />
+          </div>
+
+          <!-- Group by -->
+          <div class="flex items-center gap-2">
+            <label for="group-by" class="text-sm font-medium whitespace-nowrap">Group by:</label>
+            <Select
+              id="group-by"
+              v-model="sorting.groupBy"
+              :options="groupOptions"
+              option-label="label"
+              option-value="value"
+              class="w-48"
+            />
+          </div>
+
+          <!-- Clear all filters -->
+          <Button
+            label="Clear Filters"
+            icon="pi pi-filter-slash"
+            class="p-button-sm p-button-text"
+            @click="clearAllFilters"
+          />
+        </div>
+      </div>
+    </template>
+  </Card>
+</template>
 
 <style scoped>
 .filters-card {

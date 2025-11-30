@@ -1,3 +1,63 @@
+<script setup>
+import { computed } from 'vue'
+import Button from 'primevue/button'
+import TaskCard from './TaskCard.vue'
+import { groupTasks } from '../utils'
+
+/**
+ * TaskList Component
+ * Displays tasks in a list or grouped by specified field
+ *
+ * @component
+ */
+
+const props = defineProps({
+  /**
+   * Array of tasks to display
+   */
+  tasks: {
+    type: Array,
+    default: () => []
+  },
+
+  /**
+   * Group tasks by field (status, category, priority, none)
+   */
+  groupBy: {
+    type: String,
+    default: 'none'
+  },
+
+  /**
+   * Custom empty state message
+   */
+  emptyMessage: {
+    type: String,
+    default: 'Get started by creating your first task'
+  },
+
+  /**
+   * Show create button in empty state
+   */
+  showCreateButton: {
+    type: Boolean,
+    default: true
+  }
+})
+
+defineEmits(['edit', 'delete', 'toggle-complete', 'create-task'])
+
+/**
+ * Grouped tasks
+ */
+const groupedTasks = computed(() => {
+  if (!props.groupBy || props.groupBy === 'none') {
+    return {}
+  }
+  return groupTasks(props.tasks, props.groupBy)
+})
+</script>
+
 <template>
   <div class="task-list">
     <!-- Empty state -->
@@ -53,66 +113,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import Button from 'primevue/button'
-import TaskCard from './TaskCard.vue'
-import { groupTasks } from '../utils'
-
-/**
- * TaskList Component
- * Displays tasks in a list or grouped by specified field
- *
- * @component
- */
-
-const props = defineProps({
-  /**
-   * Array of tasks to display
-   */
-  tasks: {
-    type: Array,
-    default: () => []
-  },
-
-  /**
-   * Group tasks by field (status, category, priority, none)
-   */
-  groupBy: {
-    type: String,
-    default: 'none'
-  },
-
-  /**
-   * Custom empty state message
-   */
-  emptyMessage: {
-    type: String,
-    default: 'Get started by creating your first task'
-  },
-
-  /**
-   * Show create button in empty state
-   */
-  showCreateButton: {
-    type: Boolean,
-    default: true
-  }
-})
-
-const emit = defineEmits(['edit', 'delete', 'toggle-complete', 'create-task'])
-
-/**
- * Grouped tasks
- */
-const groupedTasks = computed(() => {
-  if (!props.groupBy || props.groupBy === 'none') {
-    return {}
-  }
-  return groupTasks(props.tasks, props.groupBy)
-})
-</script>
 
 <style scoped>
 .task-list {

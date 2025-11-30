@@ -1,4 +1,4 @@
-import { ref, reactive, computed } from 'vue'
+import { reactive, computed } from 'vue'
 import { isValidEmail, validatePassword, isNotEmpty, hasMinLength } from '@/utils/validation'
 
 /**
@@ -53,7 +53,7 @@ export const useValidation = () => {
   const validateForm = (formData, validationRules) => {
     let isValid = true
 
-    Object.keys(validationRules).forEach(fieldName => {
+    Object.keys(validationRules).forEach((fieldName) => {
       const fieldValue = formData[fieldName]
       const rules = validationRules[fieldName]
 
@@ -69,7 +69,7 @@ export const useValidation = () => {
    * Clears all validation errors
    */
   const clearErrors = () => {
-    Object.keys(errors).forEach(key => delete errors[key])
+    Object.keys(errors).forEach((key) => delete errors[key])
   }
 
   /**
@@ -121,7 +121,9 @@ export const commonRules = {
 
   password: (minLength = 6) => ({
     validator: (v) => {
-      if (!v) return false
+      if (!v) {
+        return false
+      }
       const result = validatePassword(v, { minLength })
       return result.isValid
     },

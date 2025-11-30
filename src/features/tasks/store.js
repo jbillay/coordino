@@ -44,24 +44,20 @@ export const useTaskStore = defineStore('tasks', () => {
    * Active tasks (not completed)
    * @type {import('vue').ComputedRef<Array>}
    */
-  const activeTasks = computed(() =>
-    tasks.value.filter(task => !task.completed_at)
-  )
+  const activeTasks = computed(() => tasks.value.filter((task) => !task.completed_at))
 
   /**
    * Completed tasks
    * @type {import('vue').ComputedRef<Array>}
    */
-  const completedTasks = computed(() =>
-    tasks.value.filter(task => task.completed_at)
-  )
+  const completedTasks = computed(() => tasks.value.filter((task) => task.completed_at))
 
   /**
    * Get default 'Open' status
    * @type {import('vue').ComputedRef<Object|undefined>}
    */
   const defaultStatus = computed(() =>
-    statuses.value.find(s => s.name === 'Open' && s.is_default)
+    statuses.value.find((s) => s.name === 'Open' && s.is_default)
   )
 
   /**
@@ -81,17 +77,26 @@ export const useTaskStore = defineStore('tasks', () => {
       const to = from + pageSize.value - 1
 
       // Fetch tasks with count
-      const { data, error: fetchError, count } = await supabase
+      const {
+        data,
+        error: fetchError,
+        count
+      } = await supabase
         .from('tasks')
-        .select(`
+        .select(
+          `
           *,
           status:task_statuses(id, name, color),
           category:task_categories(id, name, color)
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' }
+        )
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      if (fetchError) throw fetchError
+      if (fetchError) {
+        throw fetchError
+      }
 
       totalTasks.value = count || 0
       currentPage.value = page
@@ -115,7 +120,9 @@ export const useTaskStore = defineStore('tasks', () => {
    * @returns {Promise<void>}
    */
   const loadMoreTasks = async () => {
-    if (!hasMore.value || loading.value) return
+    if (!hasMore.value || loading.value) {
+      return
+    }
     await fetchTasks(currentPage.value + 1, true)
   }
 
@@ -140,7 +147,9 @@ export const useTaskStore = defineStore('tasks', () => {
         .select('*')
         .order('display_order')
 
-      if (fetchError) throw fetchError
+      if (fetchError) {
+        throw fetchError
+      }
 
       statuses.value = data || []
     } catch (e) {
@@ -159,7 +168,9 @@ export const useTaskStore = defineStore('tasks', () => {
         .select('*')
         .order('display_order')
 
-      if (fetchError) throw fetchError
+      if (fetchError) {
+        throw fetchError
+      }
 
       categories.value = data || []
     } catch (e) {
@@ -187,14 +198,18 @@ export const useTaskStore = defineStore('tasks', () => {
           user_id: authStore.user.id,
           ...taskData
         })
-        .select(`
+        .select(
+          `
           *,
           status:task_statuses(id, name, color),
           category:task_categories(id, name, color)
-        `)
+        `
+        )
         .single()
 
-      if (createError) throw createError
+      if (createError) {
+        throw createError
+      }
 
       tasks.value.unshift(data)
       return { success: true, data }
@@ -216,16 +231,20 @@ export const useTaskStore = defineStore('tasks', () => {
         .from('tasks')
         .update(updates)
         .eq('id', taskId)
-        .select(`
+        .select(
+          `
           *,
           status:task_statuses(id, name, color),
           category:task_categories(id, name, color)
-        `)
+        `
+        )
         .single()
 
-      if (updateError) throw updateError
+      if (updateError) {
+        throw updateError
+      }
 
-      const index = tasks.value.findIndex(t => t.id === taskId)
+      const index = tasks.value.findIndex((t) => t.id === taskId)
       if (index !== -1) {
         tasks.value[index] = data
       }
@@ -242,18 +261,15 @@ export const useTaskStore = defineStore('tasks', () => {
    * @param {string} taskId - Task ID to complete
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
-  const completeTask = async (taskId) => {
-    return updateTask(taskId, { completed_at: new Date().toISOString() })
-  }
+  const completeTask = async (taskId) =>
+    updateTask(taskId, { completed_at: new Date().toISOString() })
 
   /**
    * Mark task as incomplete (reopen)
    * @param {string} taskId - Task ID to reopen
    * @returns {Promise<{success: boolean, data?: Object, error?: string}>}
    */
-  const reopenTask = async (taskId) => {
-    return updateTask(taskId, { completed_at: null })
-  }
+  const reopenTask = async (taskId) => updateTask(taskId, { completed_at: null })
 
   /**
    * Delete a task
@@ -262,14 +278,13 @@ export const useTaskStore = defineStore('tasks', () => {
    */
   const deleteTask = async (taskId) => {
     try {
-      const { error: deleteError } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', taskId)
+      const { error: deleteError } = await supabase.from('tasks').delete().eq('id', taskId)
 
-      if (deleteError) throw deleteError
+      if (deleteError) {
+        throw deleteError
+      }
 
-      tasks.value = tasks.value.filter(t => t.id !== taskId)
+      tasks.value = tasks.value.filter((t) => t.id !== taskId)
       return { success: true }
     } catch (e) {
       console.error('Error deleting task:', e)
@@ -297,7 +312,9 @@ export const useTaskStore = defineStore('tasks', () => {
         .select()
         .single()
 
-      if (createError) throw createError
+      if (createError) {
+        throw createError
+      }
 
       statuses.value.push(data)
       return { success: true, data }
@@ -322,9 +339,11 @@ export const useTaskStore = defineStore('tasks', () => {
         .select()
         .single()
 
-      if (updateError) throw updateError
+      if (updateError) {
+        throw updateError
+      }
 
-      const index = statuses.value.findIndex(s => s.id === statusId)
+      const index = statuses.value.findIndex((s) => s.id === statusId)
       if (index !== -1) {
         statuses.value[index] = data
       }
@@ -348,9 +367,11 @@ export const useTaskStore = defineStore('tasks', () => {
         .delete()
         .eq('id', statusId)
 
-      if (deleteError) throw deleteError
+      if (deleteError) {
+        throw deleteError
+      }
 
-      statuses.value = statuses.value.filter(s => s.id !== statusId)
+      statuses.value = statuses.value.filter((s) => s.id !== statusId)
       return { success: true }
     } catch (e) {
       console.error('Error deleting status:', e)
@@ -377,7 +398,9 @@ export const useTaskStore = defineStore('tasks', () => {
         .select()
         .single()
 
-      if (createError) throw createError
+      if (createError) {
+        throw createError
+      }
 
       categories.value.push(data)
       return { success: true, data }
@@ -402,9 +425,11 @@ export const useTaskStore = defineStore('tasks', () => {
         .select()
         .single()
 
-      if (updateError) throw updateError
+      if (updateError) {
+        throw updateError
+      }
 
-      const index = categories.value.findIndex(c => c.id === categoryId)
+      const index = categories.value.findIndex((c) => c.id === categoryId)
       if (index !== -1) {
         categories.value[index] = data
       }
@@ -428,9 +453,11 @@ export const useTaskStore = defineStore('tasks', () => {
         .delete()
         .eq('id', categoryId)
 
-      if (deleteError) throw deleteError
+      if (deleteError) {
+        throw deleteError
+      }
 
-      categories.value = categories.value.filter(c => c.id !== categoryId)
+      categories.value = categories.value.filter((c) => c.id !== categoryId)
       return { success: true }
     } catch (e) {
       console.error('Error deleting category:', e)
@@ -444,7 +471,9 @@ export const useTaskStore = defineStore('tasks', () => {
    * @returns {void}
    */
   const subscribeToTasks = () => {
-    if (taskSubscription) return // Already subscribed
+    if (taskSubscription) {
+      return
+    } // Already subscribed
 
     taskSubscription = supabase
       .channel('tasks_changes')
@@ -464,11 +493,13 @@ export const useTaskStore = defineStore('tasks', () => {
               // Fetch the new task with related data
               const { data } = await supabase
                 .from('tasks')
-                .select(`
+                .select(
+                  `
                   *,
                   status:task_statuses(id, name, color),
                   category:task_categories(id, name, color)
-                `)
+                `
+                )
                 .eq('id', newRecord.id)
                 .single()
 
@@ -484,16 +515,18 @@ export const useTaskStore = defineStore('tasks', () => {
               // Fetch the updated task with related data
               const { data } = await supabase
                 .from('tasks')
-                .select(`
+                .select(
+                  `
                   *,
                   status:task_statuses(id, name, color),
                   category:task_categories(id, name, color)
-                `)
+                `
+                )
                 .eq('id', newRecord.id)
                 .single()
 
               if (data) {
-                const index = tasks.value.findIndex(t => t.id === newRecord.id)
+                const index = tasks.value.findIndex((t) => t.id === newRecord.id)
                 if (index !== -1) {
                   tasks.value[index] = data
                 }
@@ -503,7 +536,7 @@ export const useTaskStore = defineStore('tasks', () => {
 
             case 'DELETE': {
               // Remove from list
-              tasks.value = tasks.value.filter(t => t.id !== oldRecord.id)
+              tasks.value = tasks.value.filter((t) => t.id !== oldRecord.id)
               totalTasks.value = Math.max(0, totalTasks.value - 1)
               break
             }
@@ -529,11 +562,7 @@ export const useTaskStore = defineStore('tasks', () => {
    * @returns {Promise<void>}
    */
   const initialize = async () => {
-    await Promise.all([
-      fetchTasks(),
-      fetchStatuses(),
-      fetchCategories()
-    ])
+    await Promise.all([fetchTasks(), fetchStatuses(), fetchCategories()])
 
     // Set up real-time subscriptions
     subscribeToTasks()

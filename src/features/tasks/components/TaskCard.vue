@@ -1,3 +1,81 @@
+<script setup>
+import { computed } from 'vue'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import {
+  formatTaskDate,
+  getDaysRemainingText,
+  calculateDaysOpen,
+  getPriorityClasses,
+  getPriorityConfig,
+  isTaskOverdue
+} from '../utils'
+
+/**
+ * TaskCard Component
+ * Displays a single task with all metadata and actions
+ *
+ * @component
+ */
+
+const props = defineProps({
+  /**
+   * Task object to display
+   */
+  task: {
+    type: Object,
+    required: true
+  }
+})
+
+const emit = defineEmits(['edit', 'delete', 'toggle-complete'])
+
+/**
+ * Priority display classes
+ */
+const priorityClasses = computed(() => getPriorityClasses(props.task.priority))
+
+/**
+ * Priority label
+ */
+const priorityLabel = computed(() => {
+  const config = getPriorityConfig(props.task.priority)
+  return config.label
+})
+
+/**
+ * Days remaining text
+ */
+const daysRemainingText = computed(() => {
+  if (!props.task.due_date || props.task.completed_at) {
+    return ''
+  }
+  return getDaysRemainingText(props.task.due_date)
+})
+
+/**
+ * Check if task is overdue
+ */
+const isOverdue = computed(() => {
+  if (props.task.completed_at) {
+    return false
+  }
+  return isTaskOverdue(props.task.due_date)
+})
+
+/**
+ * Calculate days task has been open
+ */
+const daysOpen = computed(() => calculateDaysOpen(props.task.created_at))
+
+/**
+ * Handle toggle complete checkbox
+ */
+const handleToggleComplete = () => {
+  emit('toggle-complete', props.task)
+}
+</script>
+
 <template>
   <Card class="task-card mb-3 hover:shadow-md transition-shadow">
     <template #content>
@@ -76,7 +154,10 @@
             <!-- Metadata -->
             <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
               <!-- Due date -->
-              <span v-if="task.due_date" :class="{ 'text-red-600 dark:text-red-400 font-medium': isOverdue }">
+              <span
+                v-if="task.due_date"
+                :class="{ 'text-red-600 dark:text-red-400 font-medium': isOverdue }"
+              >
                 <i class="pi pi-calendar text-xs mr-1"></i>
                 {{ formatTaskDate(task.due_date) }}
                 <span v-if="daysRemainingText" class="ml-1">({{ daysRemainingText }})</span>
@@ -116,82 +197,6 @@
     </template>
   </Card>
 </template>
-
-<script setup>
-import { computed } from 'vue'
-import Card from 'primevue/card'
-import Button from 'primevue/button'
-import {
-  formatTaskDate,
-  getDaysRemainingText,
-  calculateDaysOpen,
-  getPriorityClasses,
-  getPriorityConfig,
-  isTaskOverdue
-} from '../utils'
-
-/**
- * TaskCard Component
- * Displays a single task with all metadata and actions
- *
- * @component
- */
-
-const props = defineProps({
-  /**
-   * Task object to display
-   */
-  task: {
-    type: Object,
-    required: true
-  }
-})
-
-const emit = defineEmits(['edit', 'delete', 'toggle-complete'])
-
-/**
- * Priority display classes
- */
-const priorityClasses = computed(() => getPriorityClasses(props.task.priority))
-
-/**
- * Priority label
- */
-const priorityLabel = computed(() => {
-  const config = getPriorityConfig(props.task.priority)
-  return config.label
-})
-
-/**
- * Days remaining text
- */
-const daysRemainingText = computed(() => {
-  if (!props.task.due_date || props.task.completed_at) return ''
-  return getDaysRemainingText(props.task.due_date)
-})
-
-/**
- * Check if task is overdue
- */
-const isOverdue = computed(() => {
-  if (props.task.completed_at) return false
-  return isTaskOverdue(props.task.due_date)
-})
-
-/**
- * Calculate days task has been open
- */
-const daysOpen = computed(() => {
-  return calculateDaysOpen(props.task.created_at)
-})
-
-/**
- * Handle toggle complete checkbox
- */
-const handleToggleComplete = () => {
-  emit('toggle-complete', props.task)
-}
-</script>
 
 <style scoped>
 .task-card {
