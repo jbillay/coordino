@@ -5,7 +5,6 @@
 
 import { describe, it, expect } from 'vitest'
 import {
-  PRIORITY_LEVELS,
   PRIORITY_CONFIG,
   getPriorityClasses,
   getPriorityLabel,
@@ -21,6 +20,7 @@ import {
   getPriorityConfig,
   generateRandomColor
 } from '../utils'
+import { PRIORITY_LEVELS } from '@/constants'
 
 describe('PRIORITY_LEVELS', () => {
   it('exports array of priority levels', () => {

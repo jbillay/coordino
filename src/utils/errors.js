@@ -46,15 +46,17 @@ export function mapSupabaseError(error, context = 'item') {
   }
 
   // Handle common network or auth errors by message content
-  const message = error.message.toLowerCase()
-  if (message.includes('network request failed')) {
-    return 'Network error. Please check your internet connection and try again.'
-  }
-  if (message.includes('jwt expired')) {
-    return 'Your session has expired. Please sign out and sign in again.'
-  }
-  if (message.includes('permission denied')) {
-    return 'You do not have permission to perform this action.'
+  if (error.message) {
+    const message = error.message.toLowerCase()
+    if (message.includes('network request failed')) {
+      return 'Network error. Please check your internet connection and try again.'
+    }
+    if (message.includes('jwt expired')) {
+      return 'Your session has expired. Please sign out and sign in again.'
+    }
+    if (message.includes('permission denied')) {
+      return 'You do not have permission to perform this action.'
+    }
   }
 
   // Default fallback message
