@@ -8,12 +8,6 @@
 import { format, parseISO, differenceInDays, differenceInCalendarDays } from 'date-fns'
 
 /**
- * Priority level constants
- * @constant
- */
-export const PRIORITY_LEVELS = ['low', 'medium', 'high', 'urgent']
-
-/**
  * Priority display configuration
  * @constant
  */

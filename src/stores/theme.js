@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
+import { THEME_STORAGE_KEY } from '@/constants'
 
 /**
  * Theme Store
@@ -17,7 +18,7 @@ export const useThemeStore = defineStore('theme', () => {
    * @private
    */
   const getInitialTheme = () => {
-    const stored = localStorage.getItem('theme')
+    const stored = localStorage.getItem(THEME_STORAGE_KEY)
     if (stored) {
       return stored
     }
@@ -50,7 +51,7 @@ export const useThemeStore = defineStore('theme', () => {
   watch(
     currentTheme,
     (newTheme) => {
-      localStorage.setItem('theme', newTheme)
+      localStorage.setItem(THEME_STORAGE_KEY, newTheme)
       applyTheme(newTheme)
     },
     { immediate: true }

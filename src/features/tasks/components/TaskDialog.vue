@@ -8,7 +8,8 @@ import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import { useTaskStore } from '../store'
-import { PRIORITY_LEVELS, getPriorityClasses } from '../utils'
+import { getPriorityClasses } from '../utils'
+import { PRIORITY_LEVELS } from '@/constants'
 import { useToast } from 'primevue/usetoast'
 
 /**

@@ -11,7 +11,9 @@ import StatusManager from '@/features/tasks/components/StatusManager.vue'
 import CategoryManager from '@/features/tasks/components/CategoryManager.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import { useTaskStore } from '@/features/tasks/store'
-import { filterTasks, sortTasks, getTaskStats } from '@/features/tasks/utils'
+import { getTaskStats } from '@/features/tasks/utils'
+import { useTaskFilters } from '@/features/tasks/composables/useTaskFilters'
+import { DEFAULT_GROUP_BY } from '@/constants'
 import { useToast } from 'primevue/usetoast'
 
 /**
@@ -34,62 +36,15 @@ const showDeleteConfirm = ref(false)
 const selectedTask = ref(null)
 const taskToDelete = ref(null)
 
-// Filters and sorting
-const filters = ref({
-  status: null,
-  category: null,
-  priority: null,
-  search: '',
-  showCompleted: false
-})
+// Task filtering and sorting
+const { filters, sortBy, displayedTasks, getEmptyMessage } = useTaskFilters()
 
-const sortBy = ref('created_at')
-const groupBy = ref('none')
-
-/**
- * Filtered tasks based on current filters
- */
-const filteredTasks = computed(() => filterTasks(taskStore.tasks, filters.value))
-
-/**
- * Sorted and filtered tasks
- */
-const displayedTasks = computed(() => sortTasks(filteredTasks.value, sortBy.value))
+const groupBy = ref(DEFAULT_GROUP_BY)
 
 /**
  * Task statistics
  */
 const taskStats = computed(() => getTaskStats(taskStore.tasks))
-
-/**
- * Empty message based on filters
- */
-const getEmptyMessage = computed(() => {
-  if (filters.value.search) {
-    return `No tasks match your search "${filters.value.search}"`
-  }
-
-  const activeFilters = []
-  if (filters.value.status) {
-    activeFilters.push('status')
-  }
-  if (filters.value.category) {
-    activeFilters.push('category')
-  }
-  if (filters.value.priority) {
-    activeFilters.push('priority')
-  }
-
-  if (activeFilters.length > 0) {
-    return `No tasks match the selected filters. Try adjusting your ${activeFilters.join(', ')} filter.`
-  }
-
-  if (!filters.value.showCompleted && taskStore.tasks.length > 0) {
-    return 'All tasks completed! Create a new task to get started.'
-  }
-
-  return 'Get started by creating your first task'
-})
 
 /**
  * Handle create task button
