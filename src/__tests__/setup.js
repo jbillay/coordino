@@ -39,13 +39,22 @@ global.IntersectionObserver = class IntersectionObserver {
 }
 
 // Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn()
+const createLocalStorageMock = () => {
+  let store = {}
+  return {
+    getItem: vi.fn((key) => store[key] || null),
+    setItem: vi.fn((key, value) => {
+      store[key] = value.toString()
+    }),
+    removeItem: vi.fn((key) => {
+      delete store[key]
+    }),
+    clear: vi.fn(() => {
+      store = {}
+    })
+  }
 }
-global.localStorage = localStorageMock
+global.localStorage = createLocalStorageMock()
 
 // Mock fetch globally
 global.fetch = vi.fn()

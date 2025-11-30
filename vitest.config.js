@@ -32,10 +32,10 @@ export default defineConfig({
       ],
       // Enforce 80% coverage thresholds
       thresholds: {
-        branches: 20,
-        functions: 20,
-        lines: 20,
-        statements: 20
+        branches: 47,
+        functions: 39,
+        lines: 47,
+        statements: 47
       },
       // Report on all files, not just those imported by tests
       all: true

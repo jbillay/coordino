@@ -21,7 +21,7 @@ const AUTH_ERRORS = {
  * @param {Error} error - The error object from Supabase
  * @returns {string} User-friendly error message
  */
-const getErrorMessage = (error) => {
+export const getErrorMessage = (error) => {
   if (!error) {
     return 'An unexpected error occurred'
   }
