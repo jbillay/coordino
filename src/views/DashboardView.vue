@@ -1,3 +1,59 @@
+<script setup>
+/**
+ * DashboardView Component
+ *
+ * Main dashboard displaying overview of tasks, notes, and upcoming meetings.
+ * Shows personalized greeting and quick access to key features.
+ *
+ * @component
+ * @example
+ * <DashboardView />
+ *
+ * Features:
+ * - Personalized time-based greeting
+ * - Task statistics (urgent, high priority, overdue)
+ * - Recent tasks list with priority badges
+ * - Recent notes preview
+ * - Upcoming meetings with timezone information
+ */
+import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import AppLayout from '@/components/layout/AppLayout.vue'
+
+const authStore = useAuthStore()
+
+/**
+ * Gets appropriate greeting based on current time of day
+ * @returns {string} 'Morning', 'Afternoon', or 'Evening'
+ */
+const getTimeOfDay = () => {
+  const hour = new Date().getHours()
+  if (hour < 12) {
+    return 'Morning'
+  }
+  if (hour < 18) {
+    return 'Afternoon'
+  }
+  return 'Evening'
+}
+
+/**
+ * Gets user's first name for personalized greeting
+ * Falls back to email username or generic greeting
+ * @returns {string} User's first name or fallback
+ */
+const getUserFirstName = computed(() => {
+  const { user } = authStore
+  if (user?.user_metadata?.full_name) {
+    return user.user_metadata.full_name.split(' ')[0]
+  }
+  if (user?.email) {
+    return user.email.split('@')[0]
+  }
+  return 'there'
+})
+</script>
+
 <template>
   <AppLayout>
     <div class="space-y-6 animate-fade-in">
@@ -37,7 +93,9 @@
         <div class="content-card">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-gray-900 dark:text-white">My Tasks</h2>
-            <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</a>
+            <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+              View All
+            </a>
           </div>
           <div class="space-y-3">
             <!-- Task Item 1 -->
@@ -45,7 +103,9 @@
               <input type="checkbox" class="task-checkbox" />
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Finalize Q3 report</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    Finalize Q3 report
+                  </span>
                   <span class="priority-badge urgent">Urgent</span>
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">Today</div>
@@ -57,7 +117,9 @@
               <input type="checkbox" class="task-checkbox" />
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Draft client presentation slides</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    Draft client presentation slides
+                  </span>
                   <span class="priority-badge high">High Priority</span>
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">Tomorrow</div>
@@ -69,7 +131,9 @@
               <input type="checkbox" class="task-checkbox" />
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Review marketing campaign copy</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    Review marketing campaign copy
+                  </span>
                   <span class="priority-badge high">High Priority</span>
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">Fri, Oct 27</div>
@@ -80,7 +144,9 @@
             <div class="task-item">
               <input type="checkbox" checked class="task-checkbox" />
               <div class="flex-1">
-                <div class="text-sm font-medium text-gray-400 dark:text-gray-500 line-through">Enhanced new designs review</div>
+                <div class="text-sm font-medium text-gray-400 dark:text-gray-500 line-through">
+                  Enhanced new designs review
+                </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">Yesterday</div>
               </div>
             </div>
@@ -91,24 +157,32 @@
         <div class="content-card">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-gray-900 dark:text-white">Recent Notes</h2>
-            <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</a>
+            <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+              View All
+            </a>
           </div>
           <div class="space-y-4">
             <!-- Note Item 1 -->
             <div class="note-item">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Project Alpha Kickoff Ideas</h3>
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+                Project Alpha Kickoff Ideas
+              </h3>
               <p class="text-xs text-gray-500 dark:text-gray-400">Updated 2 minutes ago</p>
             </div>
 
             <!-- Note Item 2 -->
             <div class="note-item">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Q4 Planning Session</h3>
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+                Q4 Planning Session
+              </h3>
               <p class="text-xs text-gray-500 dark:text-gray-400">Updated 1 hour ago</p>
             </div>
 
             <!-- Note Item 3 -->
             <div class="note-item">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Competitor Analysis Summary</h3>
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+                Competitor Analysis Summary
+              </h3>
               <p class="text-xs text-gray-500 dark:text-gray-400">Updated 3 days ago</p>
             </div>
           </div>
@@ -119,19 +193,28 @@
       <div class="content-card">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">Upcoming Meetings</h2>
-          <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View Calendar</a>
+          <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+            View Calendar
+          </a>
         </div>
         <div class="space-y-4">
           <!-- Meeting 1 -->
           <div class="meeting-item">
             <div class="flex items-start justify-between mb-2">
               <div>
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Weekly Sync with Tokyo Team</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Monday at 8:00 AM EST (9:00 PM JST)</p>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+                  Weekly Sync with Tokyo Team
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Monday at 8:00 AM EST (9:00 PM JST)
+                </p>
               </div>
             </div>
             <div class="meeting-timeline">
-              <div class="timeline-bar" style="background: linear-gradient(to right, #10b981 0%, #10b981 100%);"></div>
+              <div
+                class="timeline-bar"
+                style="background: linear-gradient(to right, #10b981 0%, #10b981 100%)"
+              ></div>
             </div>
           </div>
 
@@ -139,12 +222,19 @@
           <div class="meeting-item">
             <div class="flex items-start justify-between mb-2">
               <div>
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Design Review - London & NYC</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Tuesday at 2:00 PM EST (7:00 PM GMT)</p>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+                  Design Review - London & NYC
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Tuesday at 2:00 PM EST (7:00 PM GMT)
+                </p>
               </div>
             </div>
             <div class="meeting-timeline">
-              <div class="timeline-bar" style="background: linear-gradient(to right, #f59e0b 0%, #f59e0b 100%);"></div>
+              <div
+                class="timeline-bar"
+                style="background: linear-gradient(to right, #f59e0b 0%, #f59e0b 100%)"
+              ></div>
             </div>
           </div>
 
@@ -152,12 +242,19 @@
           <div class="meeting-item">
             <div class="flex items-start justify-between mb-2">
               <div>
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Product Strategy Session</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Thu, Oct 26 at 10:00 AM EST (3:00 PM GMT)</p>
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+                  Product Strategy Session
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Thu, Oct 26 at 10:00 AM EST (3:00 PM GMT)
+                </p>
               </div>
             </div>
             <div class="meeting-timeline">
-              <div class="timeline-bar" style="background: linear-gradient(to right, #f59e0b 0%, #f59e0b 100%);"></div>
+              <div
+                class="timeline-bar"
+                style="background: linear-gradient(to right, #f59e0b 0%, #f59e0b 100%)"
+              ></div>
             </div>
           </div>
         </div>
@@ -165,58 +262,6 @@
     </div>
   </AppLayout>
 </template>
-
-<script setup>
-/**
- * DashboardView Component
- *
- * Main dashboard displaying overview of tasks, notes, and upcoming meetings.
- * Shows personalized greeting and quick access to key features.
- *
- * @component
- * @example
- * <DashboardView />
- *
- * Features:
- * - Personalized time-based greeting
- * - Task statistics (urgent, high priority, overdue)
- * - Recent tasks list with priority badges
- * - Recent notes preview
- * - Upcoming meetings with timezone information
- */
-import { computed } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import AppLayout from '@/components/layout/AppLayout.vue'
-
-const authStore = useAuthStore()
-
-/**
- * Gets appropriate greeting based on current time of day
- * @returns {string} 'Morning', 'Afternoon', or 'Evening'
- */
-const getTimeOfDay = () => {
-  const hour = new Date().getHours()
-  if (hour < 12) return 'Morning'
-  if (hour < 18) return 'Afternoon'
-  return 'Evening'
-}
-
-/**
- * Gets user's first name for personalized greeting
- * Falls back to email username or generic greeting
- * @returns {string} User's first name or fallback
- */
-const getUserFirstName = computed(() => {
-  const user = authStore.user
-  if (user?.user_metadata?.full_name) {
-    return user.user_metadata.full_name.split(' ')[0]
-  }
-  if (user?.email) {
-    return user.email.split('@')[0]
-  }
-  return 'there'
-})
-</script>
 
 <style>
 @reference "tailwindcss";

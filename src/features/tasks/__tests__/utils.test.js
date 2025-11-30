@@ -28,7 +28,7 @@ describe('PRIORITY_LEVELS', () => {
   })
 
   it('contains only valid priority strings', () => {
-    PRIORITY_LEVELS.forEach(level => {
+    PRIORITY_LEVELS.forEach((level) => {
       expect(typeof level).toBe('string')
       expect(level.length).toBeGreaterThan(0)
     })
@@ -37,7 +37,7 @@ describe('PRIORITY_LEVELS', () => {
 
 describe('PRIORITY_CONFIG', () => {
   it('has configuration for all priority levels', () => {
-    PRIORITY_LEVELS.forEach(level => {
+    PRIORITY_LEVELS.forEach((level) => {
       expect(PRIORITY_CONFIG[level]).toBeDefined()
       expect(PRIORITY_CONFIG[level].label).toBeDefined()
       expect(PRIORITY_CONFIG[level].color).toBeDefined()
@@ -125,7 +125,7 @@ describe('filterTasks', () => {
   it('filters by status', () => {
     const filtered = filterTasks(mockTasks, { status: 1 })
     expect(filtered).toHaveLength(2)
-    expect(filtered.every(t => t.status_id === 1)).toBe(true)
+    expect(filtered.every((t) => t.status_id === 1)).toBe(true)
   })
 
   it('filters by category', () => {
@@ -149,7 +149,7 @@ describe('filterTasks', () => {
   it('excludes completed tasks by default', () => {
     const filtered = filterTasks(mockTasks, { showCompleted: false })
     expect(filtered).toHaveLength(2)
-    expect(filtered.every(t => !t.completed_at)).toBe(true)
+    expect(filtered.every((t) => !t.completed_at)).toBe(true)
   })
 
   it('includes completed tasks when requested', () => {
@@ -573,8 +573,16 @@ describe('generateRandomColor', () => {
 
   it('returns a color from the predefined list', () => {
     const validColors = [
-      '#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316',
-      '#eab308', '#22c55e', '#14b8a6', '#06b6d4', '#6366f1'
+      '#3b82f6',
+      '#8b5cf6',
+      '#ec4899',
+      '#f43f5e',
+      '#f97316',
+      '#eab308',
+      '#22c55e',
+      '#14b8a6',
+      '#06b6d4',
+      '#6366f1'
     ]
     const color = generateRandomColor()
     expect(validColors).toContain(color)

@@ -15,7 +15,7 @@ config.global.stubs = {
 // Mock window.matchMedia (used for dark mode detection)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -23,8 +23,8 @@ Object.defineProperty(window, 'matchMedia', {
     removeListener: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
+    dispatchEvent: vi.fn()
+  }))
 })
 
 // Mock IntersectionObserver (used by some components)
@@ -43,7 +43,7 @@ const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
-  clear: vi.fn(),
+  clear: vi.fn()
 }
 global.localStorage = localStorageMock
 
@@ -54,7 +54,7 @@ global.fetch = vi.fn()
 global.console = {
   ...console,
   error: vi.fn(),
-  warn: vi.fn(),
+  warn: vi.fn()
 }
 
 // Mock Supabase client
@@ -84,26 +84,28 @@ export const createMockSupabaseClient = () => {
     limit: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue(mockData),
     maybeSingle: vi.fn().mockResolvedValue(mockData),
-    then: vi.fn((resolve) => resolve(mockData)),
+    then: vi.fn((resolve) => resolve(mockData))
   }
 
   return {
     from: vi.fn(() => mockQueryBuilder),
     auth: {
       signUp: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
-      signInWithPassword: vi.fn().mockResolvedValue({ data: { user: null, session: null }, error: null }),
+      signInWithPassword: vi
+        .fn()
+        .mockResolvedValue({ data: { user: null, session: null }, error: null }),
       signInWithOAuth: vi.fn().mockResolvedValue({ data: { url: 'http://mock-url' }, error: null }),
       signOut: vi.fn().mockResolvedValue({ error: null }),
       getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
       getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
-      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } }))
     },
     channel: vi.fn(() => ({
       on: vi.fn().mockReturnThis(),
       subscribe: vi.fn().mockReturnThis(),
-      unsubscribe: vi.fn(),
+      unsubscribe: vi.fn()
     })),
-    removeChannel: vi.fn(),
+    removeChannel: vi.fn()
   }
 }
 

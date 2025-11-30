@@ -30,9 +30,13 @@ export const EMAIL_REGEX = /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
  * isValidEmail('@example.com') // false
  */
 export const isValidEmail = (email) => {
-  if (!email || typeof email !== 'string') return false
+  if (!email || typeof email !== 'string') {
+    return false
+  }
   const trimmedEmail = email.trim()
-  if (!trimmedEmail) return false
+  if (!trimmedEmail) {
+    return false
+  }
   return EMAIL_REGEX.test(trimmedEmail)
 }
 
@@ -94,8 +98,12 @@ export const validatePassword = (password, options = {}) => {
  * @returns {boolean} True if value is not empty
  */
 export const isNotEmpty = (value) => {
-  if (value === null || value === undefined) return false
-  if (typeof value === 'string') return value.trim().length > 0
+  if (value === null || value === undefined) {
+    return false
+  }
+  if (typeof value === 'string') {
+    return value.trim().length > 0
+  }
   return true
 }
 
@@ -106,7 +114,9 @@ export const isNotEmpty = (value) => {
  * @returns {boolean} True if value meets minimum length
  */
 export const hasMinLength = (value, minLength) => {
-  if (!value) return false
+  if (!value) {
+    return false
+  }
   return value.length >= minLength
 }
 
@@ -117,6 +127,8 @@ export const hasMinLength = (value, minLength) => {
  * @returns {boolean} True if value is within maximum length
  */
 export const hasMaxLength = (value, maxLength) => {
-  if (!value) return true
+  if (!value) {
+    return true
+  }
   return value.length <= maxLength
 }

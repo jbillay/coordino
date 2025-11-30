@@ -16,9 +16,7 @@ describe('useValidation', () => {
 
   describe('validateField', () => {
     it('validates field with single rule', () => {
-      const rules = [
-        { validator: (v) => v.length > 0, message: 'Field is required' }
-      ]
+      const rules = [{ validator: (v) => v.length > 0, message: 'Field is required' }]
 
       const isValid = validation.validateField('username', 'test', rules)
       expect(isValid).toBe(true)
@@ -26,9 +24,7 @@ describe('useValidation', () => {
     })
 
     it('returns error for invalid field', () => {
-      const rules = [
-        { validator: (v) => v.length > 5, message: 'Too short' }
-      ]
+      const rules = [{ validator: (v) => v.length > 5, message: 'Too short' }]
 
       const isValid = validation.validateField('username', 'abc', rules)
       expect(isValid).toBe(false)
@@ -59,9 +55,7 @@ describe('useValidation', () => {
     })
 
     it('clears error when field becomes valid', () => {
-      const rules = [
-        { validator: (v) => v.length > 0, message: 'Required' }
-      ]
+      const rules = [{ validator: (v) => v.length > 0, message: 'Required' }]
 
       validation.validateField('email', '', rules)
       expect(validation.errors.email).toBe('Required')
@@ -91,15 +85,9 @@ describe('useValidation', () => {
       }
 
       const rules = {
-        username: [
-          { validator: (v) => v.length > 0, message: 'Username required' }
-        ],
-        email: [
-          { validator: (v) => v.includes('@'), message: 'Invalid email' }
-        ],
-        age: [
-          { validator: (v) => v >= 18, message: 'Must be 18+' }
-        ]
+        username: [{ validator: (v) => v.length > 0, message: 'Username required' }],
+        email: [{ validator: (v) => v.includes('@'), message: 'Invalid email' }],
+        age: [{ validator: (v) => v >= 18, message: 'Must be 18+' }]
       }
 
       const isValid = validation.validateForm(formData, rules)
@@ -114,12 +102,8 @@ describe('useValidation', () => {
       }
 
       const rules = {
-        username: [
-          { validator: (v) => v.length > 0, message: 'Username required' }
-        ],
-        email: [
-          { validator: (v) => v.includes('@'), message: 'Invalid email' }
-        ]
+        username: [{ validator: (v) => v.length > 0, message: 'Username required' }],
+        email: [{ validator: (v) => v.includes('@'), message: 'Invalid email' }]
       }
 
       const isValid = validation.validateForm(formData, rules)
@@ -136,15 +120,9 @@ describe('useValidation', () => {
       }
 
       const rules = {
-        username: [
-          { validator: (v) => v.length > 0, message: 'Username required' }
-        ],
-        email: [
-          { validator: (v) => v.includes('@'), message: 'Email invalid' }
-        ],
-        password: [
-          { validator: (v) => v.length >= 6, message: 'Password too short' }
-        ]
+        username: [{ validator: (v) => v.length > 0, message: 'Username required' }],
+        email: [{ validator: (v) => v.includes('@'), message: 'Email invalid' }],
+        password: [{ validator: (v) => v.length >= 6, message: 'Password too short' }]
       }
 
       const isValid = validation.validateForm(formData, rules)

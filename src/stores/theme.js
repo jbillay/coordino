@@ -18,7 +18,9 @@ export const useThemeStore = defineStore('theme', () => {
    */
   const getInitialTheme = () => {
     const stored = localStorage.getItem('theme')
-    if (stored) return stored
+    if (stored) {
+      return stored
+    }
 
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark'
@@ -45,10 +47,14 @@ export const useThemeStore = defineStore('theme', () => {
   }
 
   // Watch for theme changes and persist to localStorage
-  watch(currentTheme, (newTheme) => {
-    localStorage.setItem('theme', newTheme)
-    applyTheme(newTheme)
-  }, { immediate: true })
+  watch(
+    currentTheme,
+    (newTheme) => {
+      localStorage.setItem('theme', newTheme)
+      applyTheme(newTheme)
+    },
+    { immediate: true }
+  )
 
   /**
    * Toggles between light and dark theme

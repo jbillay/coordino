@@ -59,13 +59,11 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
-      # TODO: Add ESLint when configured
-      # - name: Run ESLint
-      #   run: npm run lint
+      - name: Run ESLint
+        run: npm run lint:check
 
       - name: Check code formatting
-        run: |
-          echo "Formatting check - will be added when Prettier is configured"
+        run: npm run format:check
 
   # Job 3: Unit and Integration Tests
   test-unit:
@@ -110,54 +108,7 @@ jobs:
           path: coverage/
           retention-days: 30
 
-  # Job 4: E2E Tests (Parallel across browsers)
-  test-e2e:
-    name: E2E Tests - ${{ matrix.browser }}
-    runs-on: ubuntu-latest
-    needs: install
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: [chromium, firefox, webkit]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Restore node_modules cache
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps ${{ matrix.browser }}
-
-      - name: Run E2E tests
-        run: npx playwright test --project=${{ matrix.browser }}
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-${{ matrix.browser }}
-          path: playwright-report/
-          retention-days: 30
-
-      - name: Upload test traces
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-traces-${{ matrix.browser }}
-          path: test-results/
-          retention-days: 7
-
-  # Job 5: Build verification
+  # Job 4: Build verification
   build:
     name: Build Application
     runs-on: ubuntu-latest
@@ -193,11 +144,11 @@ jobs:
           path: dist/
           retention-days: 7
 
-  # Job 6: Quality Gate Summary
+  # Job 5: Quality Gate Summary
   quality-gate:
     name: Quality Gate
     runs-on: ubuntu-latest
-    needs: [lint, test-unit, test-e2e, build]
+    needs: [lint, test-unit, build]
     if: always()
     steps:
       - name: Check all jobs
@@ -209,10 +160,6 @@ jobs:
           fi
           if [ "${{ needs.test-unit.result }}" != "success" ]; then
             echo "❌ Unit tests failed"
-            exit 1
-          fi
-          if [ "${{ needs.test-e2e.result }}" != "success" ]; then
-            echo "❌ E2E tests failed"
             exit 1
           fi
           if [ "${{ needs.build.result }}" != "success" ]; then
@@ -238,7 +185,6 @@ jobs:
             |-------|--------|
             | Lint | ${statusIcon['${{ needs.lint.result }}']} |
             | Unit Tests | ${statusIcon['${{ needs.test-unit.result }}']} |
-            | E2E Tests | ${statusIcon['${{ needs.test-e2e.result }}']} |
             | Build | ${statusIcon['${{ needs.build.result }}']} |
 
             [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})

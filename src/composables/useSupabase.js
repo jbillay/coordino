@@ -14,13 +14,17 @@ export const useSupabase = () => {
 
     // Validate environment variables with specific error messages
     const missingVars = []
-    if (!supabaseUrl) missingVars.push('VITE_SUPABASE_URL')
-    if (!supabaseKey) missingVars.push('VITE_SUPABASE_ANON_KEY')
+    if (!supabaseUrl) {
+      missingVars.push('VITE_SUPABASE_URL')
+    }
+    if (!supabaseKey) {
+      missingVars.push('VITE_SUPABASE_ANON_KEY')
+    }
 
     if (missingVars.length > 0) {
       throw new Error(
         `Missing required environment variables: ${missingVars.join(', ')}. ` +
-        'Please copy .env.example to .env and add your Supabase credentials.'
+          'Please copy .env.example to .env and add your Supabase credentials.'
       )
     }
 
@@ -30,7 +34,7 @@ export const useSupabase = () => {
     } catch {
       throw new Error(
         'VITE_SUPABASE_URL is not a valid URL. ' +
-        'Expected format: https://your-project-ref.supabase.co'
+          'Expected format: https://your-project-ref.supabase.co'
       )
     }
 

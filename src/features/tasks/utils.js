@@ -59,9 +59,7 @@ export const getPriorityClasses = (priority) => {
  * @param {string} priority - Priority level
  * @returns {Object} Priority configuration object
  */
-export const getPriorityConfig = (priority) => {
-  return PRIORITY_CONFIG[priority] || PRIORITY_CONFIG.medium
-}
+export const getPriorityConfig = (priority) => PRIORITY_CONFIG[priority] || PRIORITY_CONFIG.medium
 
 /**
  * Get priority label for display
@@ -69,7 +67,9 @@ export const getPriorityConfig = (priority) => {
  * @returns {string} Capitalized priority label
  */
 export const getPriorityLabel = (priority) => {
-  if (!priority) return ''
+  if (!priority) {
+    return ''
+  }
   const config = PRIORITY_CONFIG[priority]
   return config ? config.label : priority.charAt(0).toUpperCase() + priority.slice(1)
 }
@@ -81,7 +81,9 @@ export const getPriorityLabel = (priority) => {
  * @returns {string} Formatted date string
  */
 export const formatTaskDate = (date, formatString = 'MMM d, yyyy') => {
-  if (!date) return ''
+  if (!date) {
+    return ''
+  }
   const dateObj = typeof date === 'string' ? parseISO(date) : date
   return format(dateObj, formatString)
 }
@@ -92,7 +94,9 @@ export const formatTaskDate = (date, formatString = 'MMM d, yyyy') => {
  * @returns {number} Days remaining (negative if overdue, 0 if no date)
  */
 export const calculateDaysRemaining = (dueDate) => {
-  if (!dueDate) return 0
+  if (!dueDate) {
+    return 0
+  }
   const dateObj = typeof dueDate === 'string' ? parseISO(dueDate) : dueDate
   return differenceInCalendarDays(dateObj, new Date())
 }
@@ -103,7 +107,9 @@ export const calculateDaysRemaining = (dueDate) => {
  * @returns {string} Human-readable message
  */
 export const getDaysRemainingText = (dueDate) => {
-  if (!dueDate) return ''
+  if (!dueDate) {
+    return ''
+  }
 
   const days = calculateDaysRemaining(dueDate)
 
@@ -113,9 +119,8 @@ export const getDaysRemainingText = (dueDate) => {
     return 'Due today'
   } else if (days === 1) {
     return 'Due tomorrow'
-  } else {
-    return `${days} days remaining`
   }
+  return `${days} days remaining`
 }
 
 /**
@@ -124,7 +129,9 @@ export const getDaysRemainingText = (dueDate) => {
  * @returns {boolean} True if task is overdue
  */
 export const isTaskOverdue = (dueDate) => {
-  if (!dueDate) return false
+  if (!dueDate) {
+    return false
+  }
   const days = calculateDaysRemaining(dueDate)
   return days < 0
 }
@@ -158,11 +165,12 @@ export const sortTasks = (tasks, sortBy, sortOrder = 'asc') => {
         bValue = b.title.toLowerCase()
         return aValue.localeCompare(bValue)
 
-      case 'priority':
+      case 'priority': {
         const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 }
         aValue = priorityOrder[a.priority] || 2
         bValue = priorityOrder[b.priority] || 2
         return bValue - aValue // Higher priority first
+      }
 
       case 'due_date':
         aValue = a.due_date ? new Date(a.due_date).getTime() : -Infinity
@@ -186,7 +194,12 @@ export const sortTasks = (tasks, sortBy, sortOrder = 'asc') => {
 
   sorted.sort(compareFn)
 
-  if (sortOrder === 'desc' && sortBy !== 'priority' && sortBy !== 'created_at' && sortBy !== 'updated_at') {
+  if (
+    sortOrder === 'desc' &&
+    sortBy !== 'priority' &&
+    sortBy !== 'created_at' &&
+    sortBy !== 'updated_at'
+  ) {
     sorted.reverse()
   }
 
@@ -206,7 +219,7 @@ export const groupTasks = (tasks, groupBy) => {
 
   const groups = {}
 
-  tasks.forEach(task => {
+  tasks.forEach((task) => {
     let groupKey
 
     switch (groupBy) {
@@ -252,31 +265,32 @@ export const filterTasks = (tasks, filters = {}) => {
 
   // Filter by completion status
   if (filters.showCompleted === false) {
-    filtered = filtered.filter(task => !task.completed_at)
+    filtered = filtered.filter((task) => !task.completed_at)
   }
 
   // Filter by status
   if (filters.status) {
-    filtered = filtered.filter(task => task.status_id === filters.status)
+    filtered = filtered.filter((task) => task.status_id === filters.status)
   }
 
   // Filter by category
   if (filters.category) {
-    filtered = filtered.filter(task => task.category_id === filters.category)
+    filtered = filtered.filter((task) => task.category_id === filters.category)
   }
 
   // Filter by priority
   if (filters.priority) {
-    filtered = filtered.filter(task => task.priority === filters.priority)
+    filtered = filtered.filter((task) => task.priority === filters.priority)
   }
 
   // Filter by search query (title and description)
   if (filters.search && filters.search.trim()) {
     const query = filters.search.toLowerCase().trim()
-    filtered = filtered.filter(task =>
-      task.title.toLowerCase().includes(query) ||
-      (task.description && task.description.toLowerCase().includes(query)) ||
-      (task.owner && task.owner.toLowerCase().includes(query))
+    filtered = filtered.filter(
+      (task) =>
+        task.title.toLowerCase().includes(query) ||
+        (task.description && task.description.toLowerCase().includes(query)) ||
+        (task.owner && task.owner.toLowerCase().includes(query))
     )
   }
 
@@ -290,15 +304,15 @@ export const filterTasks = (tasks, filters = {}) => {
  */
 export const getTaskStats = (tasks) => {
   const total = tasks.length
-  const completed = tasks.filter(t => t.completed_at).length
+  const completed = tasks.filter((t) => t.completed_at).length
   const active = total - completed
-  const overdue = tasks.filter(t => !t.completed_at && isTaskOverdue(t.due_date)).length
+  const overdue = tasks.filter((t) => !t.completed_at && isTaskOverdue(t.due_date)).length
 
   const byPriority = {
-    urgent: tasks.filter(t => !t.completed_at && t.priority === 'urgent').length,
-    high: tasks.filter(t => !t.completed_at && t.priority === 'high').length,
-    medium: tasks.filter(t => !t.completed_at && t.priority === 'medium').length,
-    low: tasks.filter(t => !t.completed_at && t.priority === 'low').length
+    urgent: tasks.filter((t) => !t.completed_at && t.priority === 'urgent').length,
+    high: tasks.filter((t) => !t.completed_at && t.priority === 'high').length,
+    medium: tasks.filter((t) => !t.completed_at && t.priority === 'medium').length,
+    low: tasks.filter((t) => !t.completed_at && t.priority === 'low').length
   }
 
   return {
@@ -326,7 +340,7 @@ export const generateRandomColor = () => {
     '#22c55e', // green
     '#14b8a6', // teal
     '#06b6d4', // cyan
-    '#6366f1'  // indigo
+    '#6366f1' // indigo
   ]
   return colors[Math.floor(Math.random() * colors.length)]
 }

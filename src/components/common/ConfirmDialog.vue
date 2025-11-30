@@ -1,59 +1,4 @@
-<template>
-  <Dialog
-    :visible="visible"
-    :modal="true"
-    :closable="true"
-    :draggable="false"
-    :style="{ width: '450px' }"
-    :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
-    @update:visible="handleCancel"
-  >
-    <template #header>
-      <div class="flex items-center gap-3">
-        <i
-          :class="[
-            'text-2xl',
-            severity === 'danger' ? 'pi pi-exclamation-triangle text-red-500' : '',
-            severity === 'warning' ? 'pi pi-exclamation-circle text-yellow-500' : '',
-            severity === 'info' ? 'pi pi-info-circle text-blue-500' : ''
-          ]"
-        ></i>
-        <h3 class="text-xl font-semibold">{{ header }}</h3>
-      </div>
-    </template>
-
-    <div class="py-4">
-      <p class="text-gray-700 dark:text-gray-300" v-html="message"></p>
-    </div>
-
-    <template #footer>
-      <div class="flex justify-end gap-2">
-        <Button
-          :label="cancelLabel"
-          icon="pi pi-times"
-          class="p-button-text"
-          @click="handleCancel"
-          :aria-label="`${cancelLabel} and close dialog`"
-        />
-        <Button
-          :label="confirmLabel"
-          :icon="confirmIcon"
-          :class="[
-            severity === 'danger' ? 'p-button-danger' : '',
-            severity === 'warning' ? 'p-button-warning' : ''
-          ]"
-          :loading="loading"
-          @click="handleConfirm"
-          :aria-label="`${confirmLabel} action`"
-          autofocus
-        />
-      </div>
-    </template>
-  </Dialog>
-</template>
-
 <script setup>
-import { ref } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 
@@ -72,7 +17,7 @@ import Button from 'primevue/button'
  * />
  */
 
-const props = defineProps({
+defineProps({
   /**
    * Dialog visibility state
    */
@@ -157,6 +102,60 @@ const handleCancel = () => {
   emit('cancel')
 }
 </script>
+
+<template>
+  <Dialog
+    :visible="visible"
+    :modal="true"
+    :closable="true"
+    :draggable="false"
+    :style="{ width: '450px' }"
+    :breakpoints="{ '960px': '75vw', '640px': '90vw' }"
+    @update:visible="handleCancel"
+  >
+    <template #header>
+      <div class="flex items-center gap-3">
+        <i
+          :class="[
+            'text-2xl',
+            severity === 'danger' ? 'pi pi-exclamation-triangle text-red-500' : '',
+            severity === 'warning' ? 'pi pi-exclamation-circle text-yellow-500' : '',
+            severity === 'info' ? 'pi pi-info-circle text-blue-500' : ''
+          ]"
+        ></i>
+        <h3 class="text-xl font-semibold">{{ header }}</h3>
+      </div>
+    </template>
+
+    <div class="py-4">
+      <p class="text-gray-700 dark:text-gray-300" v-html="message"></p>
+    </div>
+
+    <template #footer>
+      <div class="flex justify-end gap-2">
+        <Button
+          :label="cancelLabel"
+          icon="pi pi-times"
+          class="p-button-text"
+          :aria-label="`${cancelLabel} and close dialog`"
+          @click="handleCancel"
+        />
+        <Button
+          :label="confirmLabel"
+          :icon="confirmIcon"
+          :class="[
+            severity === 'danger' ? 'p-button-danger' : '',
+            severity === 'warning' ? 'p-button-warning' : ''
+          ]"
+          :loading="loading"
+          :aria-label="`${confirmLabel} action`"
+          autofocus
+          @click="handleConfirm"
+        />
+      </div>
+    </template>
+  </Dialog>
+</template>
 
 <style scoped>
 :deep(.p-dialog-header) {
