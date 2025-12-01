@@ -6,7 +6,7 @@ import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
 import Button from 'primevue/button'
 import { useTaskStore } from '../store'
-import { getPriorityClasses, PRIORITY_LEVELS } from '../utils'
+import { getPriorityOptions } from '../utils'
 
 /**
  * TaskFilters Component
@@ -66,13 +66,7 @@ const sorting = ref({
 })
 
 // Priority options with classes
-const priorityOptions = computed(() =>
-  PRIORITY_LEVELS.map((level) => ({
-    label: level.charAt(0).toUpperCase() + level.slice(1),
-    value: level,
-    class: getPriorityClasses(level)
-  }))
-)
+const priorityOptions = computed(() => getPriorityOptions())
 
 // Sort options
 const sortOptions = [

@@ -49,6 +49,23 @@ export const getPriorityClasses = (priority) => {
 }
 
 /**
+ * Get CSS classes for priority badge
+ * @param {string} priority - Priority level
+ * @returns {string} Tailwind CSS classes
+ */
+export const getPriorityOptions = () => {
+  const priorityOptions = []
+  Object.keys(PRIORITY_CONFIG).forEach((level) =>
+    priorityOptions.push({
+      label: PRIORITY_CONFIG[level].label,
+      value: level,
+      class: getPriorityClasses(level)
+    })
+  )
+  return priorityOptions
+}
+
+/**
  * Get priority configuration
  * @param {string} priority - Priority level
  * @returns {Object} Priority configuration object
