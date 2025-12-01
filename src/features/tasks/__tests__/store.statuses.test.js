@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useTaskStore } from '../store'
-import { useSupabase } from '@/composables/useSupabase'
-import { useAuthStore } from '@/stores/auth'
 
 // Mock dependencies
 const mockSupabase = {

@@ -8,8 +8,13 @@ describe('mapSupabaseError', () => {
   })
 
   it('handles unique_violation (23505) for a name conflict', () => {
-    const error = { code: '23505', message: 'duplicate key value violates unique constraint "categories_name_key"' }
-    expect(mapSupabaseError(error, 'category')).toBe('A category with this name already exists. Please choose a different name.')
+    const error = {
+      code: '23505',
+      message: 'duplicate key value violates unique constraint "categories_name_key"'
+    }
+    expect(mapSupabaseError(error, 'category')).toBe(
+      'A category with this name already exists. Please choose a different name.'
+    )
   })
 
   it('handles generic unique_violation (23505)', () => {
@@ -19,7 +24,9 @@ describe('mapSupabaseError', () => {
 
   it('handles foreign_key_violation (23503)', () => {
     const error = { code: '23503', message: 'foreign key constraint fail' }
-    expect(mapSupabaseError(error, 'task')).toBe('The selected item for this task could not be found. It may have been deleted. Please refresh and try again.')
+    expect(mapSupabaseError(error, 'task')).toBe(
+      'The selected item for this task could not be found. It may have been deleted. Please refresh and try again.'
+    )
   })
 
   it('handles not_null_violation (23502) for a title', () => {
@@ -34,7 +41,9 @@ describe('mapSupabaseError', () => {
 
   it('handles undefined_table (42P01)', () => {
     const error = { code: '42P01', message: 'table not found' }
-    expect(mapSupabaseError(error)).toBe('A database error occurred. The required table could not be found.')
+    expect(mapSupabaseError(error)).toBe(
+      'A database error occurred. The required table could not be found.'
+    )
   })
 
   it('handles PGRST116 (0 rows)', () => {
@@ -44,12 +53,16 @@ describe('mapSupabaseError', () => {
 
   it('handles network errors from message content', () => {
     const error = { message: 'Network request failed' }
-    expect(mapSupabaseError(error)).toBe('Network error. Please check your internet connection and try again.')
+    expect(mapSupabaseError(error)).toBe(
+      'Network error. Please check your internet connection and try again.'
+    )
   })
 
   it('handles JWT expired errors from message content', () => {
     const error = { message: 'JWT expired' }
-    expect(mapSupabaseError(error)).toBe('Your session has expired. Please sign out and sign in again.')
+    expect(mapSupabaseError(error)).toBe(
+      'Your session has expired. Please sign out and sign in again.'
+    )
   })
 
   it('handles permission denied errors from message content', () => {

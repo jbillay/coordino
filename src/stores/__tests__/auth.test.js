@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore, getErrorMessage } from '../auth'
-import { useSupabase } from '@/composables/useSupabase'
 
 // Mock the useSupabase composable
 const mockSupabase = {
@@ -37,9 +36,12 @@ describe('Auth Store', () => {
   describe('initialize', () => {
     it('sets user on successful session fetch', async () => {
       const mockSession = { user: { id: '123', email: 'test@test.com' } }
-      mockSupabase.auth.getSession.mockResolvedValue({ data: { session: mockSession }, error: null })
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: mockSession },
+        error: null
+      })
       single.mockResolvedValue({ data: { id: '123' }, error: null })
-      
+
       const authStore = useAuthStore()
       await authStore.initialize()
 
@@ -105,7 +107,10 @@ describe('Auth Store', () => {
   describe('signIn', () => {
     it('signs in a user successfully', async () => {
       const mockUser = { id: '123', email: 'test@test.com' }
-      mockSupabase.auth.signInWithPassword.mockResolvedValue({ data: { user: mockUser }, error: null })
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
+        data: { user: mockUser },
+        error: null
+      })
       single.mockResolvedValue({ data: { id: '123' }, error: null })
 
       const authStore = useAuthStore()
@@ -190,11 +195,14 @@ describe('Auth Store', () => {
     it('does not create a profile if it already exists', async () => {
       const authStore = useAuthStore()
       authStore.user = { id: '123' }
-      mockSupabase.auth.getSession.mockResolvedValue({ data: { session: { user: { id: '123' } } }, error: null })
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: '123' } } },
+        error: null
+      })
       single.mockResolvedValue({ data: { id: '123' }, error: null })
-      
+
       await authStore.initialize()
-      
+
       expect(from).toHaveBeenCalledWith('users_extended')
       expect(insert).not.toHaveBeenCalled()
     })
@@ -202,7 +210,10 @@ describe('Auth Store', () => {
     it('creates a profile if it does not exist', async () => {
       const authStore = useAuthStore()
       authStore.user = { id: '123', user_metadata: { full_name: 'Test User' } }
-      mockSupabase.auth.getSession.mockResolvedValue({ data: { session: { user: authStore.user } }, error: null })
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: { user: authStore.user } },
+        error: null
+      })
       single.mockResolvedValue({ data: null, error: { code: 'PGRST116' } })
       insert.mockResolvedValue({ error: null })
 
@@ -215,19 +226,25 @@ describe('Auth Store', () => {
     it('handles error when creating a profile', async () => {
       const authStore = useAuthStore()
       authStore.user = { id: '123' }
-      mockSupabase.auth.getSession.mockResolvedValue({ data: { session: { user: { id: '123' } } }, error: null })
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: '123' } } },
+        error: null
+      })
       single.mockResolvedValue({ data: null, error: { code: 'PGRST116' } })
       insert.mockResolvedValue({ error: { message: 'Insert failed' } })
 
       await authStore.initialize()
-      
+
       expect(insert).toHaveBeenCalled()
     })
 
     it('handles error when fetching a profile', async () => {
       const authStore = useAuthStore()
       authStore.user = { id: '123' }
-      mockSupabase.auth.getSession.mockResolvedValue({ data: { session: { user: { id: '123' } } }, error: null })
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: { user: { id: '123' } } },
+        error: null
+      })
       single.mockResolvedValue({ data: null, error: { message: 'Fetch failed' } })
 
       await authStore.initialize()

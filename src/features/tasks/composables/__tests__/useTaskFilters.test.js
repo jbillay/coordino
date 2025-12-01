@@ -76,13 +76,17 @@ describe('useTaskFilters', () => {
       const { filters, getEmptyMessage } = useTaskFilters()
       filters.value.status = 'in-progress'
       filters.value.priority = 'high'
-      expect(getEmptyMessage.value).toBe('No tasks match the selected filters. Try adjusting your status, priority filter.')
+      expect(getEmptyMessage.value).toBe(
+        'No tasks match the selected filters. Try adjusting your status, priority filter.'
+      )
     })
 
     it('returns a filter message when category filter is active', () => {
       const { filters, getEmptyMessage } = useTaskFilters()
       filters.value.category = 'work'
-      expect(getEmptyMessage.value).toBe('No tasks match the selected filters. Try adjusting your category filter.')
+      expect(getEmptyMessage.value).toBe(
+        'No tasks match the selected filters. Try adjusting your category filter.'
+      )
     })
 
     it('returns a "all completed" message when no tasks are filtered and showCompleted is false', () => {

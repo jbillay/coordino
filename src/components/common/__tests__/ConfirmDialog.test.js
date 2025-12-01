@@ -1,8 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ConfirmDialog from '../ConfirmDialog.vue'
-import Dialog from 'primevue/dialog'
-import Button from 'primevue/button'
 
 describe('ConfirmDialog', () => {
   const defaultProps = {
@@ -61,8 +59,11 @@ describe('ConfirmDialog', () => {
         stubs
       }
     })
-    
-    await wrapper.findAll('button').filter(b => b.text() === 'Confirm')[0].trigger('click')
+
+    await wrapper
+      .findAll('button')
+      .filter((b) => b.text() === 'Confirm')[0]
+      .trigger('click')
 
     expect(wrapper.emitted('confirm')).toBeTruthy()
   })
@@ -74,8 +75,11 @@ describe('ConfirmDialog', () => {
         stubs
       }
     })
-    
-    await wrapper.findAll('button').filter(b => b.text() === 'Cancel')[0].trigger('click')
+
+    await wrapper
+      .findAll('button')
+      .filter((b) => b.text() === 'Cancel')[0]
+      .trigger('click')
 
     expect(wrapper.emitted('cancel')).toBeTruthy()
     expect(wrapper.emitted('update:visible')[0]).toEqual([false])
@@ -90,7 +94,7 @@ describe('ConfirmDialog', () => {
     })
 
     await wrapper.findComponent(stubs.Dialog).vm.$emit('update:visible', false)
-    
+
     expect(wrapper.emitted('cancel')).toBeTruthy()
     expect(wrapper.emitted('update:visible')[0]).toEqual([false])
   })

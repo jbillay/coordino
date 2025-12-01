@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useTaskStore } from '../store'
-import { useSupabase } from '@/composables/useSupabase'
-import { useAuthStore } from '@/stores/auth'
 import { mapSupabaseError } from '@/utils/errors'
 
 // Mock dependencies
@@ -94,13 +92,15 @@ describe('Task Store - Task Operations', () => {
       expect(result.success).toBe(false)
     })
   })
-  
+
   describe('completeTask and reopenTask', () => {
     it('completes a task', async () => {
       single.mockResolvedValue({ data: {}, error: null })
       const store = useTaskStore()
       await store.completeTask(1)
-      expect(update).toHaveBeenCalledWith(expect.objectContaining({ completed_at: expect.any(String) }))
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({ completed_at: expect.any(String) })
+      )
     })
 
     it('reopens a task', async () => {
