@@ -40,7 +40,7 @@ const taskStats = computed(() => getTaskStats(taskStore.tasks))
  * Gets appropriate greeting based on current time of day
  * @returns {string} 'Morning', 'Afternoon', or 'Evening'
  */
-const getTimeOfDay = () => {
+const timeOfDay = computed(() => {
   const hour = new Date().getHours()
   if (hour < 12) {
     return 'Morning'
@@ -49,7 +49,7 @@ const getTimeOfDay = () => {
     return 'Afternoon'
   }
   return 'Evening'
-}
+})
 
 /**
  * Gets user's first name for personalized greeting
@@ -75,12 +75,14 @@ const getUserFirstName = computed(() => {
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-            Good {{ getTimeOfDay() }}, {{ getUserFirstName }}
+            Good {{ timeOfDay }}, {{ getUserFirstName }}
           </h1>
         </div>
-        <button class="add-task-btn">
-          <span>Add New Task</span>
-        </button>
+        <div class="space-x-2">
+          <Button label="New Task" icon="pi pi-plus" />
+          <Button label="New Notes" icon="pi pi-plus" />
+          <Button label="New Meeting" icon="pi pi-plus" />
+        </div>
       </div>
 
       <!-- Stat Cards: Urgent, High Priority, Overdue -->
