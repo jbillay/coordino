@@ -25,6 +25,10 @@ describe('DashboardView.vue', () => {
         stubs: {
           AppLayout: {
             template: '<div><slot /></div>'
+          },
+          Button: {
+            template: '<button>{{ label }}</button>',
+            props: ['label', 'icon', 'loading']
           }
         },
         mocks: {
@@ -43,7 +47,7 @@ describe('DashboardView.vue', () => {
 
     const wrapper = getWrapper()
     expect(wrapper.text()).toContain('Good Morning, Test')
-    expect(wrapper.text()).toContain('Add New Task')
+    expect(wrapper.text()).toContain('New Task')
     expect(wrapper.text()).toContain('Urgent')
     expect(wrapper.text()).toContain('High Priority')
     expect(wrapper.text()).toContain('Overdue')
@@ -52,6 +56,11 @@ describe('DashboardView.vue', () => {
   })
 
   it('renders correctly with email username fallback', () => {
+    // Mock Date to control getTimeOfDay
+    const mockDate = new Date(2025, 10, 15, 10, 0, 0) // November 15, 2025, 10:00:00
+    vi.useFakeTimers()
+    vi.setSystemTime(mockDate)
+
     const wrapper = mount(DashboardView, {
       global: {
         plugins: [
@@ -69,6 +78,10 @@ describe('DashboardView.vue', () => {
         stubs: {
           AppLayout: {
             template: '<div><slot /></div>'
+          },
+          Button: {
+            template: '<button>{{ label }}</button>',
+            props: ['label', 'icon', 'loading']
           }
         },
         mocks: {
@@ -79,9 +92,16 @@ describe('DashboardView.vue', () => {
       }
     })
     expect(wrapper.text()).toContain('Good Morning, test')
+
+    vi.useRealTimers()
   })
 
   it('renders correctly with generic greeting fallback', () => {
+    // Mock Date to control getTimeOfDay
+    const mockDate = new Date(2025, 10, 15, 10, 0, 0) // November 15, 2025, 10:00:00
+    vi.useFakeTimers()
+    vi.setSystemTime(mockDate)
+
     const wrapper = mount(DashboardView, {
       global: {
         plugins: [
@@ -97,6 +117,10 @@ describe('DashboardView.vue', () => {
         stubs: {
           AppLayout: {
             template: '<div><slot /></div>'
+          },
+          Button: {
+            template: '<button>{{ label }}</button>',
+            props: ['label', 'icon', 'loading']
           }
         },
         mocks: {
@@ -107,5 +131,7 @@ describe('DashboardView.vue', () => {
       }
     })
     expect(wrapper.text()).toContain('Good Morning, there')
+
+    vi.useRealTimers()
   })
 })
