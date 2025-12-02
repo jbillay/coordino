@@ -3,22 +3,22 @@ import TaskFilters from '../TaskFilters.vue'
 import { describe, it, expect, vi } from 'vitest'
 import { createTestingPinia } from '@pinia/testing'
 import { useTaskStore } from '@/features/tasks/store'
-import Button from 'primevue/button'
 
 describe('TaskFilters.vue', () => {
   const getWrapper = (props) =>
     mount(TaskFilters, {
       props,
       global: {
-        components: {
-          Button
-        },
         plugins: [
           createTestingPinia({
             createSpy: vi.fn
           })
         ],
         stubs: {
+          Button: {
+            props: ['label', 'icon', 'loading'],
+            template: '<button :disabled="loading">{{ label }}</button>'
+          },
           Select: {
             props: ['modelValue', 'options'],
             template: `

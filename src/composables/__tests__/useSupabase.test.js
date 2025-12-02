@@ -1,5 +1,5 @@
 import { useSupabase } from '../useSupabase'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 // Mock the Supabase client
 const mockSupabase = {
@@ -17,6 +17,17 @@ vi.mock('@supabase/supabase-js', () => ({
 }))
 
 describe('useSupabase', () => {
+  beforeEach(() => {
+    // Mock environment variables
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://test-project.supabase.co')
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key')
+  })
+
+  afterEach(() => {
+    // Clean up environment variables
+    vi.unstubAllEnvs()
+  })
+
   it('returns a Supabase client instance', () => {
     const { supabase } = useSupabase()
     expect(supabase).toBe(mockSupabase)

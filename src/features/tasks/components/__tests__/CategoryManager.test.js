@@ -3,7 +3,6 @@ import CategoryManager from '../CategoryManager.vue'
 import { describe, it, expect, vi } from 'vitest'
 import { createTestingPinia } from '@pinia/testing'
 import { useTaskStore } from '@/features/tasks/store'
-import Button from 'primevue/button'
 
 vi.mock('primevue/usetoast', () => ({
   useToast: vi.fn(() => ({
@@ -18,9 +17,6 @@ describe('CategoryManager.vue', () => {
         visible: true
       },
       global: {
-        components: {
-          Button
-        },
         plugins: [
           createTestingPinia({
             createSpy: vi.fn,
@@ -35,6 +31,10 @@ describe('CategoryManager.vue', () => {
           })
         ],
         stubs: {
+          Button: {
+            props: ['label', 'icon', 'loading'],
+            template: '<button :disabled="loading">{{ label }}</button>'
+          },
           Dialog: {
             template:
               '<div><slot name="header"></slot><slot></slot><slot name="footer"></slot></div>'
