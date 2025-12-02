@@ -16,11 +16,25 @@
  * - Recent notes preview
  * - Upcoming meetings with timezone information
  */
-import { computed } from 'vue'
+import { computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useTaskStore } from '@/features/tasks/store'
+import { getTaskStats } from '@/features/tasks/utils'
 import AppLayout from '@/components/layout/AppLayout.vue'
+import TaskCard from '@/features/tasks/components/TaskCard.vue'
 
 const authStore = useAuthStore()
+const taskStore = useTaskStore()
+
+onMounted(() => {
+  taskStore.initialize()
+})
+
+onBeforeUnmount(() => {
+  taskStore.unsubscribeFromTasks()
+})
+
+const taskStats = computed(() => getTaskStats(taskStore.tasks))
 
 /**
  * Gets appropriate greeting based on current time of day
@@ -73,17 +87,23 @@ const getUserFirstName = computed(() => {
       <div class="grid grid-cols-3 gap-4">
         <div class="stat-card">
           <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Urgent</div>
-          <div class="text-3xl font-bold text-gray-900 dark:text-white">3</div>
+          <div class="text-3xl font-bold text-gray-900 dark:text-white">
+            {{ taskStats.byPriority.urgent }}
+          </div>
         </div>
 
         <div class="stat-card">
           <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">High Priority</div>
-          <div class="text-3xl font-bold text-gray-900 dark:text-white">5</div>
+          <div class="text-3xl font-bold text-gray-900 dark:text-white">
+            {{ taskStats.byPriority.high }}
+          </div>
         </div>
 
         <div class="stat-card">
           <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Overdue</div>
-          <div class="text-3xl font-bold text-red-600 dark:text-red-500">2</div>
+          <div class="text-3xl font-bold text-red-600 dark:text-red-500">
+            {{ taskStats.overdue }}
+          </div>
         </div>
       </div>
 
@@ -93,62 +113,26 @@ const getUserFirstName = computed(() => {
         <div class="content-card">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-gray-900 dark:text-white">My Tasks</h2>
-            <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+            <router-link
+              :to="{ name: 'tasks' }"
+              class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
               View All
-            </a>
+            </router-link>
           </div>
           <div class="space-y-3">
-            <!-- Task Item 1 -->
-            <div class="task-item">
-              <input type="checkbox" class="task-checkbox" />
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">
-                    Finalize Q3 report
-                  </span>
-                  <span class="priority-badge urgent">Urgent</span>
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">Today</div>
-              </div>
+            <div v-if="taskStore.activeTasks.length > 0">
+              <TaskCard
+                v-for="task in taskStore.activeTasks.slice(0, 5)"
+                :key="task.id"
+                :task="task"
+                @edit="taskStore.editTask(task)"
+                @delete="taskStore.deleteTask(task.id)"
+                @toggle-complete="taskStore.toggleComplete(task)"
+              />
             </div>
-
-            <!-- Task Item 2 -->
-            <div class="task-item">
-              <input type="checkbox" class="task-checkbox" />
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">
-                    Draft client presentation slides
-                  </span>
-                  <span class="priority-badge high">High Priority</span>
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">Tomorrow</div>
-              </div>
-            </div>
-
-            <!-- Task Item 3 -->
-            <div class="task-item">
-              <input type="checkbox" class="task-checkbox" />
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">
-                    Review marketing campaign copy
-                  </span>
-                  <span class="priority-badge high">High Priority</span>
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">Fri, Oct 27</div>
-              </div>
-            </div>
-
-            <!-- Task Item 4 -->
-            <div class="task-item">
-              <input type="checkbox" checked class="task-checkbox" />
-              <div class="flex-1">
-                <div class="text-sm font-medium text-gray-400 dark:text-gray-500 line-through">
-                  Enhanced new designs review
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">Yesterday</div>
-              </div>
+            <div v-else class="text-center text-gray-500 dark:text-gray-400 py-4">
+              No active tasks. Time to relax or add a new one!
             </div>
           </div>
         </div>
