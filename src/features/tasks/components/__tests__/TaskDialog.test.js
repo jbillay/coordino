@@ -11,6 +11,16 @@ vi.mock('primevue/usetoast', () => ({
 }))
 
 describe('TaskDialog.vue', () => {
+  const mockStatuses = [
+    { id: 1, name: 'To Do', color: '#3b82f6', is_default: true },
+    { id: 2, name: 'In Progress', color: '#f59e0b', is_default: false }
+  ]
+
+  const mockCategories = [
+    { id: 1, name: 'Test Category', color: '#10b981' },
+    { id: 2, name: 'Work', color: '#8b5cf6' }
+  ]
+
   const getWrapper = (props) =>
     mount(TaskDialog, {
       props: {
@@ -20,7 +30,16 @@ describe('TaskDialog.vue', () => {
       global: {
         plugins: [
           createTestingPinia({
-            createSpy: vi.fn
+            createSpy: vi.fn,
+            initialState: {
+              tasks: {
+                statuses: mockStatuses,
+                categories: mockCategories,
+                tasks: [],
+                loading: false,
+                error: null
+              }
+            }
           })
         ],
         stubs: {
@@ -92,8 +111,6 @@ describe('TaskDialog.vue', () => {
   it('calls store action "createTask" when form is submitted for a new task', async () => {
     const wrapper = getWrapper()
     const store = useTaskStore()
-    store.statuses = [{ id: 1, name: 'To Do' }]
-    store.categories = [{ id: 1, name: 'Test Category' }]
     store.createTask.mockResolvedValue({ success: true, data: {} })
 
     await wrapper.find('input[id="task-title"]').setValue('Test Task')
