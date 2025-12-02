@@ -77,7 +77,7 @@ const handleToggleComplete = () => {
 </script>
 
 <template>
-  <Card class="task-card mb-3 hover:shadow-md transition-shadow">
+  <Card class="task-card mb-3 hover:shadow-md transition-shadow" data-testid="task-card">
     <template #content>
       <div class="flex items-start justify-between gap-4">
         <!-- Left side: Checkbox and content -->
@@ -143,7 +143,7 @@ const handleToggleComplete = () => {
 
               <!-- Owner badge -->
               <span
-                v-if="task.owner"
+                vif="task.owner"
                 class="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
               >
                 <i class="pi pi-user text-xs mr-1"></i>
@@ -155,7 +155,7 @@ const handleToggleComplete = () => {
             <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
               <!-- Due date -->
               <span
-                v-if="task.due_date"
+                vif="task.due_date"
                 :class="{ 'text-red-600 dark:text-red-400 font-medium': isOverdue }"
               >
                 <i class="pi pi-calendar text-xs mr-1"></i>
@@ -184,12 +184,14 @@ const handleToggleComplete = () => {
             icon="pi pi-pencil"
             class="p-button-rounded p-button-text p-button-sm"
             aria-label="Edit task"
+            data-testid="edit-button"
             @click="$emit('edit', task)"
           />
           <Button
             icon="pi pi-trash"
             class="p-button-rounded p-button-text p-button-sm p-button-danger"
             aria-label="Delete task"
+            data-testid="delete-button"
             @click="$emit('delete', task)"
           />
         </div>

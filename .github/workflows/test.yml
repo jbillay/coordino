@@ -94,11 +94,9 @@ jobs:
           echo "Coverage thresholds enforced in vitest.config.js (80%)"
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          files: ./coverage/coverage-final.json
-          flags: unittests
-          name: unit-tests-coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
       - name: Archive coverage report

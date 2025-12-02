@@ -332,6 +332,7 @@ const handleMagicLink = async () => {
                 class="space-y-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700"
               >
                 <InputText
+                  id="magic-email"
                   v-model="magicEmail"
                   type="email"
                   placeholder="Enter your email"
