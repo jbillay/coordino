@@ -41,7 +41,22 @@
       "Bash(npm run test:coverage:*)",
       "Bash(npm run lint)",
       "Bash(del:*)",
-      "Bash(npm run format:*)"
+      "Bash(npm run format:*)",
+      "mcp__supabase__execute_sql",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__wait_for",
+      "mcp__chrome-devtools__press_key",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__fill_form",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__get_console_message"
     ]
   },
   "enableAllProjectMcpServers": true,

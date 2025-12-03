@@ -10,6 +10,7 @@ import router from './router'
 import Button from 'primevue/button'
 import Toast from 'primevue/toast'
 import ToastService from 'primevue/toastservice'
+import Tooltip from 'primevue/tooltip'
 
 // PrimeIcons CSS
 import 'primeicons/primeicons.css'
@@ -17,14 +18,17 @@ import 'primeicons/primeicons.css'
 // Tailwind CSS
 import './assets/styles/main.css'
 
+// Secure logger (dev-only console logging)
+import { logger } from './utils/logger'
+
 const app = createApp(App)
 const pinia = createPinia()
 
 // Global error handler for Vue errors
 app.config.errorHandler = (err, instance, info) => {
-  console.error('Vue Error:', err)
-  console.error('Component:', instance)
-  console.error('Error Info:', info)
+  logger.error('Vue Error:', err)
+  logger.debug('Component:', instance)
+  logger.debug('Error Info:', info)
 
   // You can integrate with error tracking service here (e.g., Sentry)
   // Example: Sentry.captureException(err)
@@ -32,7 +36,7 @@ app.config.errorHandler = (err, instance, info) => {
 
 // Global handler for unhandled promise rejections
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled Promise Rejection:', event.reason)
+  logger.error('Unhandled Promise Rejection:', event.reason)
   event.preventDefault() // Prevent default browser error reporting
 
   // You can integrate with error tracking service here
@@ -56,11 +60,13 @@ app.use(PrimeVue, {
 })
 app.use(ToastService)
 
-// Register only essential global components
+// Register only essential global components and directives
 // Button - Used frequently across the app
 // Toast - Used for notifications
+// Tooltip - Used throughout the app for helpful hints
 app.component('Button', Button)
 app.component('Toast', Toast)
+app.directive('tooltip', Tooltip)
 
 // Initialize auth store before mounting
 import { useAuthStore } from './stores/auth'

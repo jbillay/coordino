@@ -135,9 +135,9 @@ const clearAllFilters = () => {
 </script>
 
 <template>
-  <Card class="filters-card">
+  <Card class="content-card filters-card">
     <template #content>
-      <div class="space-y-4">
+      <div class="space-y-2">
         <!-- Search -->
         <div class="w-full">
           <label for="task-search" class="sr-only">Search tasks</label>
@@ -153,10 +153,10 @@ const clearAllFilters = () => {
         </div>
 
         <!-- Filters row -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
           <!-- Status filter -->
           <div>
-            <label for="filter-status" class="block text-sm font-medium mb-2">Status</label>
+            <label for="filter-status" class="block text-sm font-medium">Status</label>
             <Select
               id="filter-status"
               v-model="filters.status"
@@ -181,7 +181,7 @@ const clearAllFilters = () => {
 
           <!-- Category filter -->
           <div>
-            <label for="filter-category" class="block text-sm font-medium mb-2">Category</label>
+            <label for="filter-category" class="block text-sm font-medium">Category</label>
             <Select
               id="filter-category"
               v-model="filters.category"
@@ -206,7 +206,7 @@ const clearAllFilters = () => {
 
           <!-- Priority filter -->
           <div>
-            <label for="filter-priority" class="block text-sm font-medium mb-2">Priority</label>
+            <label for="filter-priority" class="block text-sm font-medium">Priority</label>
             <Select
               id="filter-priority"
               v-model="filters.priority"
@@ -238,7 +238,7 @@ const clearAllFilters = () => {
 
         <!-- Sort and Group row -->
         <div
-          class="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-200 dark:border-gray-700"
+          class="flex flex-wrap items-center gap-2 pt-1 border-t border-gray-200 dark:border-gray-700"
         >
           <!-- Sort by -->
           <div class="flex items-center gap-2">

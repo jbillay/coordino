@@ -157,7 +157,7 @@ onBeforeUnmount(async () => {
   <AppLayout>
     <div class="tasks-view">
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Tasks</h1>
           <p class="text-gray-600 dark:text-gray-400">Manage your tasks with custom workflows</p>
@@ -181,18 +181,18 @@ onBeforeUnmount(async () => {
       </div>
 
       <!-- Stats Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
         <Card class="stat-card">
           <template #content>
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Tasks</p>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Active Tasks</p>
+                <p class="text-lg font-bold text-gray-900 dark:text-white">
                   {{ taskStats.active }}
                 </p>
               </div>
               <div
-                class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center"
+                class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center"
               >
                 <i class="pi pi-list text-blue-600 dark:text-blue-400 text-xl"></i>
               </div>
@@ -204,13 +204,13 @@ onBeforeUnmount(async () => {
           <template #content>
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Completed</p>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Completed</p>
+                <p class="text-lg font-bold text-gray-900 dark:text-white">
                   {{ taskStats.completed }}
                 </p>
               </div>
               <div
-                class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center"
+                class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center"
               >
                 <i class="pi pi-check-circle text-green-600 dark:text-green-400 text-xl"></i>
               </div>
@@ -222,13 +222,13 @@ onBeforeUnmount(async () => {
           <template #content>
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Overdue</p>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Overdue</p>
+                <p class="text-lg font-bold text-gray-900 dark:text-white">
                   {{ taskStats.overdue }}
                 </p>
               </div>
               <div
-                class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center"
+                class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center"
               >
                 <i class="pi pi-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
               </div>
@@ -240,13 +240,13 @@ onBeforeUnmount(async () => {
           <template #content>
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Completion Rate</p>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Completion Rate</p>
+                <p class="text-lg font-bold text-gray-900 dark:text-white">
                   {{ taskStats.completionRate }}%
                 </p>
               </div>
               <div
-                class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center"
+                class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center"
               >
                 <i class="pi pi-chart-bar text-purple-600 dark:text-purple-400 text-xl"></i>
               </div>
@@ -348,7 +348,7 @@ onBeforeUnmount(async () => {
 }
 
 :deep(.p-card-body) {
-  padding: 1.25rem;
+  padding: 0.5rem;
 }
 
 :deep(.p-card-content) {

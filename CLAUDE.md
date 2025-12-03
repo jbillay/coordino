@@ -146,6 +146,8 @@ The application is built in distinct phases, each delivering a complete, usable 
 
 **Error Handling:** Errors will happen. Network requests fail, users lose internet connections, databases have issues. Handle errors gracefully with clear user-facing messages. Never show raw error messages or stack traces to users. Log errors for debugging but display friendly explanations and recovery options.
 
+**Development Documentation:** You must of context7 to retrieve the latest version of the documentation for any component that you are using in during the development phase.
+
 ## Security Considerations
 
 **Row Level Security:** Every table must have RLS policies enabled. Never rely solely on frontend checks for security. The database is the ultimate security boundary.

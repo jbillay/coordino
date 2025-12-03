@@ -59,7 +59,7 @@ const groupedTasks = computed(() => {
 </script>
 
 <template>
-  <div class="task-list">
+  <div class="content-card task-list">
     <!-- Empty state -->
     <div v-if="!tasks || tasks.length === 0" class="empty-state text-center py-12">
       <i class="pi pi-inbox text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
@@ -76,9 +76,9 @@ const groupedTasks = computed(() => {
     </div>
 
     <!-- Grouped tasks -->
-    <div v-else-if="groupBy && groupBy !== 'none'" class="space-y-6">
+    <div v-else-if="groupBy && groupBy !== 'none'" class="space-y-3">
       <div v-for="(tasksInGroup, groupName) in groupedTasks" :key="groupName" class="task-group">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center justify-between mb-1">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ groupName }}
             <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">

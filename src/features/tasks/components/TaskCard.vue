@@ -77,11 +77,11 @@ const handleToggleComplete = () => {
 </script>
 
 <template>
-  <Card class="task-card mb-3 hover:shadow-md transition-shadow" data-testid="task-card">
+  <Card class="task-card mb-2 hover:shadow-md transition-shadow" data-testid="task-card">
     <template #content>
-      <div class="flex items-start justify-between gap-4">
+      <div class="flex items-start justify-between gap-2">
         <!-- Left side: Checkbox and content -->
-        <div class="flex items-start gap-3 flex-1 min-w-0">
+        <div class="flex items-start gap-2 flex-1 min-w-0">
           <!-- Completion checkbox -->
           <button
             :aria-label="task.completed_at ? 'Mark as incomplete' : 'Mark as complete'"
@@ -95,7 +95,7 @@ const handleToggleComplete = () => {
           <div class="flex-1 min-w-0">
             <!-- Title -->
             <h3
-              class="font-medium text-gray-900 dark:text-white mb-1"
+              class="font-medium text-gray-900 dark:text-white mb-0.5"
               :class="{ 'line-through text-gray-500 dark:text-gray-400': task.completed_at }"
             >
               {{ task.title }}
@@ -104,18 +104,18 @@ const handleToggleComplete = () => {
             <!-- Description -->
             <p
               v-if="task.description"
-              class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2"
+              class="text-sm text-gray-600 dark:text-gray-400 mb-1 line-clamp-2"
               :class="{ 'line-through': task.completed_at }"
             >
               {{ task.description }}
             </p>
 
             <!-- Tags/Badges -->
-            <div class="flex flex-wrap gap-2 mb-2">
+            <div class="flex flex-wrap gap-1 mb-1">
               <!-- Status badge -->
               <span
                 v-if="task.status"
-                class="px-2 py-1 rounded text-xs font-medium"
+                class="px-1.5 py-0.5 rounded text-xs font-medium"
                 :style="{
                   backgroundColor: task.status.color + '20',
                   color: task.status.color
@@ -127,7 +127,7 @@ const handleToggleComplete = () => {
               <!-- Category badge -->
               <span
                 v-if="task.category"
-                class="px-2 py-1 rounded text-xs font-medium"
+                class="px-1.5 py-0.5 rounded text-xs font-medium"
                 :style="{
                   backgroundColor: task.category.color + '20',
                   color: task.category.color
@@ -137,14 +137,14 @@ const handleToggleComplete = () => {
               </span>
 
               <!-- Priority badge -->
-              <span class="px-2 py-1 rounded text-xs font-medium" :class="priorityClasses">
+              <span class="px-1.5 py-0.5 rounded text-xs font-medium" :class="priorityClasses">
                 {{ priorityLabel }}
               </span>
 
               <!-- Owner badge -->
               <span
                 vif="task.owner"
-                class="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                class="px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
               >
                 <i class="pi pi-user text-xs mr-1"></i>
                 {{ task.owner }}
@@ -152,7 +152,7 @@ const handleToggleComplete = () => {
             </div>
 
             <!-- Metadata -->
-            <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <!-- Due date -->
               <span
                 vif="task.due_date"

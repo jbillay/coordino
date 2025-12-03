@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useSupabase } from '@/composables/useSupabase'
+import { logger } from '@/utils/logger'
 
 /**
  * Authentication error types and user-friendly messages
@@ -158,7 +159,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (e) {
       const friendlyError = getErrorMessage(e)
       error.value = friendlyError
-      console.error('Sign up error:', e)
+      logger.error('Sign up error:', e)
       return { success: false, error: friendlyError }
     } finally {
       loading.value = false
@@ -192,7 +193,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (e) {
       const friendlyError = getErrorMessage(e)
       error.value = friendlyError
-      console.error('Sign in error:', e)
+      logger.error('Sign in error:', e)
       return { success: false, error: friendlyError }
     } finally {
       loading.value = false
