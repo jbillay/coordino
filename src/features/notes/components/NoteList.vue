@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import NoteCard from './NoteCard.vue'
 
 const props = defineProps({
@@ -95,8 +95,8 @@ const sortNotes = (notes) => {
           />
         </div>
 
-        <!-- Sort Dropdown -->
-        <Dropdown
+        <!-- Sort Select -->
+        <Select
           v-model="sortBy"
           :options="sortOptions"
           option-label="label"
@@ -106,14 +106,19 @@ const sortNotes = (notes) => {
         />
 
         <!-- New Note Button -->
-        <Button label="New Note" icon="pi pi-plus" @click="$emit('create')" />
+        <Button
+          label="New Note"
+          icon="pi pi-plus"
+          data-testid="new-note-button"
+          @click="$emit('create')"
+        />
       </div>
     </div>
 
     <!-- Notes Content -->
     <div class="flex-1 overflow-y-auto p-6">
       <!-- Pinned Notes Section -->
-      <div v-if="pinnedNotes.length > 0" class="mb-8">
+      <div v-if="pinnedNotes.length > 0" data-testid="pinned-notes" class="mb-8">
         <div class="flex items-center space-x-2 mb-4">
           <i class="pi pi-star-fill text-primary-500"></i>
           <h3
@@ -142,7 +147,7 @@ const sortNotes = (notes) => {
       </div>
 
       <!-- Regular Notes Section -->
-      <div v-if="regularNotes.length > 0">
+      <div v-if="regularNotes.length > 0" data-testid="regular-notes">
         <h3
           v-if="pinnedNotes.length > 0"
           class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"
@@ -171,6 +176,7 @@ const sortNotes = (notes) => {
       <!-- Empty State -->
       <div
         v-if="notes.length === 0"
+        data-testid="empty-state"
         class="flex flex-col items-center justify-center h-full min-h-[400px] text-center"
       >
         <i class="pi pi-file text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
@@ -189,7 +195,11 @@ const sortNotes = (notes) => {
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="flex items-center justify-center h-full min-h-[400px]">
+      <div
+        v-if="loading"
+        data-testid="loading-indicator"
+        class="flex items-center justify-center h-full min-h-[400px]"
+      >
         <i class="pi pi-spin pi-spinner text-4xl text-primary-500"></i>
       </div>
     </div>

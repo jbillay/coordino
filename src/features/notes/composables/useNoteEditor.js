@@ -107,7 +107,7 @@ export function useNoteEditor(options = {}) {
   }
 
   const insertHorizontalRule = () => {
-    editor.value?.chain().focus().setHorizontalRule().run()
+    editor.value?.chain().focus().insertHorizontalRule().run()
   }
 
   const clearFormatting = () => {
