@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import SanitizedHtml from '~/components/common/SanitizedHtml.vue'
+import SanitizedHtml from '@/components/common/SanitizedHtml.vue'
 import {
   highlightSearchTerms,
   getSearchSnippet,
