@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import InputText from 'primevue/inputtext'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
 import { useNotesStore } from '../store'
 import { useDebounceFn } from '@vueuse/core'
@@ -153,7 +153,7 @@ defineExpose({
     <!-- Search Filters -->
     <div v-if="showFilters" class="search-filters mt-3 flex flex-wrap items-center gap-2">
       <!-- Topic Filter -->
-      <Dropdown
+      <Select
         v-model="selectedTopicId"
         :options="topicOptions"
         option-label="label"
@@ -165,7 +165,7 @@ defineExpose({
       />
 
       <!-- Date Range Filter -->
-      <Dropdown
+      <Select
         v-model="dateRange"
         :options="dateRangeOptions"
         option-label="label"

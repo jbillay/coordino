@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import Dialog from 'primevue/dialog'
 
@@ -86,6 +86,7 @@ watch(showLinkDialog, (isVisible) => {
       <Button
         v-tooltip.bottom="'Bold (Ctrl+B)'"
         icon="pi pi-bold"
+        aria-label="Toggle bold"
         class="p-button-text p-button-sm"
         :class="{
           'bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400':
@@ -119,7 +120,7 @@ watch(showLinkDialog, (isVisible) => {
 
     <!-- Heading Group -->
     <div class="toolbar-group flex items-center gap-1">
-      <Dropdown
+      <Select
         :model-value="currentHeadingLevel"
         :options="headingOptions"
         option-label="label"

@@ -1,6 +1,7 @@
 <script setup>
 import { getShortcutText } from '../composables/useNoteKeyboardShortcuts'
 import ShortcutItem from './ShortcutItem.vue'
+import Dialog from 'primevue/dialog'
 
 defineProps({
   visible: Boolean
