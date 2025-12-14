@@ -224,7 +224,7 @@ const handleRemoveParticipant = async (participantId) => {
 
 const loadMeeting = async () => {
   if (props.meetingId) {
-    await store.fetchMeetingById(props.meetingId)
+    await store.fetchMeeting(props.meetingId)
     if (store.currentMeeting) {
       localMeeting.value = {
         title: store.currentMeeting.title,

@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import MeetingForm from '../MeetingForm.vue'
 
 describe('MeetingForm.vue', () => {
-  const mockMeeting = {
+  const mockInitialData = {
     title: 'Quarterly Review',
-    proposed_time: new Date('2025-12-15T14:00:00'),
+    proposed_time: '2025-12-15T14:00:00.000Z',
+    duration_minutes: 60,
     notes: 'Discuss Q4 results'
   }
 
@@ -14,7 +16,7 @@ describe('MeetingForm.vue', () => {
   beforeEach(() => {
     wrapper = mount(MeetingForm, {
       props: {
-        meeting: mockMeeting
+        initialData: mockInitialData
       },
       global: {
         stubs: {
@@ -26,20 +28,22 @@ describe('MeetingForm.vue', () => {
           DatePicker: {
             template:
               '<input class="datepicker-stub" type="datetime-local" :value="modelValue" @input="$emit(\'update:modelValue\', new Date($event.target.value))" />',
-            props: [
-              'modelValue',
-              'showTime',
-              'showSeconds',
-              'showButtonBar',
-              'dateFormat',
-              'hourFormat',
-              'invalid'
-            ]
+            props: ['modelValue', 'invalid', 'dateFormat', 'timeOnly', 'stepMinute', 'hourFormat']
+          },
+          Select: {
+            template:
+              '<select class="select-stub" :value="modelValue" @change="$emit(\'update:modelValue\', Number($event.target.value))"><option v-for="opt in options" :key="opt.value" :value="opt.value">{{ opt.label }}</option></select>',
+            props: ['modelValue', 'options', 'optionLabel', 'optionValue', 'invalid', 'placeholder']
           },
           Textarea: {
             template:
               '<textarea class="textarea-stub" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-            props: ['modelValue', 'rows']
+            props: ['modelValue', 'rows', 'placeholder']
+          },
+          Button: {
+            template:
+              '<button class="button-stub" :type="type" :loading="loading" @click="$emit(\'click\')"><slot>{{ label }}</slot></button>',
+            props: ['label', 'type', 'severity', 'loading']
           }
         }
       }
@@ -48,6 +52,7 @@ describe('MeetingForm.vue', () => {
 
   it('renders the form', () => {
     expect(wrapper.exists()).toBe(true)
+    expect(wrapper.find('form').exists()).toBe(true)
   })
 
   it('displays title input with label', () => {
@@ -55,104 +60,106 @@ describe('MeetingForm.vue', () => {
     expect(wrapper.find('.input-text-stub').exists()).toBe(true)
   })
 
-  it('displays proposed time calendar with label', () => {
-    expect(wrapper.text()).toContain('Proposed Meeting Time *')
-    expect(wrapper.find('.datepicker-stub').exists()).toBe(true)
+  it('displays date picker with label', () => {
+    expect(wrapper.text()).toContain('Date *')
+    const datepickers = wrapper.findAll('.datepicker-stub')
+    expect(datepickers.length).toBeGreaterThan(0)
+  })
+
+  it('displays time picker with label and help text', () => {
+    expect(wrapper.text()).toContain('Time *')
+    expect(wrapper.text()).toContain('15-minute intervals (FR-002)')
+  })
+
+  it('displays duration select with label', () => {
+    expect(wrapper.text()).toContain('Duration *')
+    expect(wrapper.find('.select-stub').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Duration must be between 15 minutes and 8 hours')
   })
 
   it('displays notes textarea with label', () => {
-    expect(wrapper.text()).toContain('Notes (Optional)')
+    expect(wrapper.text()).toContain('Notes')
     expect(wrapper.find('.textarea-stub').exists()).toBe(true)
   })
 
-  it('populates form with meeting data', () => {
-    expect(wrapper.vm.localMeeting.title).toBe('Quarterly Review')
-    expect(wrapper.vm.localMeeting.notes).toBe('Discuss Q4 results')
+  it('displays submit and cancel buttons', () => {
+    const buttons = wrapper.findAll('.button-stub')
+    expect(buttons.length).toBe(2)
+    expect(wrapper.text()).toContain('Cancel')
+    expect(wrapper.text()).toContain('Save Meeting')
   })
 
-  it('emits update:meeting when title changes', async () => {
-    const input = wrapper.find('.input-text-stub')
-    await input.setValue('New Title')
-    await input.trigger('input')
-
-    expect(wrapper.emitted('update:meeting')).toBeTruthy()
+  it('uses custom submit label when provided', async () => {
+    await wrapper.setProps({ submitLabel: 'Update Meeting' })
+    expect(wrapper.text()).toContain('Update Meeting')
   })
 
-  it('emits input event when form changes', async () => {
-    const input = wrapper.find('.input-text-stub')
-    await input.trigger('input')
+  it('emits submit event with correct data when form is valid', async () => {
+    const form = wrapper.find('form')
+    await form.trigger('submit')
 
-    expect(wrapper.emitted('input')).toBeTruthy()
+    await nextTick()
+
+    expect(wrapper.emitted('submit')).toBeTruthy()
+    const emittedData = wrapper.emitted('submit')[0][0]
+    expect(emittedData).toHaveProperty('title')
+    expect(emittedData).toHaveProperty('proposed_time')
+    expect(emittedData).toHaveProperty('duration_minutes')
+    expect(emittedData).toHaveProperty('notes')
   })
 
-  it('validates required title field', async () => {
-    wrapper.vm.localMeeting.title = ''
-    const isValid = wrapper.vm.validate()
+  it('emits cancel event when cancel button is clicked', async () => {
+    const cancelButton = wrapper.findAll('.button-stub')[0]
+    await cancelButton.trigger('click')
 
-    expect(isValid).toBe(false)
-    expect(wrapper.vm.errors.title).toBe('Meeting title is required')
+    expect(wrapper.emitted('cancel')).toBeTruthy()
   })
 
-  it('validates required proposed_time field', async () => {
-    wrapper.vm.localMeeting.proposed_time = null
-    const isValid = wrapper.vm.validate()
+  it('shows error message when title is empty', async () => {
+    await wrapper.setProps({ initialData: { ...mockInitialData, title: '' } })
 
-    expect(isValid).toBe(false)
-    expect(wrapper.vm.errors.proposed_time).toBe('Proposed time is required')
-  })
-
-  it('passes validation with valid data', () => {
-    const isValid = wrapper.vm.validate()
-
-    expect(isValid).toBe(true)
-    expect(Object.keys(wrapper.vm.errors).length).toBe(0)
-  })
-
-  it('shows error message for invalid title', async () => {
-    wrapper.vm.localMeeting.title = ''
-    wrapper.vm.validate()
-    await wrapper.vm.$nextTick()
+    const form = wrapper.find('form')
+    await form.trigger('submit')
+    await nextTick()
 
     expect(wrapper.text()).toContain('Meeting title is required')
+    expect(wrapper.emitted('submit')).toBeFalsy()
   })
 
-  it('shows error message for invalid proposed_time', async () => {
-    wrapper.vm.localMeeting.proposed_time = null
-    wrapper.vm.validate()
-    await wrapper.vm.$nextTick()
+  it('shows loading state on submit button when loading prop is true', async () => {
+    await wrapper.setProps({ loading: true })
 
-    expect(wrapper.text()).toContain('Proposed time is required')
+    const submitButton = wrapper.findAll('.button-stub')[1]
+    expect(submitButton.attributes('loading')).toBeDefined()
   })
 
-  it('updates local meeting when prop changes', async () => {
-    const newMeeting = {
-      title: 'Updated Meeting',
-      proposed_time: new Date('2025-12-20T10:00:00'),
-      notes: 'New notes'
-    }
+  it('trims whitespace from title on submit', async () => {
+    const titleInput = wrapper.find('.input-text-stub')
+    await titleInput.setValue('  Test Meeting  ')
+    await titleInput.trigger('input')
 
-    await wrapper.setProps({ meeting: newMeeting })
+    const form = wrapper.find('form')
+    await form.trigger('submit')
+    await nextTick()
 
-    expect(wrapper.vm.localMeeting.title).toBe('Updated Meeting')
-    expect(wrapper.vm.localMeeting.notes).toBe('New notes')
+    const emittedData = wrapper.emitted('submit')[0][0]
+    expect(emittedData.title).toBe('Test Meeting')
   })
 
-  it('exposes validate method', () => {
-    expect(typeof wrapper.vm.validate).toBe('function')
+  it('allows empty notes field', async () => {
+    const textarea = wrapper.find('.textarea-stub')
+    await textarea.setValue('')
+    await textarea.trigger('input')
+
+    const form = wrapper.find('form')
+    await form.trigger('submit')
+    await nextTick()
+
+    expect(wrapper.emitted('submit')).toBeTruthy()
   })
 
-  it('trims whitespace when validating title', () => {
-    wrapper.vm.localMeeting.title = '   '
-    const isValid = wrapper.vm.validate()
-
-    expect(isValid).toBe(false)
-    expect(wrapper.vm.errors.title).toBe('Meeting title is required')
-  })
-
-  it('allows empty notes field', () => {
-    wrapper.vm.localMeeting.notes = ''
-    const isValid = wrapper.vm.validate()
-
-    expect(isValid).toBe(true)
+  it('initializes with provided data', () => {
+    const titleInput = wrapper.find('.input-text-stub')
+    expect(titleInput.element.value).toBe('Quarterly Review')
   })
 })

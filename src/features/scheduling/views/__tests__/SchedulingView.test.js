@@ -98,7 +98,7 @@ describe('SchedulingView.vue', () => {
       const store = useSchedulingStore()
       store.fetchMeetings = vi.fn().mockReturnValue(neverResolve)
       store.fetchParticipants = vi.fn().mockReturnValue(neverResolve)
-      store.fetchCountryConfigs = vi.fn().mockReturnValue(neverResolve)
+      store.fetchCountryConfigurations = vi.fn().mockReturnValue(neverResolve)
 
       const wrapper = mount(SchedulingView, {
         global: {
@@ -121,20 +121,20 @@ describe('SchedulingView.vue', () => {
       const { store } = mountComponent()
       store.fetchMeetings.mockResolvedValue([])
       store.fetchParticipants.mockResolvedValue([])
-      store.fetchCountryConfigs.mockResolvedValue([])
+      store.fetchCountryConfigurations.mockResolvedValue([])
 
       await nextTick() // onMounted is async
 
       expect(store.fetchMeetings).toHaveBeenCalled()
       expect(store.fetchParticipants).toHaveBeenCalled()
-      expect(store.fetchCountryConfigs).toHaveBeenCalled()
+      expect(store.fetchCountryConfigurations).toHaveBeenCalled()
     })
 
     it('should hide loading spinner and show content after data loads', async () => {
       const { wrapper, store } = mountComponent()
       store.fetchMeetings.mockResolvedValue([])
       store.fetchParticipants.mockResolvedValue([])
-      store.fetchCountryConfigs.mockResolvedValue([])
+      store.fetchCountryConfigurations.mockResolvedValue([])
 
       await flushPromises()
 
@@ -167,7 +167,7 @@ describe('SchedulingView.vue', () => {
       const store = useSchedulingStore()
       store.fetchMeetings = vi.fn().mockRejectedValue(error)
       store.fetchParticipants = vi.fn().mockResolvedValue([])
-      store.fetchCountryConfigs = vi.fn().mockResolvedValue([])
+      store.fetchCountryConfigurations = vi.fn().mockResolvedValue([])
 
       mount(SchedulingView, {
         global: {
@@ -195,7 +195,7 @@ describe('SchedulingView.vue', () => {
       const { wrapper, store } = mountComponent({ meetings: [], filteredMeetings: [] })
       store.fetchMeetings.mockResolvedValue([])
       store.fetchParticipants.mockResolvedValue([])
-      store.fetchCountryConfigs.mockResolvedValue([])
+      store.fetchCountryConfigurations.mockResolvedValue([])
       await flushPromises()
 
       // Find the Button by its data-label attribute

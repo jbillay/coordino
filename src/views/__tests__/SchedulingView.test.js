@@ -24,7 +24,7 @@ vi.mock('@/features/scheduling/components/MeetingEditor.vue', () => ({
 
 describe('SchedulingView.vue', () => {
   let wrapper
-  let store
+  let _store
 
   const mountComponent = () => {
     wrapper = mount(SchedulingView, {
@@ -53,7 +53,7 @@ describe('SchedulingView.vue', () => {
         }
       }
     })
-    store = useSchedulingStore()
+    _store = useSchedulingStore()
   }
 
   beforeEach(() => {
@@ -61,14 +61,15 @@ describe('SchedulingView.vue', () => {
     mountComponent()
   })
 
-  it('renders MeetingList and fetches meetings on mount', () => {
-    expect(wrapper.findComponent({ name: 'MeetingList' }).exists()).toBe(true)
-    expect(store.fetchMeetings).toHaveBeenCalled()
+  it('renders as a layout wrapper without direct content', () => {
+    // This wrapper component only provides layout, actual content comes from router-view
+    expect(wrapper.findComponent({ name: 'MeetingList' }).exists()).toBe(false)
+    expect(wrapper.findComponent({ name: 'MeetingEditor' }).exists()).toBe(false)
   })
 
-  it('shows placeholder when no meeting is selected', () => {
-    expect(wrapper.find('[data-testid="meeting-editor"]').exists()).toBe(false)
-    expect(wrapper.text()).toContain('Select a meeting or create a new one')
+  it('provides router-view as outlet for nested scheduling routes', () => {
+    // The actual SchedulingView with MeetingList/MeetingEditor is rendered via router-view
+    expect(wrapper.findComponent({ name: 'router-view' }).exists()).toBe(true)
   })
 
   it('renders AppLayout component', () => {

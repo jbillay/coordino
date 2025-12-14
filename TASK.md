@@ -43,29 +43,6 @@ This file tracks issues, improvements, and tasks identified through code reviews
   - **Impact**: Prevents information disclosure via console
   - **Status**: ✅ Completed - Created logger utility with dev-only logging, replaced all console.error() calls
 
-### Testing
-
-- [ ] **[TESTING]** Implement unit tests for task store - ZERO real tests currently exist
-  - **File**: `src/__tests__/auth.test.js` contains only placeholder tests
-  - **Action**: Write tests for:
-    - Task CRUD operations
-    - Filter/sort utilities
-    - Store state management
-    - Auth flows
-  - **Target**: 70%+ coverage before Phase 3
-
-- [ ] **[TESTING]** Improve notes store test coverage
-  - **File**: `src/features/notes/__tests__/store.test.js`
-  - **Issue**: Only 15 basic tests, missing critical scenarios
-  - **Missing Tests**:
-    - Real-time subscription handlers
-    - Error scenarios for all CRUD operations
-    - Search functionality
-    - Pin/archive toggle operations
-    - Topic reordering
-    - Concurrent edit scenarios
-  - **Target**: 80%+ coverage
-
 ### Performance
 
 - [x] **[PERFORMANCE]** Add pagination to task list to prevent scaling issues

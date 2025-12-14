@@ -325,6 +325,45 @@ export const useSchedulingStore = defineStore('scheduling', () => {
     }
   }
 
+  // Fetch all meetings for the current user
+  async function fetchMeetings() {
+    loading.value = true
+    error.value = null
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('meetings')
+        .select(
+          `
+          *,
+          meeting_participants (
+            participant_id,
+            participants (*)
+          )
+        `
+        )
+        .eq('user_id', authStore.user.id)
+        .order('proposed_time', { ascending: false })
+
+      if (fetchError) {
+        throw fetchError
+      }
+
+      // Transform the data to include participants directly on each meeting
+      meetings.value = data.map((meeting) => ({
+        ...meeting,
+        participants: meeting.meeting_participants?.map((mp) => mp.participants) || [],
+        participant_count: meeting.meeting_participants?.length || 0
+      }))
+
+      return meetings.value
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   // US3: Fetch holidays for meeting participants (T094, T100)
   async function fetchMeetingHolidays(meeting) {
     if (!meeting || !meeting.participants || meeting.participants.length === 0) {
@@ -715,6 +754,7 @@ export const useSchedulingStore = defineStore('scheduling', () => {
     deleteParticipant,
     createMeeting,
     fetchMeeting,
+    fetchMeetings,
     updateMeeting,
     deleteMeeting,
     addParticipantToMeeting,

@@ -88,7 +88,7 @@ const initializeData = async () => {
     await Promise.all([
       store.fetchMeetings(),
       store.fetchParticipants(),
-      store.fetchCountryConfigs()
+      store.fetchCountryConfigurations()
     ])
   } catch (error) {
     console.error('Failed to initialize scheduling view:', error)

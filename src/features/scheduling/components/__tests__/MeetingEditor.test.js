@@ -81,17 +81,21 @@ describe('MeetingEditor', () => {
       }
     })
     const store = useSchedulingStore()
+    // Add mock for calculateParticipantStatuses if not already mocked
+    if (!store.calculateParticipantStatuses) {
+      store.calculateParticipantStatuses = vi.fn().mockResolvedValue([])
+    }
     return { wrapper, store }
   }
 
   describe('Initial state', () => {
     it('should render "New Meeting" when meetingId is null', async () => {
       const { wrapper, store } = mountComponent({ meetingId: null })
-      store.fetchMeetingById.mockResolvedValue(undefined)
+      store.fetchMeeting.mockResolvedValue(undefined)
       store.fetchParticipants.mockResolvedValue(undefined)
       await nextTick()
       expect(wrapper.find('h2').text()).toBe('New Meeting')
-      expect(store.fetchMeetingById).not.toHaveBeenCalled()
+      expect(store.fetchMeeting).not.toHaveBeenCalled()
       expect(store.fetchParticipants).toHaveBeenCalled()
       expect(wrapper.vm.localMeeting.title).toBe('')
       expect(wrapper.vm.localMeeting.proposed_time).toBeNull()
@@ -114,13 +118,13 @@ describe('MeetingEditor', () => {
           participantStatuses: [{ participantId: 'p1', status: 'green' }]
         }
       )
-      store.fetchMeetingById.mockResolvedValue(undefined) // Mock fetchMeetingById to resolve to avoid errors later
+      store.fetchMeeting.mockResolvedValue(undefined) // Mock fetchMeetingById to resolve to avoid errors later
       store.fetchParticipants.mockResolvedValue(undefined)
       await nextTick() // Wait for component to re-render and onMounted to run
       await nextTick() // Wait for any subsequent updates from loadMeeting
 
       expect(store.fetchParticipants).toHaveBeenCalled()
-      expect(store.fetchMeetingById).toHaveBeenCalledWith('123')
+      expect(store.fetchMeeting).toHaveBeenCalledWith('123')
       expect(wrapper.find('h2').text()).toBe('Edit Meeting')
       expect(wrapper.vm.localMeeting.title).toBe(mockMeeting.title)
       expect(wrapper.vm.selectedParticipants).toEqual(mockMeeting.participants)
