@@ -11,7 +11,9 @@ describe('SchedulingView.vue', () => {
         stubs: {
           AppLayout: {
             template: '<div class="app-layout"><slot /></div>'
-          }
+          },
+          Toast: true,
+          'router-view': true
         }
       }
     })
@@ -22,38 +24,28 @@ describe('SchedulingView.vue', () => {
     expect(wrapper.find('.app-layout').exists()).toBe(true)
   })
 
-  it('displays the scheduling heading', () => {
-    const heading = wrapper.find('h1')
-    expect(heading.exists()).toBe(true)
-    expect(heading.text()).toBe('Scheduling')
+  it('renders AppLayout component', () => {
+    const appLayout = wrapper.find('.app-layout')
+    expect(appLayout.exists()).toBe(true)
   })
 
-  it('displays the placeholder message', () => {
-    expect(wrapper.text()).toContain('Meeting scheduler will be implemented in Phase 4')
+  it('renders Toast component for notifications', () => {
+    expect(wrapper.findComponent({ name: 'Toast' }).exists()).toBe(true)
   })
 
-  it('displays the calendar icon', () => {
-    const icon = wrapper.find('.pi-calendar')
-    expect(icon.exists()).toBe(true)
-    expect(icon.classes()).toContain('text-6xl')
+  it('renders router-view for nested routes', () => {
+    expect(wrapper.findComponent({ name: 'router-view' }).exists()).toBe(true)
   })
 
-  it('applies correct styling classes', () => {
-    const container = wrapper.find('.text-center')
-    expect(container.exists()).toBe(true)
-    expect(container.classes()).toContain('py-12')
+  it('has correct component structure', () => {
+    // Should have AppLayout wrapping Toast and router-view
+    const html = wrapper.html()
+    expect(html).toContain('app-layout')
   })
 
-  it('has accessible heading structure', () => {
-    const heading = wrapper.find('h1')
-    expect(heading.classes()).toContain('text-3xl')
-    expect(heading.classes()).toContain('font-bold')
-  })
-
-  it('displays description text with appropriate styling', () => {
-    const description = wrapper.find('p')
-    expect(description.exists()).toBe(true)
-    expect(description.classes()).toContain('text-gray-600')
-    expect(description.classes()).toContain('dark:text-gray-400')
+  it('provides routing outlet for scheduling feature', () => {
+    // The router-view allows nested routes like /scheduling/meetings/:id
+    const routerView = wrapper.findComponent({ name: 'router-view' })
+    expect(routerView.exists()).toBe(true)
   })
 })

@@ -1,0 +1,466 @@
+openapi: 3.1.0
+info:
+  title: Scheduling Assistant - Meetings API
+  version: 1.0.0
+  description: |
+    API contracts for meeting management operations in the Scheduling Assistant feature.
+    All endpoints use Supabase client-side queries with Row Level Security.
+
+servers:
+  - url: https://{project-ref}.supabase.co/rest/v1
+    description: Supabase REST API
+    variables:
+      project-ref:
+        default: your-project-ref
+
+paths:
+  /meetings:
+    get:
+      summary: List all meetings for authenticated user
+      description: Retrieves all meetings owned by the current user with optional filtering and sorting
+      operationId: listMeetings
+      tags:
+        - Meetings
+      parameters:
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [proposed_time.asc, proposed_time.desc, created_at.desc]
+            default: proposed_time.desc
+          description: Sort order for results
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+          description: Maximum number of results to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Number of results to skip (pagination)
+      responses:
+        '200':
+          description: List of meetings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Meeting'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create a new meeting
+      description: Creates a new meeting for the authenticated user
+      operationId: createMeeting
+      tags:
+        - Meetings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMeetingRequest'
+      responses:
+        '201':
+          description: Meeting created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meeting'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /meetings/{meetingId}:
+    get:
+      summary: Get meeting by ID
+      description: Retrieves a single meeting with all participants
+      operationId: getMeeting
+      tags:
+        - Meetings
+      parameters:
+        - $ref: '#/components/parameters/meetingId'
+      responses:
+        '200':
+          description: Meeting details with participants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingWithParticipants'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      summary: Update meeting
+      description: Updates meeting details (title, time, duration, notes)
+      operationId: updateMeeting
+      tags:
+        - Meetings
+      parameters:
+        - $ref: '#/components/parameters/meetingId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeetingRequest'
+      responses:
+        '200':
+          description: Meeting updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meeting'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      summary: Delete meeting
+      description: Permanently deletes a meeting and all participant associations
+      operationId: deleteMeeting
+      tags:
+        - Meetings
+      parameters:
+        - $ref: '#/components/parameters/meetingId'
+      responses:
+        '204':
+          description: Meeting deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /meeting_participants:
+    post:
+      summary: Add participant to meeting
+      description: Associates an existing participant with a meeting
+      operationId: addParticipantToMeeting
+      tags:
+        - Meetings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddParticipantRequest'
+      responses:
+        '201':
+          description: Participant added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingParticipant'
+        '400':
+          description: Validation error (duplicate, limit exceeded)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                limitExceeded:
+                  value:
+                    code: PARTICIPANT_LIMIT_EXCEEDED
+                    message: Cannot add more than 50 participants to a meeting
+                duplicate:
+                  value:
+                    code: DUPLICATE_PARTICIPANT
+                    message: Participant already added to this meeting
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      summary: Remove participant from meeting
+      description: Removes participant association from meeting
+      operationId: removeParticipantFromMeeting
+      tags:
+        - Meetings
+      parameters:
+        - name: meeting_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participant_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Participant removed successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  parameters:
+    meetingId:
+      name: meetingId
+      in: path
+      required: true
+      description: Unique meeting identifier (UUID)
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    Meeting:
+      type: object
+      required:
+        - id
+        - user_id
+        - title
+        - proposed_time
+        - duration_minutes
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique meeting identifier
+        user_id:
+          type: string
+          format: uuid
+          description: Meeting organizer ID (references auth.users)
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Meeting title
+          example: Q4 Planning Call
+        proposed_time:
+          type: string
+          format: date-time
+          description: Proposed meeting start time in UTC (ISO 8601)
+          example: '2025-12-15T14:00:00Z'
+        duration_minutes:
+          type: integer
+          minimum: 15
+          maximum: 480
+          description: Meeting duration in minutes (15 min to 8 hours)
+          example: 60
+        notes:
+          type: string
+          nullable: true
+          description: Optional meeting notes or agenda
+          example: Discuss Q4 objectives and team goals
+        created_at:
+          type: string
+          format: date-time
+          description: Record creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Record last update timestamp
+
+    MeetingWithParticipants:
+      allOf:
+        - $ref: '#/components/schemas/Meeting'
+        - type: object
+          properties:
+            meeting_participants:
+              type: array
+              description: List of participant associations
+              items:
+                type: object
+                properties:
+                  participant:
+                    $ref: '#/components/schemas/Participant'
+
+    CreateMeetingRequest:
+      type: object
+      required:
+        - title
+        - proposed_time
+        - duration_minutes
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Meeting title
+          example: Weekly Sync
+        proposed_time:
+          type: string
+          format: date-time
+          description: Proposed meeting start time in UTC
+          example: '2025-12-15T14:00:00Z'
+        duration_minutes:
+          type: integer
+          minimum: 15
+          maximum: 480
+          description: Meeting duration in minutes
+          example: 30
+        notes:
+          type: string
+          nullable: true
+          description: Optional meeting notes
+          example: Review sprint progress
+
+    UpdateMeetingRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Updated meeting title
+        proposed_time:
+          type: string
+          format: date-time
+          description: Updated proposed meeting time in UTC
+        duration_minutes:
+          type: integer
+          minimum: 15
+          maximum: 480
+          description: Updated meeting duration
+        notes:
+          type: string
+          nullable: true
+          description: Updated meeting notes
+
+    AddParticipantRequest:
+      type: object
+      required:
+        - meeting_id
+        - participant_id
+      properties:
+        meeting_id:
+          type: string
+          format: uuid
+          description: Meeting to add participant to
+        participant_id:
+          type: string
+          format: uuid
+          description: Participant to add
+
+    MeetingParticipant:
+      type: object
+      required:
+        - meeting_id
+        - participant_id
+      properties:
+        meeting_id:
+          type: string
+          format: uuid
+        participant_id:
+          type: string
+          format: uuid
+
+    Participant:
+      type: object
+      required:
+        - id
+        - user_id
+        - name
+        - timezone
+        - country_code
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Alice Chen
+        timezone:
+          type: string
+          description: IANA timezone identifier
+          example: Asia/Shanghai
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: ISO 3166-1 alpha-2 country code
+          example: CN
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code for programmatic handling
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          description: Human-readable error message
+          example: Duration must be between 15 and 480 minutes
+        details:
+          type: object
+          description: Additional error context
+          additionalProperties: true
+
+  responses:
+    BadRequest:
+      description: Invalid request (validation error)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            invalidDuration:
+              value:
+                code: VALIDATION_ERROR
+                message: Duration must be between 15 and 480 minutes
+
+    Unauthorized:
+      description: Authentication required or failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: UNAUTHORIZED
+            message: Authentication required
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: NOT_FOUND
+            message: Meeting not found
+
+  securitySchemes:
+    supabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT token from auth.session()
+
+security:
+  - supabaseAuth: []
