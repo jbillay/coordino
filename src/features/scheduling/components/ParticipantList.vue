@@ -1,64 +1,206 @@
 <script setup>
-import { computed } from 'vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Badge from 'primevue/badge'
 import Button from 'primevue/button'
-import ParticipantCard from './ParticipantCard.vue'
+import { DEFAULT_CONFIG } from '../utils'
 
-const props = defineProps({
+defineProps({
   participants: {
     type: Array,
-    default: () => []
+    required: true
   },
-  participantStatuses: {
-    type: Array,
-    default: () => []
-  },
-  removable: {
+  loading: {
     type: Boolean,
-    default: true
+    default: false
+  },
+  showActions: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['add', 'remove'])
+defineEmits(['edit', 'delete'])
 
-const participantsWithStatus = computed(() =>
-  props.participants.map((participant) => {
-    const status = props.participantStatuses.find((s) => s.participant_id === participant.id)
-    return {
-      ...participant,
-      status: status || null,
-      localTime: status?.local_time || ''
-    }
-  })
-)
+const defaultConfig = DEFAULT_CONFIG
 
-const handleRemove = (participantId) => {
-  emit('remove', participantId)
+// Get status label for display
+function getStatusLabel(status) {
+  const labels = {
+    green: 'Optimal',
+    orange: 'Acceptable',
+    red: 'Poor',
+    critical: 'Critical'
+  }
+  return labels[status] || status
+}
+
+// Map status to PrimeVue Badge severity (T044)
+function getStatusSeverity(status) {
+  const severityMap = {
+    green: 'success',
+    orange: 'warn',
+    red: 'danger',
+    critical: 'danger'
+  }
+  return severityMap[status] || 'secondary'
+}
+
+// Format working hours for display (FR-043)
+function formatWorkingHours(config) {
+  return `${config.green_start} - ${config.green_end}`
 }
 </script>
 
 <template>
   <div class="participant-list">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold">Participants ({{ participants.length }})</h3>
-      <Button label="Add Participant" icon="pi pi-plus" size="small" @click="emit('add')" />
-    </div>
+    <DataTable
+      :value="participants"
+      :loading="loading"
+      striped-rows
+      show-gridlines
+      responsive-layout="scroll"
+      data-key="id"
+    >
+      <Column field="name" header="Name" :sortable="true">
+        <template #body="{ data }">
+          <span class="font-medium">{{ data.name }}</span>
+        </template>
+      </Column>
 
-    <div v-if="participants.length > 0" class="space-y-3">
-      <ParticipantCard
-        v-for="participant in participantsWithStatus"
-        :key="participant.id"
-        :participant="participant"
-        :status="participant.status"
-        :local-time="participant.localTime"
-        :removable="removable"
-        @remove="handleRemove"
-      />
-    </div>
+      <Column field="timezone" header="Location (Timezone)" :sortable="true">
+        <template #body="{ data }">
+          {{ data.timezone }}
+        </template>
+      </Column>
 
-    <div v-else class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-      <i class="pi pi-users text-4xl text-gray-400 mb-3"></i>
-      <p class="text-gray-500 mb-3">No participants added yet</p>
-      <Button label="Add First Participant" icon="pi pi-plus" outlined @click="emit('add')" />
-    </div>
+      <Column field="offset" header="Timezone Offset" :sortable="true">
+        <template #body="{ data }">
+          <span class="font-mono text-sm">{{ data.offset }}</span>
+        </template>
+      </Column>
+
+      <Column field="formattedTime" header="Local Time">
+        <template #body="{ data }">
+          <span class="font-medium">{{ data.formattedTime }}</span>
+        </template>
+      </Column>
+
+      <Column field="status" header="Status" :sortable="true">
+        <template #body="{ data }">
+          <div class="status-cell">
+            <Badge :value="getStatusLabel(data.status)" :severity="getStatusSeverity(data.status)">
+              <template #default>
+                <div class="badge-content">
+                  <i v-if="data.status === 'critical'" class="pi pi-exclamation-triangle mr-1"></i>
+                  <i v-else-if="data.status === 'red'" class="pi pi-times-circle mr-1"></i>
+                  <i v-else-if="data.status === 'orange'" class="pi pi-exclamation-circle mr-1"></i>
+                  <i v-else-if="data.status === 'green'" class="pi pi-check-circle mr-1"></i>
+                  <span>{{ getStatusLabel(data.status) }}</span>
+                </div>
+              </template>
+            </Badge>
+            <div v-if="data.statusReason" class="status-reason">
+              <i class="pi pi-info-circle text-xs"></i>
+              <span>{{ data.statusReason }}</span>
+            </div>
+          </div>
+        </template>
+      </Column>
+
+      <Column header="Working Hours">
+        <template #body="{ data }">
+          <span class="text-sm text-gray-600">
+            {{ formatWorkingHours(data.config || defaultConfig) }}
+          </span>
+        </template>
+      </Column>
+
+      <Column v-if="showActions" header="Actions">
+        <template #body="{ data }">
+          <div class="action-buttons">
+            <Button
+              icon="pi pi-pencil"
+              size="small"
+              text
+              rounded
+              severity="secondary"
+              aria-label="Edit participant"
+              @click="$emit('edit', data)"
+            />
+            <Button
+              icon="pi pi-trash"
+              size="small"
+              text
+              rounded
+              severity="danger"
+              aria-label="Delete participant"
+              @click="$emit('delete', data)"
+            />
+          </div>
+        </template>
+      </Column>
+
+      <template #empty>
+        <div class="empty-message">
+          No participants added yet. Add participants to see timezone impact.
+        </div>
+      </template>
+    </DataTable>
   </div>
 </template>
+
+<style scoped>
+.participant-list {
+  width: 100%;
+}
+
+.status-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.badge-content {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.status-reason {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  padding: 0.25rem 0.5rem;
+  background: #f3f4f6;
+  border-radius: 0.25rem;
+  max-width: fit-content;
+}
+
+.status-reason i {
+  flex-shrink: 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--p-text-muted-color);
+}
+
+/* Accessibility: Focus indicators (T057) */
+:deep(button:focus-visible) {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+}
+
+:deep(th) {
+  font-weight: 600;
+}
+</style>

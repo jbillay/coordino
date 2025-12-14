@@ -1,0 +1,588 @@
+openapi: 3.1.0
+info:
+  title: Scheduling Assistant - Equity & Heatmap API
+  version: 1.0.0
+  description: |
+    API contracts for equity scoring, heatmap generation, and country configuration.
+    These are client-side calculations and configuration management operations.
+
+servers:
+  - url: https://{project-ref}.supabase.co/rest/v1
+    description: Supabase REST API
+    variables:
+      project-ref:
+        default: your-project-ref
+
+paths:
+  /country_configurations:
+    get:
+      summary: List custom country configurations
+      description: Retrieves custom working hour configurations for the authenticated user
+      operationId: listCountryConfigurations
+      tags:
+        - Country Configurations
+      responses:
+        '200':
+          description: List of custom country configurations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CountryConfiguration'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create custom country configuration
+      description: |
+        Creates custom working hours for a specific country.
+        Only one configuration per (user_id, country_code) pair.
+      operationId: createCountryConfiguration
+      tags:
+        - Country Configurations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCountryConfigRequest'
+      responses:
+        '201':
+          description: Configuration created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryConfiguration'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Configuration already exists for this country
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: DUPLICATE_CONFIGURATION
+                message: Custom configuration already exists for country ES
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /country_configurations/{configId}:
+    get:
+      summary: Get country configuration by ID
+      description: Retrieves a single custom country configuration
+      operationId: getCountryConfiguration
+      tags:
+        - Country Configurations
+      parameters:
+        - $ref: '#/components/parameters/configId'
+      responses:
+        '200':
+          description: Country configuration details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryConfiguration'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      summary: Update country configuration
+      description: Updates custom working hours for a country
+      operationId: updateCountryConfiguration
+      tags:
+        - Country Configurations
+      parameters:
+        - $ref: '#/components/parameters/configId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCountryConfigRequest'
+      responses:
+        '200':
+          description: Configuration updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryConfiguration'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      summary: Delete country configuration
+      description: |
+        Deletes custom configuration, reverting to default working hours.
+        Participants from this country will use default 9:00-17:00 green hours.
+      operationId: deleteCountryConfiguration
+      tags:
+        - Country Configurations
+      parameters:
+        - $ref: '#/components/parameters/configId'
+      responses:
+        '204':
+          description: Configuration deleted (reverted to defaults)
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /holiday_cache:
+    get:
+      summary: Get cached holidays for country and year
+      description: |
+        Retrieves cached holiday data. If cache is stale (>7 days), client should
+        trigger background refresh via holiday API.
+      operationId: getHolidayCache
+      tags:
+        - Holidays
+      parameters:
+        - name: country_code
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Z]{2}$'
+          description: ISO 3166-1 alpha-2 country code
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 2020
+            maximum: 2100
+          description: Calendar year
+      responses:
+        '200':
+          description: Cached holiday data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HolidayCache'
+        '404':
+          description: No cache entry (need to fetch from API)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: CACHE_MISS
+                message: No cached holidays for US in 2025
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  parameters:
+    configId:
+      name: configId
+      in: path
+      required: true
+      description: Unique country configuration identifier (UUID)
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    CountryConfiguration:
+      type: object
+      required:
+        - id
+        - user_id
+        - country_code
+        - green_start
+        - green_end
+        - orange_morning_start
+        - orange_morning_end
+        - orange_evening_start
+        - orange_evening_end
+        - work_days
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique configuration identifier
+        user_id:
+          type: string
+          format: uuid
+          description: Configuration owner ID
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: ISO 3166-1 alpha-2 country code
+          example: ES
+        green_start:
+          type: string
+          format: time
+          description: Green zone start time (HH:MM format)
+          example: '10:00'
+        green_end:
+          type: string
+          format: time
+          description: Green zone end time (HH:MM format)
+          example: '18:00'
+        orange_morning_start:
+          type: string
+          format: time
+          description: Orange morning buffer start time
+          example: '09:00'
+        orange_morning_end:
+          type: string
+          format: time
+          description: Orange morning buffer end time (should equal green_start)
+          example: '10:00'
+        orange_evening_start:
+          type: string
+          format: time
+          description: Orange evening buffer start (should equal green_end)
+          example: '18:00'
+        orange_evening_end:
+          type: string
+          format: time
+          description: Orange evening buffer end time
+          example: '19:00'
+        work_days:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          description: Working days (1=Monday, 7=Sunday)
+          example: [1, 2, 3, 4, 5]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateCountryConfigRequest:
+      type: object
+      required:
+        - country_code
+        - green_start
+        - green_end
+        - orange_morning_start
+        - orange_morning_end
+        - orange_evening_start
+        - orange_evening_end
+        - work_days
+      properties:
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          example: FR
+        green_start:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          example: '10:00'
+        green_end:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          example: '18:00'
+        orange_morning_start:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          example: '09:00'
+        orange_morning_end:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          example: '10:00'
+        orange_evening_start:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          example: '18:00'
+        orange_evening_end:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          example: '19:00'
+        work_days:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          minItems: 1
+          maxItems: 7
+          example: [1, 2, 3, 4, 5]
+
+    UpdateCountryConfigRequest:
+      type: object
+      properties:
+        green_start:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+        green_end:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+        orange_morning_start:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+        orange_morning_end:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+        orange_evening_start:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+        orange_evening_end:
+          type: string
+          format: time
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+        work_days:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          minItems: 1
+          maxItems: 7
+
+    HolidayCache:
+      type: object
+      required:
+        - country_code
+        - year
+        - holidays_json
+        - fetched_at
+      properties:
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          example: US
+        year:
+          type: integer
+          example: 2025
+        holidays_json:
+          type: array
+          description: Array of holiday objects from Nager.Date API
+          items:
+            $ref: '#/components/schemas/Holiday'
+        fetched_at:
+          type: string
+          format: date-time
+          description: When data was cached (check if >7 days for staleness)
+          example: '2025-12-01T10:00:00Z'
+
+    Holiday:
+      type: object
+      description: Holiday data from Nager.Date API
+      properties:
+        date:
+          type: string
+          format: date
+          description: Holiday date (YYYY-MM-DD)
+          example: '2025-12-25'
+        localName:
+          type: string
+          description: Holiday name in local language
+          example: Christmas Day
+        name:
+          type: string
+          description: Holiday name in English
+          example: Christmas Day
+        countryCode:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          example: US
+        global:
+          type: boolean
+          description: Whether holiday applies nationwide
+          example: true
+        types:
+          type: array
+          items:
+            type: string
+            enum: [Public, Bank, School, Authorities, Optional, Observance]
+          example: [Public]
+
+    EquityScoreResult:
+      type: object
+      description: Client-side calculated equity score (not stored in DB)
+      properties:
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Global equity score (0-100)
+          example: 65
+        breakdown:
+          type: object
+          properties:
+            green_count:
+              type: integer
+              description: Participants in green zone
+              example: 3
+            orange_count:
+              type: integer
+              description: Participants in orange zone
+              example: 1
+            red_count:
+              type: integer
+              description: Participants in red zone
+              example: 1
+            critical_count:
+              type: integer
+              description: Participants on holiday/non-working day
+              example: 0
+        participant_statuses:
+          type: array
+          description: Status for each participant
+          items:
+            $ref: '#/components/schemas/ParticipantStatus'
+
+    ParticipantStatus:
+      type: object
+      description: Calculated status for one participant (client-side only)
+      properties:
+        participant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Alice Chen
+        local_time:
+          type: string
+          format: date-time
+          description: Meeting time in participant's timezone
+          example: '2025-12-15T22:00:00+08:00'
+        local_time_formatted:
+          type: string
+          description: Formatted local time with timezone abbreviation
+          example: '10:00 PM CST (Asia/Shanghai)'
+        timezone_offset:
+          type: string
+          description: UTC offset
+          example: UTC+8
+        status:
+          type: string
+          enum: [green, orange, red, critical]
+          description: Color status indicator
+        status_reason:
+          type: string
+          description: Explanation for status
+          example: Outside working hours (10:00 PM)
+        working_hours:
+          type: string
+          description: Participant's working hour range
+          example: 9:00 AM - 5:00 PM
+
+    HeatmapData:
+      type: object
+      description: Client-side generated 24-hour heatmap (not stored in DB)
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date for which heatmap was generated
+          example: '2025-12-15'
+        heatmap:
+          type: array
+          description: 24 hourly equity scores
+          minItems: 24
+          maxItems: 24
+          items:
+            $ref: '#/components/schemas/HeatmapSlot'
+        top_suggestions:
+          type: array
+          description: Top 3 optimal time slots
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/HeatmapSlot'
+
+    HeatmapSlot:
+      type: object
+      description: Equity score for one hour
+      properties:
+        hour:
+          type: integer
+          minimum: 0
+          maximum: 23
+          description: Hour of day (0-23)
+          example: 14
+        equity_score:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Equity score for this hour
+          example: 75
+        breakdown:
+          type: object
+          properties:
+            green_count:
+              type: integer
+            orange_count:
+              type: integer
+            red_count:
+              type: integer
+            critical_count:
+              type: integer
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+  responses:
+    BadRequest:
+      description: Invalid request (validation error)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            invalidTimeRange:
+              value:
+                code: VALIDATION_ERROR
+                message: green_start must be before green_end
+
+    Unauthorized:
+      description: Authentication required or failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    supabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - supabaseAuth: []

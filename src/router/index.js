@@ -62,9 +62,40 @@ const router = createRouter({
     },
     {
       path: '/scheduling',
-      name: 'scheduling',
       component: () => import('@/views/SchedulingView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'scheduling',
+          component: () => import('@/features/scheduling/views/MeetingList.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'participants',
+          name: 'scheduling-participants',
+          component: () => import('@/features/scheduling/views/ParticipantManagement.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'create',
+          name: 'scheduling-create',
+          component: () => import('@/features/scheduling/views/CreateMeeting.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'config',
+          name: 'scheduling-config',
+          component: () => import('@/features/scheduling/views/CountryConfigManagement.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: ':id',
+          name: 'scheduling-detail',
+          component: () => import('@/features/scheduling/views/MeetingDetail.vue'),
+          meta: { requiresAuth: true }
+        }
+      ]
     },
     {
       path: '/settings',

@@ -47,7 +47,9 @@ describe('SchedulingView.vue', () => {
         stubs: {
           AppLayout: {
             template: '<div class="app-layout"><slot /></div>'
-          }
+          },
+          Toast: true,
+          'router-view': true
         }
       }
     })
@@ -69,40 +71,28 @@ describe('SchedulingView.vue', () => {
     expect(wrapper.text()).toContain('Select a meeting or create a new one')
   })
 
-  it('shows MeetingEditor when a meeting is selected', async () => {
-    await wrapper.findComponent({ name: 'MeetingList' }).vm.$emit('select', '1')
-    expect(wrapper.findComponent({ name: 'MeetingEditor' }).exists()).toBe(true)
+  it('renders AppLayout component', () => {
+    const appLayout = wrapper.find('.app-layout')
+    expect(appLayout.exists()).toBe(true)
   })
 
-  it('shows MeetingEditor when create meeting is emitted', async () => {
-    await wrapper.findComponent({ name: 'MeetingList' }).vm.$emit('create')
-    expect(wrapper.findComponent({ name: 'MeetingEditor' }).exists()).toBe(true)
-    const editor = wrapper.findComponent({ name: 'MeetingEditor' })
-    expect(editor.props('meetingId')).toBeNull()
+  it('renders Toast component for notifications', () => {
+    expect(wrapper.findComponent({ name: 'Toast' }).exists()).toBe(true)
   })
 
-  it('calls deleteMeeting when delete event is emitted', async () => {
-    await wrapper.findComponent({ name: 'MeetingList' }).vm.$emit('delete', '1')
-    expect(store.deleteMeeting).toHaveBeenCalledWith('1')
+  it('renders router-view for nested routes', () => {
+    expect(wrapper.findComponent({ name: 'router-view' }).exists()).toBe(true)
   })
 
-  it('handles save event from MeetingEditor', async () => {
-    store.fetchMeetings.mockClear() // Clear mount call
-    await wrapper.findComponent({ name: 'MeetingList' }).vm.$emit('select', '1')
-    await wrapper.findComponent({ name: 'MeetingEditor' }).vm.$emit('save')
-    expect(wrapper.findComponent({ name: 'MeetingEditor' }).exists()).toBe(false)
-    expect(store.fetchMeetings).toHaveBeenCalledTimes(1) // once on save
+  it('has correct component structure', () => {
+    // Should have AppLayout wrapping Toast and router-view
+    const html = wrapper.html()
+    expect(html).toContain('app-layout')
   })
 
-  it('handles cancel event from MeetingEditor', async () => {
-    await wrapper.findComponent({ name: 'MeetingList' }).vm.$emit('select', '1')
-    await wrapper.findComponent({ name: 'MeetingEditor' }).vm.$emit('cancel')
-    expect(wrapper.findComponent({ name: 'MeetingEditor' }).exists()).toBe(false)
-  })
-
-  it('calls setSearchQuery on search event', async () => {
-    const query = 'test query'
-    await wrapper.findComponent({ name: 'MeetingList' }).vm.$emit('search', query)
-    expect(store.setSearchQuery).toHaveBeenCalledWith(query)
+  it('provides routing outlet for scheduling feature', () => {
+    // The router-view allows nested routes like /scheduling/meetings/:id
+    const routerView = wrapper.findComponent({ name: 'router-view' })
+    expect(routerView.exists()).toBe(true)
   })
 })

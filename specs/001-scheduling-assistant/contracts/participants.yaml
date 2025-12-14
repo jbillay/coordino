@@ -1,0 +1,362 @@
+openapi: 3.1.0
+info:
+  title: Scheduling Assistant - Participants API
+  version: 1.0.0
+  description: |
+    API contracts for participant management operations in the Scheduling Assistant feature.
+    Participants are reusable across multiple meetings.
+
+servers:
+  - url: https://{project-ref}.supabase.co/rest/v1
+    description: Supabase REST API
+    variables:
+      project-ref:
+        default: your-project-ref
+
+paths:
+  /participants:
+    get:
+      summary: List all participants for authenticated user
+      description: Retrieves reusable participants owned by the current user
+      operationId: listParticipants
+      tags:
+        - Participants
+      parameters:
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [name.asc, name.desc, created_at.desc]
+            default: name.asc
+          description: Sort order for results
+        - name: country_code
+          in: query
+          schema:
+            type: string
+            pattern: '^[A-Z]{2}$'
+          description: Filter by country code
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by name (case-insensitive partial match)
+      responses:
+        '200':
+          description: List of participants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Create a new participant
+      description: Creates a reusable participant for the authenticated user
+      operationId: createParticipant
+      tags:
+        - Participants
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateParticipantRequest'
+      responses:
+        '201':
+          description: Participant created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /participants/{participantId}:
+    get:
+      summary: Get participant by ID
+      description: Retrieves a single participant with all associated meetings
+      operationId: getParticipant
+      tags:
+        - Participants
+      parameters:
+        - $ref: '#/components/parameters/participantId'
+      responses:
+        '200':
+          description: Participant details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantWithMeetings'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      summary: Update participant
+      description: Updates participant details (name, timezone, country, notes)
+      operationId: updateParticipant
+      tags:
+        - Participants
+      parameters:
+        - $ref: '#/components/parameters/participantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateParticipantRequest'
+      responses:
+        '200':
+          description: Participant updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      summary: Delete participant
+      description: |
+        Permanently deletes a participant. Fails if participant is assigned to any meetings.
+        Client should check meeting_participants count and show confirmation dialog.
+      operationId: deleteParticipant
+      tags:
+        - Participants
+      parameters:
+        - $ref: '#/components/parameters/participantId'
+      responses:
+        '204':
+          description: Participant deleted successfully
+        '409':
+          description: Cannot delete participant assigned to meetings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: PARTICIPANT_IN_USE
+                message: Cannot delete participant assigned to meetings
+                details:
+                  meeting_count: 3
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  parameters:
+    participantId:
+      name: participantId
+      in: path
+      required: true
+      description: Unique participant identifier (UUID)
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    Participant:
+      type: object
+      required:
+        - id
+        - user_id
+        - name
+        - timezone
+        - country_code
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique participant identifier
+        user_id:
+          type: string
+          format: uuid
+          description: Participant owner ID (references auth.users)
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Participant display name
+          example: Alice Chen
+        timezone:
+          type: string
+          description: IANA timezone identifier
+          example: Asia/Shanghai
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: ISO 3166-1 alpha-2 country code
+          example: CN
+        notes:
+          type: string
+          nullable: true
+          description: Optional notes about participant
+          example: Prefers morning meetings (before 10 AM local time)
+        created_at:
+          type: string
+          format: date-time
+          description: Record creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Record last update timestamp
+
+    ParticipantWithMeetings:
+      allOf:
+        - $ref: '#/components/schemas/Participant'
+        - type: object
+          properties:
+            meeting_participants:
+              type: array
+              description: List of meetings this participant is assigned to
+              items:
+                type: object
+                properties:
+                  meeting:
+                    $ref: '#/components/schemas/MeetingSummary'
+
+    MeetingSummary:
+      type: object
+      description: Minimal meeting info for participant view
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        proposed_time:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+
+    CreateParticipantRequest:
+      type: object
+      required:
+        - name
+        - timezone
+        - country_code
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Participant display name
+          example: Bob Smith
+        timezone:
+          type: string
+          description: IANA timezone identifier (validated against Intl.supportedValuesOf('timeZone'))
+          example: America/New_York
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: ISO 3166-1 alpha-2 country code
+          example: US
+        notes:
+          type: string
+          nullable: true
+          description: Optional notes
+          example: Works remotely from NYC
+
+    UpdateParticipantRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Updated participant name
+        timezone:
+          type: string
+          description: Updated IANA timezone identifier
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+          description: Updated ISO 3166-1 alpha-2 country code
+        notes:
+          type: string
+          nullable: true
+          description: Updated notes
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code for programmatic handling
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error context
+          additionalProperties: true
+
+  responses:
+    BadRequest:
+      description: Invalid request (validation error)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            invalidTimezone:
+              value:
+                code: VALIDATION_ERROR
+                message: Invalid IANA timezone identifier
+                details:
+                  field: timezone
+                  value: Invalid/Timezone
+            invalidCountryCode:
+              value:
+                code: VALIDATION_ERROR
+                message: Invalid ISO 3166-1 alpha-2 country code
+                details:
+                  field: country_code
+                  value: USA
+
+    Unauthorized:
+      description: Authentication required or failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: UNAUTHORIZED
+            message: Authentication required
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: NOT_FOUND
+            message: Participant not found
+
+  securitySchemes:
+    supabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT token from auth.session()
+
+security:
+  - supabaseAuth: []

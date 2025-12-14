@@ -1,1001 +1,728 @@
 /**
- * Scheduling Assistant Pinia Store
- * Manages state for meetings, participants, country configurations, and equity scoring
+ * Pinia store for Scheduling Assistant feature
+ * Manages meetings, participants, and scheduling state
  */
 
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { useSupabase } from '@/composables/useSupabase'
 import { useAuthStore } from '@/stores/auth'
-import { convertToTimezone, formatLocalTime } from './utils/timezoneConverter'
-import { calculateEquityScore } from './utils/equityScorer'
-import { determineColorStatus } from './utils/workingHoursValidator'
-import { fetchHolidays, isHoliday } from './utils/holidayService'
+import { toLocalTime, calculateStatus } from './composables/useTimezone'
+import { formatInTimeZone } from 'date-fns-tz'
+import { calculateScore as calcEquityScore } from './composables/useEquityScore'
+import { generateHeatmap, getTopSuggestions } from './composables/useHeatmap'
+import { fetchHolidays, checkHoliday } from './composables/useHolidays'
+import { DEFAULT_CONFIG } from './utils'
 
-export const useSchedulingStore = defineStore('scheduling', {
-  state: () => ({
-    // Meeting Management
-    meetings: [],
-    currentMeeting: null,
-    isDirty: false,
+export const useSchedulingStore = defineStore('scheduling', () => {
+  const { supabase } = useSupabase()
+  const authStore = useAuthStore()
 
-    // Participant Management
-    participants: [],
-    availableParticipants: [],
+  // State
+  const meetings = ref([])
+  const currentMeeting = ref(null)
+  const participants = ref([])
+  const loading = ref(false)
+  const error = ref(null)
+  const holidaysCache = ref({}) // Map of 'countryCode_year' -> holidays array
+  const holidaysFetchError = ref(false) // Track if holiday API failed (T100)
+  const countryConfigurations = ref([]) // Custom working hours per country (US4)
 
-    // Country Configurations
-    countryConfigs: [],
-    defaultConfigs: [],
-    customConfigs: [],
-
-    // Equity Scoring
-    equityScore: null,
-    participantStatuses: [],
-    optimalTimeSlots: [],
-    heatmapData: [],
-
-    // Holiday Data
-    holidayCache: new Map(),
-
-    // UI State
-    loading: false,
-    loadingMeetings: false,
-    loadingSuggestions: false,
-    savingMeeting: false,
-    error: null,
-
-    // Search/Filter State
-    searchQuery: '',
-    filterDate: null
-  }),
-
-  getters: {
-    /**
-     * Filtered meetings based on search query and date filter
-     */
-    filteredMeetings(state) {
-      let filtered = [...state.meetings]
-
-      // Apply search filter
-      if (state.searchQuery) {
-        const query = state.searchQuery.toLowerCase()
-        filtered = filtered.filter((meeting) => {
-          const titleMatch = meeting.title?.toLowerCase().includes(query)
-          const participantMatch = meeting.participants?.some((p) =>
-            p.name.toLowerCase().includes(query)
-          )
-          return titleMatch || participantMatch
-        })
-      }
-
-      // Apply date filter
-      if (state.filterDate) {
-        filtered = filtered.filter((meeting) => {
-          const meetingDate = new Date(meeting.proposed_time)
-          const filterDate = new Date(state.filterDate)
-          return (
-            meetingDate.getFullYear() === filterDate.getFullYear() &&
-            meetingDate.getMonth() === filterDate.getMonth() &&
-            meetingDate.getDate() === filterDate.getDate()
-          )
-        })
-      }
-
-      return filtered
-    },
-
-    /**
-     * Current equity score breakdown
-     */
-    currentEquityScore(state) {
-      if (!state.participantStatuses || state.participantStatuses.length === 0) {
-        return null
-      }
-
-      return calculateEquityScore(state.participantStatuses)
-    },
-
-    /**
-     * Check if current meeting has unsaved changes
-     */
-    hasUnsavedChanges(state) {
-      return state.isDirty
-    },
-
-    /**
-     * Participants grouped by country
-     */
-    participantsByCountry(state) {
-      const grouped = {}
-      state.participants.forEach((p) => {
-        if (!grouped[p.country]) {
-          grouped[p.country] = []
-        }
-        grouped[p.country].push(p)
-      })
-      return grouped
-    },
-
-    /**
-     * Get config for country (custom takes precedence over default)
-     */
-    getConfigForCountry: (state) => (countryCode) => {
-      // Try custom config first
-      const custom = state.customConfigs.find((c) => c.country_code === countryCode)
-      if (custom) {
-        return custom
-      }
-
-      // Fall back to default
-      const defaultConfig = state.defaultConfigs.find((c) => c.country_code === countryCode)
-      return defaultConfig || null
+  // Computed Properties (T094: Updated for US3 holiday support, T114: Updated for US4 custom configs)
+  const participantsWithStatus = computed(() => {
+    if (!currentMeeting.value || !currentMeeting.value.participants) {
+      return []
     }
-  },
 
-  actions: {
-    // ========================================================================
-    // MEETING MANAGEMENT
-    // ========================================================================
+    const proposedTime = new Date(currentMeeting.value.proposed_time)
+    const year = proposedTime.getFullYear()
 
-    /**
-     * Fetch all meetings for current user
-     */
-    async fetchMeetings() {
-      this.loadingMeetings = true
-      this.error = null
+    return currentMeeting.value.participants.map((participant) => {
+      // Convert proposed UTC time to participant's local timezone
+      const localTime = toLocalTime(proposedTime, participant.timezone)
 
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-        const authStore = useAuthStore()
+      // T114: Get country-specific config (custom or default)
+      const config = getCountryConfig(participant.country_code)
 
-        if (!authStore.user) {
-          throw new Error('User not authenticated')
-        }
+      // Get day of week in participant's timezone (0=Sunday, 1=Monday, ..., 6=Saturday)
+      const dayOfWeek = localTime.getDay()
 
-        const { data, error } = await supabase
-          .from('meetings')
-          .select(
-            `
-            *,
-            meeting_participants (
-              participant:participants (*)
-            )
-          `
-          )
-          .eq('user_id', authStore.user.id)
-          .order('created_at', { ascending: false })
+      // Convert JS day (0-6) to ISO day (1-7): Sunday=7, Monday=1, etc.
+      const dayOfWeekISO = dayOfWeek === 0 ? 7 : dayOfWeek
+      const isWorkDay = config.work_days.includes(dayOfWeekISO)
 
-        if (error) {
-          throw error
-        }
+      // Get holidays for this participant's country (US3)
+      const cacheKey = `${participant.country_code}_${year}`
+      const countryHolidays = holidaysCache.value[cacheKey] || []
 
-        // Transform data to include participants array
-        this.meetings = data.map((meeting) => ({
-          ...meeting,
-          participants: meeting.meeting_participants?.map((mp) => mp.participant) || []
-        }))
-      } catch (error) {
-        console.error('Failed to fetch meetings:', error)
-        this.error = 'Failed to load meetings. Please try again.'
-        this.meetings = []
-      } finally {
-        this.loadingMeetings = false
+      // Check if meeting date is a holiday
+      const holiday = checkHoliday(localTime, countryHolidays)
+
+      // Calculate status with holiday check and custom config
+      const statusResult = calculateStatus(localTime, config, holiday, isWorkDay)
+
+      // Format time with timezone (h:mm a zzz format)
+      const formattedTime = `${formatInTimeZone(
+        proposedTime,
+        participant.timezone,
+        'h:mm a zzz'
+      )} (${participant.timezone})`
+
+      // Calculate UTC offset using the participant's timezone
+      // Format: 'xxx' gives us '+05:30' or '-08:00'
+      const offsetStr = formatInTimeZone(proposedTime, participant.timezone, 'xxx')
+      const offset = `UTC${offsetStr}`
+
+      return {
+        ...participant,
+        localTime,
+        formattedTime,
+        offset,
+        status: statusResult.status,
+        statusReason: statusResult.reason,
+        config // Include config for UI display
       }
-    },
+    })
+  })
 
-    /**
-     * Fetch meeting by ID with participants
-     */
-    async fetchMeetingById(id) {
-      this.loading = true
-      this.error = null
+  const equityScore = computed(() => calcEquityScore(participantsWithStatus.value))
 
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-        const authStore = useAuthStore()
+  // Heatmap data for optimal time discovery (US2, US3, US4)
+  const heatmapData = computed(() => {
+    if (
+      !currentMeeting.value ||
+      !currentMeeting.value.participants ||
+      currentMeeting.value.participants.length === 0
+    ) {
+      return []
+    }
 
-        if (!authStore.user) {
-          throw new Error('User not authenticated')
-        }
+    const meetingDate = new Date(currentMeeting.value.proposed_time)
 
-        const { data, error } = await supabase
-          .from('meetings')
-          .select(
-            `
-            *,
-            meeting_participants (
-              participant:participants (*)
-            )
-          `
-          )
-          .eq('id', id)
-          .eq('user_id', authStore.user.id)
-          .single()
-
-        if (error) {
-          throw error
-        }
-
-        if (!data) {
-          this.error = 'Meeting not found'
-          return null
-        }
-
-        // Transform participants
-        const meeting = {
-          ...data,
-          participants: data.meeting_participants?.map((mp) => mp.participant) || []
-        }
-
-        this.currentMeeting = meeting
-        this.isDirty = false
-
-        // Calculate equity score if we have participants
-        if (meeting.participants.length > 0) {
-          await this.calculateEquityForCurrent()
-        }
-
-        return meeting
-      } catch (error) {
-        console.error('Failed to fetch meeting:', error)
-        this.error = 'Failed to load meeting. Please try again.'
-        return null
-      } finally {
-        this.loading = false
+    // T114: Build country configs map using custom configs where available
+    const countryConfigs = {}
+    currentMeeting.value.participants.forEach((participant) => {
+      if (participant.country_code && !countryConfigs[participant.country_code]) {
+        countryConfigs[participant.country_code] = getCountryConfig(participant.country_code)
       }
-    },
+    })
 
-    /**
-     * Create new meeting
-     */
-    async createMeeting(meetingData) {
-      this.savingMeeting = true
-      this.error = null
+    return generateHeatmap(
+      currentMeeting.value.participants,
+      meetingDate,
+      countryConfigs,
+      holidaysCache.value
+    )
+  })
 
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-        const authStore = useAuthStore()
+  // Top 3 optimal time suggestions (US2)
+  const topSuggestions = computed(() => getTopSuggestions(heatmapData.value, 3))
 
-        if (!authStore.user) {
-          throw new Error('User not authenticated')
-        }
-
-        // Validate input
-        if (!meetingData.title || meetingData.title.trim().length === 0) {
-          throw new Error('Meeting title is required')
-        }
-
-        if (!meetingData.proposed_time) {
-          throw new Error('Proposed time is required')
-        }
-
-        // Insert meeting
-        const { data: meeting, error: meetingError } = await supabase
-          .from('meetings')
-          .insert({
-            user_id: authStore.user.id,
-            title: meetingData.title.trim(),
-            proposed_time: meetingData.proposed_time,
-            notes: meetingData.notes || null
-          })
-          .select()
-          .single()
-
-        if (meetingError) {
-          throw meetingError
-        }
-
-        // Insert participant associations if provided
-        if (meetingData.participant_ids && meetingData.participant_ids.length > 0) {
-          const associations = meetingData.participant_ids.map((participantId) => ({
-            meeting_id: meeting.id,
-            participant_id: participantId
-          }))
-
-          const { error: junctionError } = await supabase
-            .from('meeting_participants')
-            .insert(associations)
-
-          if (junctionError) {
-            throw junctionError
-          }
-        }
-
-        // Fetch complete meeting with participants
-        const createdMeeting = await this.fetchMeetingById(meeting.id)
-
-        // Add to meetings list
-        this.meetings.unshift(createdMeeting)
-        this.isDirty = false
-
-        return createdMeeting
-      } catch (error) {
-        console.error('Failed to create meeting:', error)
-        this.error = error.message || 'Failed to create meeting. Please try again.'
-        throw error
-      } finally {
-        this.savingMeeting = false
-      }
-    },
-
-    /**
-     * Save current meeting changes
-     */
-    async saveMeeting() {
-      if (!this.currentMeeting) {
-        throw new Error('No current meeting to save')
-      }
-
-      this.savingMeeting = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-
-        // Update meeting record
-        const { error: updateError } = await supabase
-          .from('meetings')
-          .update({
-            title: this.currentMeeting.title,
-            proposed_time: this.currentMeeting.proposed_time,
-            notes: this.currentMeeting.notes,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', this.currentMeeting.id)
-
-        if (updateError) {
-          throw updateError
-        }
-
-        // Refresh from database to get updated timestamps
-        await this.fetchMeetingById(this.currentMeeting.id)
-
-        // Update in meetings list
-        const index = this.meetings.findIndex((m) => m.id === this.currentMeeting.id)
-        if (index !== -1) {
-          this.meetings[index] = { ...this.currentMeeting }
-        }
-
-        this.isDirty = false
-      } catch (error) {
-        console.error('Failed to save meeting:', error)
-        this.error = 'Failed to save meeting. Please try again.'
-        throw error
-      } finally {
-        this.savingMeeting = false
-      }
-    },
-
-    /**
-     * Delete meeting by ID
-     */
-    async deleteMeeting(id) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-
-        const { error } = await supabase.from('meetings').delete().eq('id', id)
-
-        if (error) {
-          throw error
-        }
-
-        // Remove from state
-        this.meetings = this.meetings.filter((m) => m.id !== id)
-
-        // Clear current meeting if deleted
-        if (this.currentMeeting?.id === id) {
-          this.currentMeeting = null
-          this.isDirty = false
-        }
-      } catch (error) {
-        console.error('Failed to delete meeting:', error)
-        this.error = 'Failed to delete meeting. Please try again.'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    // ========================================================================
-    // PARTICIPANT MANAGEMENT
-    // ========================================================================
-
-    /**
-     * Fetch all participants for current user
-     */
-    async fetchParticipants() {
-      this.loading = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-        const authStore = useAuthStore()
-
-        if (!authStore.user) {
-          throw new Error('User not authenticated')
-        }
-
-        const { data, error } = await supabase
-          .from('participants')
-          .select('*')
-          .eq('user_id', authStore.user.id)
-          .order('name')
-
-        if (error) {
-          throw error
-        }
-
-        this.participants = data || []
-        this.availableParticipants = data || []
-      } catch (error) {
-        console.error('Failed to fetch participants:', error)
-        this.error = 'Failed to load participants. Please try again.'
-        this.participants = []
-      } finally {
-        this.loading = false
-      }
-    },
-
-    /**
-     * Add new participant
-     */
-    async addParticipant(participantData) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-        const authStore = useAuthStore()
-
-        if (!authStore.user) {
-          throw new Error('User not authenticated')
-        }
-
-        // Validate input
-        if (!participantData.name || participantData.name.trim().length === 0) {
-          throw new Error('Participant name is required')
-        }
-
-        if (!participantData.timezone) {
-          throw new Error('Timezone is required')
-        }
-
-        if (!participantData.country || participantData.country.length !== 2) {
-          throw new Error('Valid country code is required')
-        }
-
-        const { data, error } = await supabase
-          .from('participants')
-          .insert({
-            user_id: authStore.user.id,
-            name: participantData.name.trim(),
-            timezone: participantData.timezone,
-            country: participantData.country.toUpperCase(),
-            notes: participantData.notes || null
-          })
-          .select()
-          .single()
-
-        if (error) {
-          if (error.code === '23505') {
-            // Unique constraint violation
-            throw new Error('A participant with this name already exists')
-          }
-          throw error
-        }
-
-        // Add to state
-        this.participants.push(data)
-        this.participants.sort((a, b) => a.name.localeCompare(b.name))
-        this.availableParticipants = [...this.participants]
-
-        return data
-      } catch (error) {
-        console.error('Failed to add participant:', error)
-        this.error = error.message || 'Failed to add participant. Please try again.'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    /**
-     * Update participant
-     */
-    async updateParticipant(id, updates) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-
-        const { data, error } = await supabase
-          .from('participants')
-          .update({
-            ...updates,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', id)
-          .select()
-          .single()
-
-        if (error) {
-          if (error.code === '23505') {
-            throw new Error('A participant with this name already exists')
-          }
-          throw error
-        }
-
-        // Update in state
-        const index = this.participants.findIndex((p) => p.id === id)
-        if (index !== -1) {
-          this.participants[index] = data
-        }
-
-        this.availableParticipants = [...this.participants]
-
-        return data
-      } catch (error) {
-        console.error('Failed to update participant:', error)
-        this.error = error.message || 'Failed to update participant. Please try again.'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    /**
-     * Remove participant
-     */
-    async removeParticipant(id) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-
-        const { error } = await supabase.from('participants').delete().eq('id', id)
-
-        if (error) {
-          throw error
-        }
-
-        // Remove from state
-        this.participants = this.participants.filter((p) => p.id !== id)
-        this.availableParticipants = [...this.participants]
-      } catch (error) {
-        console.error('Failed to remove participant:', error)
-        this.error = 'Failed to remove participant. Please try again.'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    /**
-     * Add participant to meeting
-     */
-    async addParticipantToMeeting(meetingId, participantId) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-
-        const { error } = await supabase.from('meeting_participants').insert({
-          meeting_id: meetingId,
-          participant_id: participantId
+  // Actions - Participant Management
+  async function createParticipant(participantData) {
+    loading.value = true
+    error.value = null
+    try {
+      const { data, error: insertError } = await supabase
+        .from('participants')
+        .insert({
+          user_id: authStore.user.id,
+          name: participantData.name,
+          timezone: participantData.timezone,
+          country_code: participantData.country_code,
+          notes: participantData.notes || null
         })
+        .select()
+        .single()
 
-        if (error) {
-          if (error.code === '23505') {
-            throw new Error('Participant already added to this meeting')
-          }
-          throw error
-        }
-
-        // Refresh current meeting if applicable
-        if (this.currentMeeting?.id === meetingId) {
-          await this.fetchMeetingById(meetingId)
-          await this.calculateEquityForCurrent()
-        }
-
-        this.isDirty = true
-      } catch (error) {
-        console.error('Failed to add participant to meeting:', error)
-        this.error = error.message || 'Failed to add participant to meeting.'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    /**
-     * Remove participant from meeting
-     */
-    async removeParticipantFromMeeting(meetingId, participantId) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-
-        const { error } = await supabase
-          .from('meeting_participants')
-          .delete()
-          .eq('meeting_id', meetingId)
-          .eq('participant_id', participantId)
-
-        if (error) {
-          throw error
-        }
-
-        // Refresh current meeting if applicable
-        if (this.currentMeeting?.id === meetingId) {
-          await this.fetchMeetingById(meetingId)
-          await this.calculateEquityForCurrent()
-        }
-
-        this.isDirty = true
-      } catch (error) {
-        console.error('Failed to remove participant from meeting:', error)
-        this.error = 'Failed to remove participant from meeting.'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    // ========================================================================
-    // COUNTRY CONFIGURATION MANAGEMENT
-    // ========================================================================
-
-    /**
-     * Fetch all country configurations
-     */
-    async fetchCountryConfigs() {
-      this.loading = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-
-        const { data, error } = await supabase
-          .from('country_configurations')
-          .select('*')
-          .order('country_code')
-
-        if (error) {
-          throw error
-        }
-
-        this.countryConfigs = data || []
-        this.defaultConfigs = data?.filter((c) => c.is_default) || []
-        this.customConfigs = data?.filter((c) => !c.is_default) || []
-      } catch (error) {
-        console.error('Failed to fetch country configs:', error)
-        this.error = 'Failed to load country configurations.'
-        this.countryConfigs = []
-      } finally {
-        this.loading = false
-      }
-    },
-
-    /**
-     * Save country config (create or update custom)
-     */
-    async saveCountryConfig(configData) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-        const authStore = useAuthStore()
-
-        if (!authStore.user) {
-          throw new Error('User not authenticated')
-        }
-
-        // Check if custom config already exists
-        const existing = this.customConfigs.find((c) => c.country_code === configData.country_code)
-
-        let data
-        if (existing) {
-          // Update existing
-          const { data: updated, error } = await supabase
-            .from('country_configurations')
-            .update({
-              ...configData,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', existing.id)
-            .select()
-            .single()
-
-          if (error) {
-            throw error
-          }
-          data = updated
-        } else {
-          // Create new
-          const { data: created, error } = await supabase
-            .from('country_configurations')
-            .insert({
-              ...configData,
-              user_id: authStore.user.id,
-              is_default: false
-            })
-            .select()
-            .single()
-
-          if (error) {
-            throw error
-          }
-          data = created
-        }
-
-        // Refresh configs
-        await this.fetchCountryConfigs()
-
-        return data
-      } catch (error) {
-        console.error('Failed to save country config:', error)
-        this.error = 'Failed to save country configuration.'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    /**
-     * Delete country config
-     */
-    async deleteCountryConfig(id) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const { useSupabase } = await import('@/composables/useSupabase')
-        const { supabase } = useSupabase()
-
-        const { error } = await supabase.from('country_configurations').delete().eq('id', id)
-
-        if (error) {
-          throw error
-        }
-
-        // Remove from state
-        this.customConfigs = this.customConfigs.filter((c) => c.id !== id)
-        this.countryConfigs = [...this.defaultConfigs, ...this.customConfigs]
-      } catch (error) {
-        console.error('Failed to delete country config:', error)
-        this.error = 'Failed to delete country configuration.'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    // ========================================================================
-    // EQUITY SCORING
-    // ========================================================================
-
-    /**
-     * Calculate equity score for current meeting
-     */
-    async calculateEquityForCurrent() {
-      if (!this.currentMeeting || !this.currentMeeting.participants?.length) {
-        this.participantStatuses = []
-        this.equityScore = null
-        return
+      if (insertError) {
+        throw insertError
       }
 
-      try {
-        const statuses = await this.calculateParticipantStatuses(
-          this.currentMeeting.participants,
-          this.currentMeeting.proposed_time
-        )
+      // Add to local participants list
+      participants.value.push(data)
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
 
-        this.participantStatuses = statuses
-        const scoreResult = calculateEquityScore(statuses)
-        this.equityScore = scoreResult.score
-      } catch (error) {
-        console.error('Failed to calculate equity score:', error)
-        this.error = 'Failed to calculate equity score.'
+  async function fetchParticipants() {
+    loading.value = true
+    error.value = null
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('participants')
+        .select('*')
+        .eq('user_id', authStore.user.id)
+        .order('created_at', { ascending: false })
+
+      if (fetchError) {
+        throw fetchError
       }
-    },
 
-    /**
-     * Calculate participant statuses for a given time
-     */
-    async calculateParticipantStatuses(participants, proposedTime) {
-      const statuses = []
+      participants.value = data
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
 
-      for (const participant of participants) {
-        // Get country config
-        const config = this.getConfigForCountry(participant.country)
-        if (!config) {
-          console.warn(`No config found for country: ${participant.country}`)
-          continue
-        }
+  async function updateParticipant(id, updates) {
+    loading.value = true
+    error.value = null
+    try {
+      const { data, error: updateError } = await supabase
+        .from('participants')
+        .update(updates)
+        .eq('id', id)
+        .eq('user_id', authStore.user.id)
+        .select()
+        .single()
 
-        // Convert to participant's local time
-        const localTime = convertToTimezone(proposedTime, participant.timezone)
+      if (updateError) {
+        throw updateError
+      }
 
-        // Check for holidays
-        const holidays = await this.getHolidaysForCountry(
-          participant.country,
-          localTime.getFullYear()
-        )
-        const holidayCheck = isHoliday(localTime, holidays)
+      // Update in local participants list
+      const index = participants.value.findIndex((p) => p.id === id)
+      if (index !== -1) {
+        participants.value[index] = data
+      }
 
-        // Determine color status
-        const statusResult = determineColorStatus(localTime, config, !!holidayCheck)
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
 
-        statuses.push({
-          participant_id: participant.id,
-          participant_name: participant.name,
-          local_time: formatLocalTime(proposedTime, participant.timezone, 'PPpp'),
-          timezone: participant.timezone,
-          country: participant.country,
-          status: statusResult.status,
-          is_critical: statusResult.is_critical,
-          reason: statusResult.reason,
-          holiday: holidayCheck ? holidayCheck.name : null,
-          config
+  async function deleteParticipant(id) {
+    loading.value = true
+    error.value = null
+    try {
+      // Check if participant is in any meetings (FR-013)
+      const { data: meetingCount, error: countError } = await supabase
+        .from('meeting_participants')
+        .select('meeting_id', { count: 'exact', head: true })
+        .eq('participant_id', id)
+
+      if (countError) {
+        throw countError
+      }
+
+      // Delete participant (cascades to meeting_participants)
+      const { error: deleteError } = await supabase
+        .from('participants')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', authStore.user.id)
+
+      if (deleteError) {
+        throw deleteError
+      }
+
+      // Remove from local participants list
+      const index = participants.value.findIndex((p) => p.id === id)
+      if (index !== -1) {
+        participants.value.splice(index, 1)
+      }
+
+      return { deletedCount: meetingCount }
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Actions - Meeting Management
+  async function createMeeting(meetingData) {
+    loading.value = true
+    error.value = null
+    try {
+      // Validate duration (FR-001a)
+      if (meetingData.duration_minutes < 15 || meetingData.duration_minutes > 480) {
+        throw new Error('Meeting duration must be between 15 and 480 minutes')
+      }
+
+      const { data, error: insertError } = await supabase
+        .from('meetings')
+        .insert({
+          user_id: authStore.user.id,
+          title: meetingData.title,
+          proposed_time: meetingData.proposed_time, // Should already be UTC
+          duration_minutes: meetingData.duration_minutes,
+          notes: meetingData.notes || null
         })
+        .select()
+        .single()
+
+      if (insertError) {
+        throw insertError
       }
 
-      return statuses
-    },
+      // Add to local meetings list
+      meetings.value.unshift(data)
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
 
-    /**
-     * Generate optimal time slots (heatmap data)
-     */
-    async generateOptimalTimeSlots(date, participants = null) {
-      // Use provided participants or fall back to currentMeeting participants
-      const participantsToAnalyze = participants || this.currentMeeting?.participants
+  async function fetchMeeting(id) {
+    loading.value = true
+    error.value = null
+    try {
+      // Fetch meeting with participants join
+      const { data: meeting, error: meetingError } = await supabase
+        .from('meetings')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', authStore.user.id)
+        .single()
 
-      if (!participantsToAnalyze || participantsToAnalyze.length === 0) {
-        this.optimalTimeSlots = []
-        this.heatmapData = []
-        return
+      if (meetingError) {
+        throw meetingError
       }
 
-      this.loadingSuggestions = true
+      // Fetch associated participants
+      const { data: meetingParticipants, error: participantsError } = await supabase
+        .from('meeting_participants')
+        .select('participant_id, participants(*)')
+        .eq('meeting_id', id)
 
-      try {
-        const slots = []
-
-        // Analyze each hour of the day
-        for (let hour = 0; hour < 24; hour++) {
-          const testTime = new Date(date)
-          testTime.setHours(hour, 0, 0, 0)
-
-          const statuses = await this.calculateParticipantStatuses(participantsToAnalyze, testTime)
-
-          const scoreResult = calculateEquityScore(statuses)
-
-          slots.push({
-            hour,
-            datetime: testTime,
-            score: scoreResult.score,
-            green_count: scoreResult.green_count,
-            orange_count: scoreResult.orange_count,
-            red_count: scoreResult.red_count,
-            critical_count: scoreResult.critical_count,
-            participant_statuses: statuses
-          })
-        }
-
-        // Sort by score descending
-        const sorted = [...slots].sort((a, b) => b.score - a.score)
-
-        this.heatmapData = slots
-        this.optimalTimeSlots = sorted.slice(0, 3) // Top 3 suggestions
-      } catch (error) {
-        console.error('Failed to generate optimal time slots:', error)
-        this.error = 'Failed to analyze optimal times.'
-      } finally {
-        this.loadingSuggestions = false
+      if (participantsError) {
+        throw participantsError
       }
-    },
 
-    // ========================================================================
-    // HOLIDAY MANAGEMENT
-    // ========================================================================
+      // Attach participants to meeting object
+      meeting.participants = meetingParticipants.map((mp) => mp.participants)
 
-    /**
-     * Get holidays for country (with caching)
-     */
-    async getHolidaysForCountry(countryCode, year) {
+      currentMeeting.value = meeting
+
+      // US3: Fetch holidays for all participants' countries
+      await fetchMeetingHolidays(meeting)
+
+      return meeting
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // US3: Fetch holidays for meeting participants (T094, T100)
+  async function fetchMeetingHolidays(meeting) {
+    if (!meeting || !meeting.participants || meeting.participants.length === 0) {
+      return
+    }
+
+    const meetingDate = new Date(meeting.proposed_time)
+    const year = meetingDate.getFullYear()
+
+    // Reset error flag
+    holidaysFetchError.value = false
+
+    // Get unique country codes
+    const countryCodes = [...new Set(meeting.participants.map((p) => p.country_code))].filter(
+      Boolean
+    )
+
+    // Fetch holidays for each country
+    const fetchPromises = countryCodes.map(async (countryCode) => {
       const cacheKey = `${countryCode}_${year}`
 
-      // Check cache
-      if (this.holidayCache.has(cacheKey)) {
-        return this.holidayCache.get(cacheKey)
+      // Skip if already cached
+      if (holidaysCache.value[cacheKey]) {
+        return { success: true, countryCode }
       }
 
-      // Fetch from API
-      const holidays = await fetchHolidays(countryCode, year)
+      try {
+        const holidays = await fetchHolidays(countryCode, year, supabase)
+        holidaysCache.value[cacheKey] = holidays
+        return { success: true, countryCode }
+      } catch (error) {
+        console.error(`Failed to fetch holidays for ${countryCode}:`, error)
+        holidaysCache.value[cacheKey] = [] // Cache empty array on failure
+        return { success: false, countryCode, error }
+      }
+    })
 
-      // Store in cache
-      this.holidayCache.set(cacheKey, holidays)
+    const results = await Promise.all(fetchPromises)
 
-      return holidays
-    },
-
-    // ========================================================================
-    // UTILITY ACTIONS
-    // ========================================================================
-
-    /**
-     * Set current meeting
-     */
-    setCurrentMeeting(meeting) {
-      this.currentMeeting = meeting
-      this.isDirty = false
-    },
-
-    /**
-     * Mark as dirty
-     */
-    markDirty() {
-      this.isDirty = true
-    },
-
-    /**
-     * Clear error
-     */
-    clearError() {
-      this.error = null
-    },
-
-    /**
-     * Set search query
-     */
-    setSearchQuery(query) {
-      this.searchQuery = query
-    },
-
-    /**
-     * Reset store
-     */
-    $reset() {
-      this.meetings = []
-      this.currentMeeting = null
-      this.isDirty = false
-      this.participants = []
-      this.availableParticipants = []
-      this.countryConfigs = []
-      this.defaultConfigs = []
-      this.customConfigs = []
-      this.equityScore = null
-      this.participantStatuses = []
-      this.optimalTimeSlots = []
-      this.heatmapData = []
-      this.holidayCache = new Map()
-      this.loading = false
-      this.loadingMeetings = false
-      this.loadingSuggestions = false
-      this.savingMeeting = false
-      this.error = null
-      this.searchQuery = ''
-      this.filterDate = null
+    // Check if any fetches failed (T100)
+    const failures = results.filter((r) => !r.success)
+    if (failures.length > 0) {
+      holidaysFetchError.value = true
+      console.warn(
+        `Holiday fetch failed for ${failures.length} countries:`,
+        failures.map((f) => f.countryCode)
+      )
     }
+  }
+
+  async function updateMeeting(id, updates) {
+    loading.value = true
+    error.value = null
+    try {
+      // Validate duration if changed (FR-001a)
+      if (
+        updates.duration_minutes &&
+        (updates.duration_minutes < 15 || updates.duration_minutes > 480)
+      ) {
+        throw new Error('Meeting duration must be between 15 and 480 minutes')
+      }
+
+      const { data, error: updateError } = await supabase
+        .from('meetings')
+        .update(updates)
+        .eq('id', id)
+        .eq('user_id', authStore.user.id)
+        .select()
+        .single()
+
+      if (updateError) {
+        throw updateError
+      }
+
+      // Update in local meetings list
+      const index = meetings.value.findIndex((m) => m.id === id)
+      if (index !== -1) {
+        meetings.value[index] = data
+      }
+
+      // Update currentMeeting if it's the same meeting
+      if (currentMeeting.value && currentMeeting.value.id === id) {
+        currentMeeting.value = { ...currentMeeting.value, ...data }
+      }
+
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function deleteMeeting(id) {
+    loading.value = true
+    error.value = null
+    try {
+      const { error: deleteError } = await supabase
+        .from('meetings')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', authStore.user.id)
+
+      if (deleteError) {
+        throw deleteError
+      }
+
+      // Remove from local meetings list
+      const index = meetings.value.findIndex((m) => m.id === id)
+      if (index !== -1) {
+        meetings.value.splice(index, 1)
+      }
+
+      // Clear currentMeeting if it's the deleted meeting
+      if (currentMeeting.value && currentMeeting.value.id === id) {
+        currentMeeting.value = null
+      }
+
+      return true
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Actions - Meeting-Participant Association
+  async function addParticipantToMeeting(meetingId, participantId) {
+    loading.value = true
+    error.value = null
+    try {
+      // Check current participant count (FR-010a)
+      const { data: existingCount, error: countError } = await supabase
+        .from('meeting_participants')
+        .select('participant_id', { count: 'exact', head: true })
+        .eq('meeting_id', meetingId)
+
+      if (countError) {
+        throw countError
+      }
+
+      if (existingCount && existingCount.length >= 50) {
+        throw new Error('Maximum of 50 participants per meeting exceeded')
+      }
+
+      // Check for duplicates
+      const { data: existing, error: checkError } = await supabase
+        .from('meeting_participants')
+        .select('*')
+        .eq('meeting_id', meetingId)
+        .eq('participant_id', participantId)
+        .maybeSingle()
+
+      if (checkError) {
+        throw checkError
+      }
+
+      if (existing) {
+        throw new Error('Participant already added to this meeting')
+      }
+
+      // Insert into meeting_participants
+      const { error: insertError } = await supabase.from('meeting_participants').insert({
+        meeting_id: meetingId,
+        participant_id: participantId
+      })
+
+      if (insertError) {
+        throw insertError
+      }
+
+      // Refresh meeting if it's current
+      if (currentMeeting.value && currentMeeting.value.id === meetingId) {
+        await fetchMeeting(meetingId)
+      }
+
+      return true
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function removeParticipantFromMeeting(meetingId, participantId) {
+    loading.value = true
+    error.value = null
+    try {
+      const { error: deleteError } = await supabase
+        .from('meeting_participants')
+        .delete()
+        .eq('meeting_id', meetingId)
+        .eq('participant_id', participantId)
+
+      if (deleteError) {
+        throw deleteError
+      }
+
+      // Refresh meeting if it's current
+      if (currentMeeting.value && currentMeeting.value.id === meetingId) {
+        await fetchMeeting(meetingId)
+      }
+
+      return true
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Actions - Country Configuration Management (US4)
+
+  // T113: Helper function to get country config (custom or default)
+  function getCountryConfig(countryCode) {
+    if (!countryCode) {
+      return DEFAULT_CONFIG
+    }
+
+    // Check if custom config exists for this country
+    const customConfig = countryConfigurations.value.find(
+      (config) => config.country_code === countryCode
+    )
+
+    if (customConfig) {
+      return {
+        green_start: customConfig.green_start,
+        green_end: customConfig.green_end,
+        orange_morning_start: customConfig.orange_morning_start,
+        orange_morning_end: customConfig.orange_morning_end,
+        orange_evening_start: customConfig.orange_evening_start,
+        orange_evening_end: customConfig.orange_evening_end,
+        work_days: customConfig.work_days
+      }
+    }
+
+    // Fall back to default configuration
+    return DEFAULT_CONFIG
+  }
+
+  // T109: Fetch all country configurations for current user
+  async function fetchCountryConfigurations() {
+    loading.value = true
+    error.value = null
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('country_configurations')
+        .select('*')
+        .eq('user_id', authStore.user.id)
+        .order('country_code', { ascending: true })
+
+      if (fetchError) {
+        throw fetchError
+      }
+
+      countryConfigurations.value = data || []
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // T110: Create a new country configuration
+  async function createCountryConfiguration(configData) {
+    loading.value = true
+    error.value = null
+    try {
+      const { data, error: insertError } = await supabase
+        .from('country_configurations')
+        .insert({
+          user_id: authStore.user.id,
+          country_code: configData.country_code,
+          green_start: configData.green_start,
+          green_end: configData.green_end,
+          orange_morning_start: configData.orange_morning_start,
+          orange_morning_end: configData.orange_morning_end,
+          orange_evening_start: configData.orange_evening_start,
+          orange_evening_end: configData.orange_evening_end,
+          work_days: configData.work_days
+        })
+        .select()
+        .single()
+
+      if (insertError) {
+        throw insertError
+      }
+
+      // Add to local list
+      countryConfigurations.value.push(data)
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // T111: Update an existing country configuration
+  async function updateCountryConfiguration(id, updates) {
+    loading.value = true
+    error.value = null
+    try {
+      const { data, error: updateError } = await supabase
+        .from('country_configurations')
+        .update(updates)
+        .eq('id', id)
+        .eq('user_id', authStore.user.id)
+        .select()
+        .single()
+
+      if (updateError) {
+        throw updateError
+      }
+
+      // Update in local list
+      const index = countryConfigurations.value.findIndex((c) => c.id === id)
+      if (index !== -1) {
+        countryConfigurations.value[index] = data
+      }
+
+      return data
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // T112: Delete a country configuration (reverts to defaults)
+  async function deleteCountryConfiguration(id) {
+    loading.value = true
+    error.value = null
+    try {
+      const { error: deleteError } = await supabase
+        .from('country_configurations')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', authStore.user.id)
+
+      if (deleteError) {
+        throw deleteError
+      }
+
+      // Remove from local list
+      const index = countryConfigurations.value.findIndex((c) => c.id === id)
+      if (index !== -1) {
+        countryConfigurations.value.splice(index, 1)
+      }
+
+      return true
+    } catch (err) {
+      error.value = err.message
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return {
+    // State
+    meetings,
+    currentMeeting,
+    participants,
+    loading,
+    error,
+    holidaysFetchError,
+    countryConfigurations,
+
+    // Computed
+    participantsWithStatus,
+    equityScore,
+    heatmapData,
+    topSuggestions,
+
+    // Actions
+    createParticipant,
+    fetchParticipants,
+    updateParticipant,
+    deleteParticipant,
+    createMeeting,
+    fetchMeeting,
+    updateMeeting,
+    deleteMeeting,
+    addParticipantToMeeting,
+    removeParticipantFromMeeting,
+    getCountryConfig,
+    fetchCountryConfigurations,
+    createCountryConfiguration,
+    updateCountryConfiguration,
+    deleteCountryConfiguration
   }
 })
