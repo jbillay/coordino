@@ -146,6 +146,9 @@ jobs:
   quality-gate:
     name: Quality Gate
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     needs: [lint, test-unit, build]
     if: always()
     steps:

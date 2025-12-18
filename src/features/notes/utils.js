@@ -234,9 +234,7 @@ export const validateNote = (noteData) => {
     errors.content = 'Note content is required'
   }
 
-  if (!noteData.topic_id) {
-    errors.topic_id = 'Please select a topic'
-  }
+  // topic_id is optional - notes can exist without a topic
 
   return {
     valid: Object.keys(errors).length === 0,

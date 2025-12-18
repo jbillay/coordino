@@ -57,10 +57,11 @@ describe('TaskCard.vue', () => {
     expect(wrapper.emitted('delete')[0]).toEqual([task])
   })
 
-  it('emits "toggle-complete" event when checkbox is clicked', async () => {
+  it('emits "toggle" event when checkbox is clicked', async () => {
     const wrapper = getWrapper()
-    await wrapper.find('button[aria-label="Mark as complete"]').trigger('click')
-    expect(wrapper.emitted('toggle-complete')).toHaveLength(1)
-    expect(wrapper.emitted('toggle-complete')[0]).toEqual([task])
+    const checkbox = wrapper.findComponent({ name: 'Checkbox' })
+    await checkbox.vm.$emit('update:model-value', true)
+    expect(wrapper.emitted('toggle')).toHaveLength(1)
+    expect(wrapper.emitted('toggle')[0]).toEqual([task])
   })
 })

@@ -31,6 +31,25 @@
   --brand-purple: #8b5cf6;
   --brand-indigo: #6366f1;
 
+  /* ========== Brand Teal Scale (Primary Color System) ========== */
+  --brand-teal-50: #f0fdfa;
+  --brand-teal-100: #ccfbf1;
+  --brand-teal-200: #99f6e4;
+  --brand-teal-300: #5eead4;
+  --brand-teal-400: #2dd4bf;
+  --brand-teal-500: #14b8a6; /* Base brand color */
+  --brand-teal-600: #0d9488; /* Hover/focus states */
+  --brand-teal-700: #0f766e;
+  --brand-teal-800: #115e59;
+  --brand-teal-900: #134e4a;
+
+  /* Primary color aliases - point to brand teal */
+  --color-primary: var(--brand-teal-500);
+  --color-primary-hover: var(--brand-teal-600);
+  --color-primary-active: var(--brand-teal-700);
+  --color-primary-subtle: var(--brand-teal-50);
+  --color-primary-muted: var(--brand-teal-100);
+
   /* ========== Background Colors - Light Theme ========== */
   --bg-base: #fafbfc;
   --bg-surface: #ffffff;
@@ -139,14 +158,14 @@
   --z-tooltip: 1070;
 }
 
-/* ========== MODERN DARK THEME (Notion/Linear style) ========== */
+/* ========== MODERN DARK THEME (Netflix-inspired) ========== */
 .dark {
-  /* Background colors - Modern, rich blacks */
-  --bg-base: #000000;
-  --bg-surface: #111111;
-  --bg-elevated: #1a1a1a;
-  --bg-interactive: #1f1f1f;
-  --bg-hover: #262626;
+  /* Background colors - Netflix-style (NOT pure black for better eye comfort) */
+  --bg-base: #141414; /* Netflix base - reduces eye strain, prevents OLED burn-in */
+  --bg-surface: #1f1f1f; /* Cards, panels - slightly elevated */
+  --bg-elevated: #2a2a2a; /* Modals, dropdowns, tooltips - highest elevation */
+  --bg-interactive: #2d2d2d; /* Interactive elements default state */
+  --bg-hover: #353535; /* Hover states for interactive elements */
   --bg-accent: linear-gradient(135deg, #141414 0%, #1a1a1a 100%);
   --bg-gradient-brand: linear-gradient(135deg, #14b8a6 0%, #6366f1 50%, #8b5cf6 100%);
   --bg-gradient-subtle: linear-gradient(135deg, #141414 0%, #1a1a1a 100%);
@@ -368,6 +387,135 @@ body {
 
 .skip-link:focus {
   top: 1rem;
+}
+
+/* ========================================
+   ANIMATIONS & MICRO-INTERACTIONS
+   ======================================== */
+
+/* Button interactions */
+button,
+.btn,
+.interactive {
+  transition: all 0.2s ease-out;
+}
+
+button:hover:not(:disabled),
+.btn:hover:not(:disabled),
+.interactive:hover {
+  transform: scale(1.02);
+}
+
+button:active:not(:disabled),
+.btn:active:not(:disabled),
+.interactive:active {
+  transform: scale(0.98);
+}
+
+/* Checkmark animation */
+@keyframes checkmark-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.checkbox-checked {
+  animation: checkmark-pop 0.3s ease-out;
+}
+
+/* Dialog entry with stagger */
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dialog-enter-active {
+  animation: dialog-fade-in 0.2s ease-out;
+}
+
+.dialog-enter-active > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.dialog-enter-active > *:nth-child(2) {
+  animation-delay: 50ms;
+}
+.dialog-enter-active > *:nth-child(3) {
+  animation-delay: 100ms;
+}
+.dialog-enter-active > *:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+/* Toast notifications */
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+:deep(.p-toast) {
+  animation: toast-slide-in 0.3s ease-out;
+}
+
+/* Card hover lift */
+.card-interactive {
+  transition: all 0.2s ease-out;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Focus indicators - ALWAYS visible */
+*:focus-visible {
+  outline: 2px solid var(--brand-teal-500);
+  outline-offset: 2px;
+}
+
+/* Loading pulse */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ========== SCROLLBAR STYLING ========== */

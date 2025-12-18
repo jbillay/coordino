@@ -17,12 +17,16 @@
  * - Upcoming meetings with timezone information
  */
 import { computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useTaskStore } from '@/features/tasks/store'
 import { getTaskStats } from '@/features/tasks/utils'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import TaskCard from '@/features/tasks/components/TaskCard.vue'
+import ContinueSection from '@/components/dashboard/ContinueSection.vue'
+import StatCardSkeleton from '@/components/skeletons/StatCardSkeleton.vue'
 
+const router = useRouter()
 const authStore = useAuthStore()
 const taskStore = useTaskStore()
 
@@ -35,6 +39,14 @@ onBeforeUnmount(() => {
 })
 
 const taskStats = computed(() => getTaskStats(taskStore.tasks))
+
+/**
+ * Navigate to tasks with specific filter
+ * @param {string} filter - Filter type to apply
+ */
+const navigateToTasks = (filter) => {
+  router.push({ name: 'tasks', query: { filter } })
+}
 
 /**
  * Gets appropriate greeting based on current time of day
@@ -72,41 +84,87 @@ const getUserFirstName = computed(() => {
   <AppLayout>
     <div class="space-y-6 animate-fade-in">
       <!-- Header with Greeting and Add Task Button -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-            Good {{ timeOfDay }}, {{ getUserFirstName }}
-          </h1>
-        </div>
-        <div class="space-x-2">
-          <Button label="New Task" icon="pi pi-plus" />
-          <Button label="New Notes" icon="pi pi-plus" />
-          <Button label="New Meeting" icon="pi pi-plus" />
-        </div>
+      <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+          Good {{ timeOfDay }}, {{ getUserFirstName }}
+        </h1>
       </div>
 
-      <!-- Stat Cards: Urgent, High Priority, Overdue -->
-      <div class="grid grid-cols-3 gap-4">
-        <div class="stat-card">
-          <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Urgent</div>
-          <div class="text-3xl font-bold text-gray-900 dark:text-white">
-            {{ taskStats.byPriority.urgent }}
-          </div>
-        </div>
+      <!-- Continue Where You Left Off Section -->
+      <ContinueSection />
 
-        <div class="stat-card">
-          <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">High Priority</div>
-          <div class="text-3xl font-bold text-gray-900 dark:text-white">
-            {{ taskStats.byPriority.high }}
-          </div>
-        </div>
+      <!-- Stat Cards: Interactive with click-to-filter -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <!-- Loading Skeletons -->
+        <template v-if="taskStore.loading">
+          <StatCardSkeleton v-for="i in 3" :key="i" />
+        </template>
 
-        <div class="stat-card">
-          <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Overdue</div>
-          <div class="text-3xl font-bold text-red-600 dark:text-red-500">
-            {{ taskStats.overdue }}
+        <!-- Actual Stat Cards -->
+        <template v-else>
+          <!-- Urgent Tasks -->
+          <div
+            class="stat-card interactive"
+            role="button"
+            tabindex="0"
+            aria-label="View urgent tasks"
+            @click="navigateToTasks('urgent')"
+            @keydown.enter="navigateToTasks('urgent')"
+          >
+            <div class="stat-icon urgent">
+              <i class="pi pi-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ taskStats.byPriority.urgent }}</div>
+              <div class="stat-label">Urgent</div>
+            </div>
+            <div class="stat-arrow">
+              <i class="pi pi-arrow-right"></i>
+            </div>
           </div>
-        </div>
+
+          <!-- High Priority Tasks -->
+          <div
+            class="stat-card interactive"
+            role="button"
+            tabindex="0"
+            aria-label="View high priority tasks"
+            @click="navigateToTasks('high-priority')"
+            @keydown.enter="navigateToTasks('high-priority')"
+          >
+            <div class="stat-icon high-priority">
+              <i class="pi pi-flag"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value">{{ taskStats.byPriority.high }}</div>
+              <div class="stat-label">High Priority</div>
+            </div>
+            <div class="stat-arrow">
+              <i class="pi pi-arrow-right"></i>
+            </div>
+          </div>
+
+          <!-- Overdue Tasks -->
+          <div
+            class="stat-card interactive"
+            role="button"
+            tabindex="0"
+            aria-label="View overdue tasks"
+            @click="navigateToTasks('overdue')"
+            @keydown.enter="navigateToTasks('overdue')"
+          >
+            <div class="stat-icon overdue">
+              <i class="pi pi-clock"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value error">{{ taskStats.overdue }}</div>
+              <div class="stat-label">Overdue</div>
+            </div>
+            <div class="stat-arrow">
+              <i class="pi pi-arrow-right"></i>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- Two Column Layout: My Tasks & Recent Notes -->
@@ -360,6 +418,109 @@ const getUserFirstName = computed(() => {
   @apply h-full rounded-full;
 }
 
+/* Interactive Stat Cards */
+.stat-card {
+  @apply relative flex items-center gap-4 p-5
+         bg-white dark:bg-gray-800
+         border border-gray-200 dark:border-gray-700
+         rounded-lg overflow-hidden;
+  transition: all 0.2s ease;
+}
+
+.stat-card.interactive {
+  @apply cursor-pointer;
+}
+
+.stat-card.interactive:hover {
+  transform: scale(1.02);
+  border-color: var(--brand-teal-500);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.interactive:hover .stat-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.stat-icon {
+  @apply flex items-center justify-center
+         w-12 h-12 rounded-xl flex-shrink-0;
+  background: var(--brand-teal-100);
+  color: var(--brand-teal-600);
+  font-size: 1.5rem;
+}
+
+.dark .stat-icon {
+  background: rgba(20, 184, 166, 0.2);
+  color: var(--brand-teal-400);
+}
+
+.stat-icon.urgent {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.dark .stat-icon.urgent {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--color-warning);
+}
+
+.stat-icon.high-priority {
+  background: var(--brand-teal-100);
+  color: var(--brand-teal-600);
+}
+
+.dark .stat-icon.high-priority {
+  background: rgba(20, 184, 166, 0.2);
+  color: var(--brand-teal-400);
+}
+
+.stat-icon.overdue {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.dark .stat-icon.overdue {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--color-error);
+}
+
+.stat-content {
+  @apply flex-1 min-w-0;
+}
+
+.stat-value {
+  @apply text-3xl font-bold text-gray-900 dark:text-white leading-none mb-1;
+}
+
+.stat-value.error {
+  @apply text-red-600 dark:text-red-500;
+}
+
+.stat-label {
+  @apply text-sm font-medium text-gray-600 dark:text-gray-400;
+}
+
+.stat-arrow {
+  @apply opacity-0 transform translate-x-2 transition-all duration-200;
+  color: var(--brand-teal-500);
+  font-size: 1.25rem;
+}
+
+/* Focus indicator for stat cards */
+.stat-card.interactive:focus-visible {
+  outline: 2px solid var(--brand-teal-500);
+  outline-offset: 2px;
+}
+
+/* Mobile: Always show arrow */
+@media (max-width: 640px) {
+  .stat-card.interactive .stat-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 /* Animation */
 .animate-fade-in {
   animation: fadeIn 0.5s ease-in-out;
@@ -373,6 +534,18 @@ const getUserFirstName = computed(() => {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .stat-arrow {
+    transition: none;
+  }
+
+  .stat-card.interactive:hover {
+    transform: none;
   }
 }
 </style>

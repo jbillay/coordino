@@ -2,9 +2,45 @@
 
 ## Design Philosophy
 
-Coordino's design philosophy centers on creating an interface that feels both professional and delightful. The application should inspire confidence through clarity and consistency while surprising users with thoughtful details that make mundane productivity tasks feel more engaging. The visual language balances structure with creativity, formality with warmth, and efficiency with beauty.
+Coordino's design philosophy centers on creating an interface optimized for **quick, frequent interactions**. Users are busy knowledge workers who need to accomplish tasks efficiently without friction. The application should feel fast, responsive, and context-aware—remembering where users left off and minimizing clicks to complete common actions.
+
+The visual language balances information density with breathability, professional polish with approachability, and power-user features with beginner-friendly simplicity. Every design decision prioritizes speed of execution over visual spectacle.
 
 The design system respects accessibility as a first-class concern, not an afterthought. Every color choice considers contrast ratios, every interaction works with keyboard navigation, and every component provides appropriate feedback for screen readers. Beautiful design and accessible design are not competing goals but complementary ones.
+
+## Core Design Principles
+
+### 1. Speed Over Clicks
+**Goal:** Enable users to complete common actions in 1-2 clicks/keystrokes, not 4-6.
+
+- Provide multiple paths to common actions (FAB, keyboard shortcuts, command palette)
+- Use context-aware defaults to reduce decision-making
+- Show recently accessed items for quick resumption
+- Never hide common actions behind multiple menus
+
+### 2. Information Density
+**Goal:** Show more useful information per screen without overwhelming users.
+
+- Optimize vertical space (2x-3x more content per screen)
+- Use progressive disclosure (hide details until needed)
+- Show actions only on hover (reduce visual noise)
+- Prioritize scannable layouts over decorative padding
+
+### 3. Context Retention
+**Goal:** Users never lose their place or forget what they were doing.
+
+- Implement "Continue where you left off" sections
+- Preserve state across sessions
+- Use breadcrumbs and clear navigation
+- Enable quick return to previous context
+
+### 4. Consistent Brand Identity
+**Goal:** Every interaction reinforces Coordino's visual identity.
+
+- Use brand teal (#14b8a6) consistently throughout the app
+- Maintain the same accent colors across all features
+- Apply unified micro-interactions and animations
+- Create memorable, distinctive visual elements
 
 ## Color System
 
@@ -12,45 +48,47 @@ Colors in Coordino serve three primary purposes: establishing brand identity, co
 
 ### Brand Colors
 
-The primary brand color establishes Coordino's visual identity. This color appears in the most important interactive elements like primary buttons, active navigation items, and key calls to action. The primary color should feel modern and energetic without being overpowering, suggesting productivity and forward momentum.
+**Primary Brand Color: Teal** - The primary brand color establishes Coordino's visual identity. This teal color (#14b8a6) appears in the most important interactive elements like primary buttons, active navigation items, FAB, and key calls to action. The color feels modern, energetic, and trustworthy—suggesting both productivity and calm focus.
 
 ```css
 :root {
-  /* Light theme primary */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;  /* Base primary */
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  /* Brand Identity - Teal Scale */
+  --brand-teal-50: #f0fdfa;
+  --brand-teal-100: #ccfbf1;
+  --brand-teal-200: #99f6e4;
+  --brand-teal-300: #5eead4;
+  --brand-teal-400: #2dd4bf;
+  --brand-teal-500: #14b8a6;  /* Base brand color */
+  --brand-teal-600: #0d9488;
+  --brand-teal-700: #0f766e;
+  --brand-teal-800: #115e59;
+  --brand-teal-900: #134e4a;
+
+  /* Primary color points to brand teal */
+  --color-primary: var(--brand-teal-500);
+  --color-primary-dark: var(--brand-teal-600);
+  --color-primary-light: var(--brand-teal-400);
 }
 
 .dark {
-  /* Dark theme adjusts brightness for appropriate contrast */
-  --color-primary-50: #1e3a8a;
-  --color-primary-100: #1e40af;
-  --color-primary-200: #1d4ed8;
-  --color-primary-300: #2563eb;
-  --color-primary-400: #3b82f6;
-  --color-primary-500: #60a5fa;  /* Base primary in dark mode */
-  --color-primary-600: #93c5fd;
-  --color-primary-700: #bfdbfe;
-  --color-primary-800: #dbeafe;
-  --color-primary-900: #eff6ff;
+  /* In dark mode, use slightly lighter teal for better contrast */
+  --color-primary: var(--brand-teal-400);
+  --color-primary-dark: var(--brand-teal-500);
+  --color-primary-light: var(--brand-teal-300);
 }
 ```
 
-The accent color provides visual interest and can be used sparingly for highlighting special features or creating visual breaks. Think of it as the application's personality color that adds warmth and approachability to the more structured primary color.
+**Accent Colors** - Purple and ocean blue provide visual interest and can be used sparingly for highlighting special features or creating visual breaks.
 
 ```css
 :root {
-  --color-accent-400: #a78bfa;
-  --color-accent-500: #8b5cf6;
-  --color-accent-600: #7c3aed;
+  --brand-purple-400: #a78bfa;
+  --brand-purple-500: #8b5cf6;
+  --brand-purple-600: #7c3aed;
+
+  --brand-ocean-400: #22d3ee;
+  --brand-ocean-500: #0891b2;
+  --brand-ocean-600: #0e7490;
 }
 ```
 
@@ -63,24 +101,24 @@ Semantic colors communicate status and meaning consistently throughout the appli
   /* Success - confirmations, completed tasks, positive states */
   --color-success-50: #f0fdf4;
   --color-success-100: #dcfce7;
-  --color-success-500: #22c55e;
-  --color-success-600: #16a34a;
-  --color-success-700: #15803d;
-  
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+
   /* Warning - cautionary states, approaching deadlines */
   --color-warning-50: #fffbeb;
   --color-warning-100: #fef3c7;
-  --color-warning-500: #eab308;
-  --color-warning-600: #ca8a04;
-  --color-warning-700: #a16207;
-  
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+
   /* Error - failures, destructive actions, overdue items */
   --color-error-50: #fef2f2;
   --color-error-100: #fee2e2;
   --color-error-500: #ef4444;
   --color-error-600: #dc2626;
   --color-error-700: #b91c1c;
-  
+
   /* Info - neutral information, helpful tips */
   --color-info-50: #eff6ff;
   --color-info-100: #dbeafe;
@@ -92,25 +130,27 @@ Semantic colors communicate status and meaning consistently throughout the appli
 
 When using semantic colors, always pair them with icons or text labels to ensure color-blind users can understand the meaning. Color should enhance communication, not be the sole channel of information.
 
-### Neutral Colors
+### Neutral Colors - Airbnb-Inspired
 
-Neutral colors create the structure and hierarchy of the interface. These grays work across both light and dark themes, providing appropriate contrast and visual separation without competing with content or interactive elements.
+Neutral colors create the structure and hierarchy of the interface. The light theme uses clean, crisp grays. The dark theme uses carefully calibrated warm grays that reduce eye strain.
 
 ```css
 :root {
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
+  /* Light Theme - Clean, crisp grays */
+  --color-gray-50: #FAFAFA;
+  --color-gray-100: #F5F5F5;
+  --color-gray-200: #EEEEEE;
+  --color-gray-300: #E0E0E0;
+  --color-gray-400: #BDBDBD;
+  --color-gray-500: #9E9E9E;
+  --color-gray-600: #757575;
+  --color-gray-700: #616161;
+  --color-gray-800: #424242;
+  --color-gray-900: #212121;
 }
 
 .dark {
+  /* Dark Theme - Warm, comfortable grays */
   --color-gray-50: #18181b;
   --color-gray-100: #27272a;
   --color-gray-200: #3f3f46;
@@ -126,65 +166,76 @@ Neutral colors create the structure and hierarchy of the interface. These grays 
 
 ### Background and Surface Colors
 
-Backgrounds create depth and hierarchy through subtle variations in color. The application uses a layered approach where different surfaces sit at different perceived depths, helping users understand the information architecture.
+**CRITICAL CHANGE:** Dark mode now uses Netflix-style backgrounds (#141414) instead of pure black (#000000). Pure black causes eye strain, OLED burn-in, and makes it impossible to perceive depth through elevation.
 
 ```css
 :root {
-  --bg-base: #ffffff;           /* Main application background */
-  --bg-surface: #f9fafb;        /* Cards, panels, elevated content */
-  --bg-elevated: #ffffff;       /* Dialogs, dropdowns, tooltips */
-  --bg-interactive: #f3f4f6;    /* Hover states on neutral elements */
+  /* Light Theme - Airbnb-inspired */
+  --bg-base: #FFFFFF;
+  --bg-surface: #F7F7F7;
+  --bg-elevated: #FFFFFF;
+  --bg-interactive: #F0F9FF;    /* Light teal tint */
+  --bg-hover: #E0F2FE;
 }
 
 .dark {
-  --bg-base: #111827;
-  --bg-surface: #1f2937;
-  --bg-elevated: #374151;
-  --bg-interactive: #4b5563;
+  /* Dark Theme - Netflix-inspired */
+  --bg-base: #141414;           /* Netflix base - NOT pure black! */
+  --bg-surface: #1f1f1f;        /* Cards, panels */
+  --bg-elevated: #2a2a2a;       /* Modals, dropdowns */
+  --bg-interactive: #303030;    /* Hover states */
+  --bg-hover: #3a3a3a;
 }
 ```
 
-The base background is the canvas on which everything sits. Surface backgrounds are for cards, panels, and grouped content that should feel distinct from the base. Elevated backgrounds are for elements that float above the rest like modals and dropdowns. Interactive backgrounds provide hover states for clickable regions.
+**Why #141414 instead of #000000?**
+1. **Reduces eye strain** - Pure black creates excessive contrast with white text
+2. **Prevents OLED burn-in** - Pixels need slight activity
+3. **Enables depth perception** - Elevated surfaces can be lighter (#1f1f1f, #2a2a2a)
+4. **Matches industry standards** - Netflix, YouTube, Spotify all use ~#141414
+5. **Better color rendering** - Shadows and borders are actually visible
 
 ### Text Colors
 
-Text colors must maintain sufficient contrast against their backgrounds while creating clear hierarchy through variations in emphasis. The contrast ratios meet WCAG 2.1 Level AA standards, ensuring readability for users with various visual abilities.
+Text colors maintain WCAG 2.1 AA contrast requirements while creating clear hierarchy.
 
 ```css
 :root {
-  --text-primary: #111827;      /* Main content, headings */
-  --text-secondary: #6b7280;    /* Supporting text, descriptions */
-  --text-tertiary: #9ca3af;     /* De-emphasized text, timestamps */
-  --text-inverse: #ffffff;      /* Text on dark backgrounds */
-  --text-link: #2563eb;         /* Links and interactive text */
+  /* Light Theme */
+  --text-primary: #222222;      /* Main content, headings */
+  --text-secondary: #717171;    /* Supporting text, descriptions */
+  --text-tertiary: #B0B0B0;     /* De-emphasized text, timestamps */
+  --text-inverse: #FFFFFF;      /* Text on dark backgrounds */
+  --text-link: var(--brand-teal-600);  /* Interactive text */
 }
 
 .dark {
-  --text-primary: #f9fafb;
-  --text-secondary: #d1d5db;
-  --text-tertiary: #9ca3af;
-  --text-inverse: #111827;
-  --text-link: #60a5fa;
+  /* Dark Theme */
+  --text-primary: #FFFFFF;
+  --text-secondary: #D1D5DB;    /* 92% opacity feel */
+  --text-tertiary: #9CA3AF;     /* 60% opacity feel */
+  --text-inverse: #141414;
+  --text-link: var(--brand-teal-400);
 }
 ```
 
-Primary text color is for the most important content that users need to read and understand. Secondary text provides additional context without competing for attention. Tertiary text is for the least important information that supports but doesn't drive understanding. Link text stands out as clickable and interactive while maintaining readability.
-
 ### Border Colors
 
-Borders create separation and structure. They should be visible enough to provide definition but subtle enough not to create visual noise. Borders become lighter in dark mode since contrast relationships reverse.
+Borders in dark mode need higher contrast than the default to remain visible against #141414 backgrounds.
 
 ```css
 :root {
-  --border-default: #e5e7eb;    /* Standard borders, dividers */
-  --border-strong: #d1d5db;     /* Emphasized borders */
-  --border-subtle: #f3f4f6;     /* Very light separation */
+  /* Light Theme */
+  --border-subtle: #EBEBEB;
+  --border-default: #D6D6D6;
+  --border-strong: #B0B0B0;
 }
 
 .dark {
-  --border-default: #374151;
-  --border-strong: #4b5563;
-  --border-subtle: #27272a;
+  /* Dark Theme - Higher contrast for visibility */
+  --border-subtle: #2a2a2a;
+  --border-default: #3a3a3a;    /* More visible than before */
+  --border-strong: #4a4a4a;
 }
 ```
 
@@ -194,7 +245,7 @@ Typography establishes hierarchy, improves readability, and contributes signific
 
 ### Font Family
 
-The application uses system fonts that provide excellent readability, load instantly, and feel native to each platform. This approach respects user preferences while ensuring consistent rendering across devices.
+The application uses system fonts that provide excellent readability, load instantly, and feel native to each platform.
 
 ```css
 :root {
@@ -209,30 +260,24 @@ body {
 }
 ```
 
-Monospace fonts are reserved for code snippets, technical identifiers, and situations where character width consistency matters. They should never be used for body text or headings.
-
 ### Type Scale
 
-The type scale creates visual hierarchy through size relationships. Each level serves a specific purpose in the information architecture.
+**IMPORTANT:** Minimum body text size is now **16px (1rem)** for accessibility. Never use 14px for body content—only for metadata and secondary information.
 
 ```css
 :root {
-  --text-xs: 0.75rem;      /* 12px - Tiny labels, timestamps */
-  --text-sm: 0.875rem;     /* 14px - Secondary text, captions */
-  --text-base: 1rem;       /* 16px - Body text, primary content */
+  --text-xs: 0.75rem;      /* 12px - Tiny labels, timestamps only */
+  --text-sm: 0.875rem;     /* 14px - Metadata, captions, secondary info */
+  --text-base: 1rem;       /* 16px - Body text minimum */
   --text-lg: 1.125rem;     /* 18px - Emphasized body text */
-  --text-xl: 1.25rem;      /* 20px - Section headings */
+  --text-xl: 1.25rem;      /* 20px - Card titles, section headings */
   --text-2xl: 1.5rem;      /* 24px - Page titles */
   --text-3xl: 1.875rem;    /* 30px - Major headings */
   --text-4xl: 2.25rem;     /* 36px - Hero text */
 }
 ```
 
-Body text should generally be 16px (1rem) for comfortable reading. Smaller sizes work for supporting information but become difficult to read in longer passages. Larger sizes create emphasis and should be used sparingly to maintain their impact.
-
 ### Font Weight
-
-Font weight creates hierarchy within the same size, allowing emphasis without changing scale. The application uses a limited set of weights to maintain consistency.
 
 ```css
 :root {
@@ -243,11 +288,7 @@ Font weight creates hierarchy within the same size, allowing emphasis without ch
 }
 ```
 
-Regular weight is the default for body text. Medium weight works well for labels and buttons where slight emphasis helps scannability. Semibold creates clear hierarchy for subheadings. Bold is reserved for major headings and strong emphasis.
-
 ### Line Height
-
-Line height affects readability profoundly. Taller line heights improve readability for longer passages, while tighter line heights work better for headings and UI elements.
 
 ```css
 :root {
@@ -257,24 +298,9 @@ Line height affects readability profoundly. Taller line heights improve readabil
 }
 ```
 
-Body text should use normal or relaxed line height to prevent lines from feeling cramped. Headings benefit from tighter line height since they're usually shorter and the extra space isn't needed for readability.
+## Spacing System - Optimized for Information Density
 
-### Letter Spacing
-
-Most text works best with default letter spacing, but certain situations benefit from adjustments. Headings, especially in uppercase, often need increased letter spacing for clarity.
-
-```css
-:root {
-  --tracking-tight: -0.025em;   /* Large headings */
-  --tracking-normal: 0;          /* Body text, most content */
-  --tracking-wide: 0.025em;      /* Small caps, uppercase text */
-  --tracking-wider: 0.05em;      /* Spaced capitals */
-}
-```
-
-## Spacing System
-
-Consistent spacing creates visual rhythm and helps users understand relationships between elements. Elements that relate to each other should be closer together than elements that don't. The spacing scale provides options for every situation while encouraging consistency.
+**NEW APPROACH:** Coordino prioritizes information density for quick scanning. The spacing system has been recalibrated to show 2-3x more content per screen while maintaining readability.
 
 ```css
 :root {
@@ -291,202 +317,663 @@ Consistent spacing creates visual rhythm and helps users understand relationship
   --space-8: 2rem;         /* 32px */
   --space-10: 2.5rem;      /* 40px */
   --space-12: 3rem;        /* 48px */
-  --space-16: 4rem;        /* 64px */
-  --space-20: 5rem;        /* 80px */
-  --space-24: 6rem;        /* 96px */
 }
 ```
 
-Smaller spacing values work for tight groupings and subtle separation. Medium values create comfortable whitespace within components. Larger values separate distinct sections and create breathing room in the layout.
+### Component Spacing Patterns - UPDATED
 
-### Component Spacing Patterns
+**Task Lists (Compact):**
+- Vertical padding per item: `0.625rem` (10px) - was 1.25rem
+- Horizontal padding: `1rem` (16px)
+- Border between items: `1px solid var(--border-subtle)`
+- NO Card wrappers - direct list with hover states
+- **Goal:** Show 8-10 tasks per screen vs. 3-4
 
-**Cards and Panels:** Use space-6 (24px) for internal padding, space-4 (16px) between elements within the card, and space-8 (32px) between separate cards.
+**Dashboard Cards:**
+- Internal padding: `1.5rem` (24px) - was 2rem
+- Gap between cards: `1rem` (16px) - was 2rem
+- Use subtle hover lift (4px translate)
 
-**Forms:** Use space-4 (16px) between form fields, space-2 (8px) between labels and inputs, and space-6 (24px) between form sections.
+**Forms:**
+- Between fields: `1rem` (16px)
+- Label to input: `0.5rem` (8px)
+- Between sections: `1.5rem` (24px)
 
-**Lists:** Use space-3 (12px) between list items for compact lists, space-4 (16px) for comfortable lists, and space-6 (24px) for spacious lists with complex items.
+**Navigation:**
+- Between nav items: `0.5rem` (8px)
+- Nav item padding: `0.625rem 0.75rem`
 
-**Navigation:** Use space-2 (8px) between inline navigation items, space-4 (16px) for button groups, and space-6 (24px) between major navigation sections.
+## Quick Access Patterns
 
-## Layout and Grid
+### Floating Action Button (FAB)
 
-The application uses a container-based layout with maximum widths that prevent content from becoming too wide on large screens. Content wider than about 75 characters becomes difficult to read, so constraining width improves the reading experience.
-
-```css
-.container {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-@media (min-width: 640px) {
-  .container {
-    padding: 0 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    padding: 0 2rem;
-  }
-}
-```
-
-Grid layouts should use Tailwind's grid utilities or CSS Grid for complex layouts. Flexbox works better for simpler layouts and component arrangements. The choice between grid and flexbox depends on whether you need two-dimensional control (grid) or one-dimensional alignment (flexbox).
-
-### Responsive Breakpoints
-
-The application adapts to different screen sizes using Tailwind's default breakpoints. Design mobile-first, then add enhancements for larger screens.
-
-```
-sm: 640px   /* Small tablets portrait */
-md: 768px   /* Tablets and small laptops */
-lg: 1024px  /* Desktops and laptops */
-xl: 1280px  /* Large desktops */
-2xl: 1536px /* Very large screens */
-```
-
-On mobile, focus on vertical stacking and full-width components. On tablets, introduce two-column layouts for appropriate content. On desktop, utilize three or more columns where it makes sense, but never fill the entire width with text.
-
-## Component Patterns
-
-### Buttons
-
-Buttons communicate available actions and their importance through visual hierarchy. Primary buttons demand attention and represent the main action in any context. Secondary buttons provide alternatives. Tertiary buttons offer low-priority options without visual weight.
+**Purpose:** Provide instant access to create actions without navigating menus. Inspired by Google's Material Design and mobile app patterns.
 
 ```vue
-<!-- Primary Button - Main action -->
-<Button label="Create Task" icon="pi pi-plus" />
+<!-- FAB Implementation -->
+<div class="fab-container">
+  <!-- Expandable menu -->
+  <transition name="fab-expand">
+    <div v-if="showFABMenu" class="fab-menu">
+      <button class="fab-item" @click="createTask">
+        <i class="pi pi-check-circle"></i>
+        <span>New Task</span>
+      </button>
+      <button class="fab-item" @click="createNote">
+        <i class="pi pi-file"></i>
+        <span>New Note</span>
+      </button>
+      <button class="fab-item" @click="createMeeting">
+        <i class="pi pi-users"></i>
+        <span>New Meeting</span>
+      </button>
+    </div>
+  </transition>
 
-<!-- Secondary Button - Alternative action -->
-<Button label="Cancel" icon="pi pi-times" class="p-button-secondary" />
-
-<!-- Tertiary Button - Low priority action -->
-<Button label="Options" icon="pi pi-cog" class="p-button-text" />
-
-<!-- Danger Button - Destructive action -->
-<Button label="Delete" icon="pi pi-trash" class="p-button-danger" />
-```
-
-Button sizing should match the importance and touch target requirements. Default size works for most situations. Small buttons work in compact interfaces but should still meet minimum touch target size of 44x44px on mobile. Large buttons work for primary actions on mobile or landing pages.
-
-### Forms and Inputs
-
-Form inputs should feel inviting and forgiving. Labels must always be present and visible, never relying solely on placeholder text which disappears on focus. Validation messages should appear inline, close to the relevant field, in clear language that helps users fix problems.
-
-```vue
-<div class="form-field">
-  <label for="task-title" class="form-label">
-    Task Title
-    <span class="text-error-500">*</span>
-  </label>
-  <InputText 
-    id="task-title"
-    v-model="title"
-    placeholder="Enter task title"
-    :class="{ 'p-invalid': errors.title }"
-  />
-  <small v-if="errors.title" class="text-error-500">
-    {{ errors.title }}
-  </small>
-  <small v-else class="text-secondary">
-    A clear title helps you quickly identify tasks
-  </small>
+  <!-- Main FAB button -->
+  <button
+    class="fab-main"
+    @click="toggleFABMenu"
+    aria-label="Quick actions"
+  >
+    <i class="pi pi-plus"></i>
+  </button>
 </div>
 ```
 
-Field labels should use medium font weight and 14px size. Required fields should be marked with an asterisk and explained at the top of the form. Help text appears below inputs in secondary text color, providing guidance without cluttering the interface. Error messages replace help text and use error color to draw attention.
+**Styling:**
+```css
+.fab-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+}
 
-### Cards
+.fab-main {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--brand-teal-500);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-Cards group related content and actions into containers that feel distinct from the background. They create visual hierarchy through elevation and help organize dense interfaces into scannable sections.
+.fab-main:hover {
+  background: var(--brand-teal-600);
+  box-shadow: 0 8px 24px rgba(20, 184, 166, 0.4);
+  transform: scale(1.05);
+}
+```
+
+### Command Palette (⌘K / Ctrl+K)
+
+**Purpose:** Power-user feature enabling keyboard-driven navigation and actions. Inspired by VS Code, Notion, Linear, and Spotlight.
+
+**Features:**
+- Fuzzy search across all actions and content
+- Keyboard navigation (↑↓ arrows, Enter to select, Esc to close)
+- Recently used actions at top
+- Grouped by category (Actions, Navigation, Recent Items)
 
 ```vue
-<Card class="task-card">
-  <template #header>
-    <div class="flex justify-between items-center">
-      <h3 class="text-lg font-semibold">Task Title</h3>
-      <span class="text-sm text-secondary">2 days ago</span>
+<!-- Command Palette -->
+<div class="command-palette-overlay" v-if="showCommandPalette">
+  <div class="command-palette">
+    <div class="command-search">
+      <i class="pi pi-search"></i>
+      <input
+        ref="commandInput"
+        v-model="commandQuery"
+        placeholder="Type a command or search..."
+        @input="filterCommands"
+        @keydown="handleCommandKeyboard"
+      />
+      <kbd>ESC</kbd>
     </div>
-  </template>
+
+    <div class="command-results">
+      <div class="command-section">
+        <div class="command-section-title">Quick Actions</div>
+        <div
+          v-for="(action, index) in filteredActions"
+          :key="action.id"
+          class="command-item"
+          :class="{ active: index === selectedIndex }"
+          @click="executeCommand(action)"
+        >
+          <div class="command-icon">
+            <i :class="action.icon"></i>
+          </div>
+          <div class="command-text">
+            <div class="command-name">{{ action.name }}</div>
+            <div class="command-desc">{{ action.description }}</div>
+          </div>
+          <div class="command-shortcut">
+            <kbd v-for="key in action.keys" :key="key">{{ key }}</kbd>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+**Global Keyboard Shortcuts:**
+- `⌘K` / `Ctrl+K` - Open command palette
+- `⌘N` / `Ctrl+N` - New task (context-aware: note if in notes, meeting if in scheduling)
+- `⌘F` / `Ctrl+F` - Focus search
+- `G then D` - Go to Dashboard
+- `G then T` - Go to Tasks
+- `G then N` - Go to Notes
+- `G then M` - Go to Meetings
+- `?` - Show keyboard shortcuts help
+- `Esc` - Close modals/palettes
+
+### Continue Where You Left Off
+
+**Purpose:** Netflix-style feature showing recent activity to enable instant resumption of work.
+
+**Implementation:**
+```vue
+<!-- Dashboard: Continue Where You Left Off -->
+<section class="continue-section">
+  <h2 class="section-title">Continue where you left off</h2>
+  <div class="activity-carousel">
+    <div
+      v-for="item in recentActivity.slice(0, 5)"
+      :key="item.id"
+      class="activity-card"
+      @click="resumeActivity(item)"
+    >
+      <div class="activity-icon">
+        <i :class="getActivityIcon(item.type)"></i>
+      </div>
+      <div class="activity-title">{{ item.title }}</div>
+      <div class="activity-meta">
+        {{ formatActivityMeta(item) }}
+      </div>
+    </div>
+  </div>
+</section>
+```
+
+**Data Structure:**
+```javascript
+// Track user activity in Pinia store
+export const useActivityStore = defineStore('activity', {
+  state: () => ({
+    recentActivity: [] // Last 10 items user interacted with
+  }),
+
+  actions: {
+    trackActivity(type, id, title, metadata) {
+      this.recentActivity.unshift({
+        type, // 'task', 'note', 'meeting'
+        id,
+        title,
+        metadata,
+        timestamp: new Date().toISOString()
+      })
+
+      // Keep only last 10 items
+      this.recentActivity = this.recentActivity.slice(0, 10)
+
+      // Persist to localStorage
+      localStorage.setItem('coordino_recent_activity', JSON.stringify(this.recentActivity))
+    }
+  }
+})
+```
+
+## Component Patterns - UPDATED
+
+### Compact Task Cards
+
+**OLD APPROACH (Avoid):**
+```vue
+<!-- ❌ Too bulky - uses PrimeVue Card wrapper -->
+<Card class="task-card mb-2">
   <template #content>
-    <p class="text-secondary">Task description and details</p>
-  </template>
-  <template #footer>
-    <div class="flex justify-end gap-2">
-      <Button label="Edit" class="p-button-text" />
-      <Button label="Complete" />
+    <div class="p-4">  <!-- Extra padding -->
+      <!-- Task content -->
     </div>
   </template>
 </Card>
 ```
 
-Cards should have subtle shadows in light mode and slightly lighter backgrounds in dark mode to create depth. Avoid excessive shadows that create a "floating" effect. Cards can have optional headers and footers for grouping related actions or metadata.
-
-### Dialogs and Modals
-
-Dialogs interrupt the user's flow to gather information or confirm actions. They should be used sparingly and always have a clear purpose. The backdrop should dim the background content, focusing attention on the dialog.
-
+**NEW APPROACH (Use this):**
 ```vue
-<Dialog 
-  :visible="showDialog" 
-  :modal="true"
-  :closable="true"
-  :style="{ width: '500px' }"
-  @update:visible="showDialog = $event"
->
-  <template #header>
-    <h3>Dialog Title</h3>
-  </template>
-  
-  <p>Dialog content</p>
-  
-  <template #footer>
-    <Button label="Cancel" class="p-button-text" @click="showDialog = false" />
-    <Button label="Confirm" @click="handleConfirm" />
-  </template>
-</Dialog>
+<!-- ✅ Compact - direct list items with hover -->
+<div class="task-list">
+  <div
+    v-for="task in tasks"
+    :key="task.id"
+    class="task-item"
+    @click="openTask(task)"
+  >
+    <!-- Checkbox -->
+    <button
+      class="task-checkbox"
+      @click.stop="toggleComplete(task)"
+      aria-label="Mark as complete"
+    >
+      <i :class="task.completed ? 'pi pi-check-square' : 'pi pi-square'"></i>
+    </button>
+
+    <!-- Content -->
+    <div class="task-content">
+      <div class="task-title">{{ task.title }}</div>
+      <div class="task-meta">
+        <span v-if="task.priority !== 'normal'" class="badge" :class="`badge-${task.priority}`">
+          {{ task.priority }}
+        </span>
+        <span v-if="task.due_date" class="meta-item">
+          <i class="pi pi-calendar"></i>
+          {{ formatDueDate(task.due_date) }}
+        </span>
+        <span v-if="task.status" class="meta-item" :style="{ color: task.status.color }">
+          {{ task.status.name }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Actions (hover-only) -->
+    <div class="task-actions">
+      <button class="action-btn" @click.stop="editTask(task)">
+        <i class="pi pi-pencil"></i>
+      </button>
+      <button class="action-btn" @click.stop="deleteTask(task)">
+        <i class="pi pi-trash"></i>
+      </button>
+    </div>
+  </div>
+</div>
 ```
 
-Dialogs should always provide a clear way to dismiss them, either through a close button, cancel action, or clicking the backdrop. The primary action should be visually emphasized. Destructive actions should require explicit confirmation and use danger styling.
+**Styling:**
+```css
+.task-list {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  overflow: hidden;
+}
 
-### Tags and Badges
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;  /* Compact: 10px vertical */
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.15s ease;
+  cursor: pointer;
+}
 
-Tags label and categorize content. They use color purposefully to communicate meaning quickly. Custom colors from user-defined categories or statuses should have sufficient contrast against their background.
+.task-item:hover {
+  background: var(--bg-hover);
+}
 
-```vue
-<span 
-  class="px-3 py-1 rounded-full text-sm font-medium"
-  :style="{ 
-    backgroundColor: category.color + '20',
-    color: category.color 
-  }"
->
-  {{ category.name }}
-</span>
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border: 2px solid var(--border-strong);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.task-checkbox:hover {
+  border-color: var(--brand-teal-500);
+  background: var(--bg-interactive);
+}
+
+.task-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-title {
+  font-size: 0.9375rem;  /* 15px */
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.task-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.75rem;  /* 12px */
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+/* Hover-only actions (Gmail-style) */
+.task-actions {
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.task-item:hover .task-actions {
+  opacity: 1;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+
+.action-btn:hover {
+  background: var(--bg-interactive);
+  color: var(--text-primary);
+}
 ```
 
-The color value with '20' appended creates a 20% opacity background, ensuring the tag has enough contrast against the page background while using the full-strength color for text. This technique works for both light and dark themes.
+**Result:** Show 8-10 tasks per screen instead of 3-4.
+
+### Interactive Stat Cards
+
+**Purpose:** Make stat cards clickable to filter content, not just display numbers.
+
+```vue
+<!-- Interactive stat card -->
+<button
+  class="stat-card interactive"
+  @click="navigateToFilteredView('overdue')"
+>
+  <div class="stat-label">Overdue Tasks</div>
+  <div class="stat-value error">{{ stats.overdue }}</div>
+  <i class="pi pi-arrow-right stat-arrow"></i>
+</button>
+```
+
+```css
+.stat-card.interactive {
+  cursor: pointer;
+  position: relative;
+  border: 1px solid var(--border-default);
+  transition: all 0.2s ease;
+}
+
+.stat-card.interactive::after {
+  content: '→';
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.25rem;
+  color: var(--brand-teal-500);
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.stat-card.interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--brand-teal-500);
+}
+
+.stat-card.interactive:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(4px);
+}
+```
+
+### Buttons
+
+Primary buttons now use brand teal, not generic blue.
+
+```vue
+<!-- Primary Button - Brand teal -->
+<Button
+  label="Create Task"
+  icon="pi pi-plus"
+  class="btn-primary"
+/>
+
+<!-- Secondary Button -->
+<Button
+  label="Cancel"
+  icon="pi pi-times"
+  class="p-button-outlined"
+/>
+
+<!-- Danger Button -->
+<Button
+  label="Delete"
+  icon="pi pi-trash"
+  class="p-button-danger"
+/>
+```
+
+```css
+.btn-primary {
+  background: var(--brand-teal-500) !important;
+  border-color: var(--brand-teal-500) !important;
+}
+
+.btn-primary:hover {
+  background: var(--brand-teal-600) !important;
+  border-color: var(--brand-teal-600) !important;
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3) !important;
+}
+```
+
+### Filters - Chip-Based (Airbnb-style)
+
+**OLD:** Bulky filter card with dropdowns taking up entire row.
+
+**NEW:** Compact chip filters like Airbnb's interface.
+
+```vue
+<div class="filter-bar">
+  <!-- Prominent search -->
+  <div class="search-prominent">
+    <i class="pi pi-search"></i>
+    <input
+      type="text"
+      placeholder="Search tasks, notes, meetings..."
+      v-model="globalSearch"
+    />
+    <kbd>⌘K</kbd>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="filter-chips">
+    <button
+      v-for="preset in filterPresets"
+      :key="preset.id"
+      class="filter-chip"
+      :class="{ active: currentFilter === preset.id }"
+      @click="applyFilterPreset(preset)"
+    >
+      {{ preset.label }}
+      <span class="chip-count">{{ preset.count }}</span>
+    </button>
+
+    <!-- More filters dropdown -->
+    <button class="filter-chip more">
+      <i class="pi pi-filter"></i>
+      More
+    </button>
+  </div>
+</div>
+```
+
+```css
+.filter-bar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background: var(--bg-elevated);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.search-prominent {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+}
+
+.search-prominent input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.filter-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-default);
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-chip:hover {
+  background: var(--bg-hover);
+  border-color: var(--brand-teal-500);
+}
+
+.filter-chip.active {
+  background: var(--brand-teal-500);
+  border-color: var(--brand-teal-500);
+  color: white;
+}
+
+.chip-count {
+  padding: 0.125rem 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  font-size: 0.75rem;
+}
+```
+
+**Preset Filters:**
+- "My Focus" → Urgent + High priority + Due this week
+- "Due Soon" → Due in next 7 days
+- "Overdue" → Past due date
+- "Completed" → Show completed items
+- "All" → No filtering
+
+### Skeleton Screens (Loading States)
+
+Replace generic spinners with content-aware skeleton screens (Netflix-style).
+
+```vue
+<!-- Task list loading skeleton -->
+<div v-if="loading" class="task-skeleton-list">
+  <div v-for="i in 5" :key="i" class="task-skeleton">
+    <div class="skeleton-checkbox"></div>
+    <div class="skeleton-content">
+      <div class="skeleton-title"></div>
+      <div class="skeleton-meta"></div>
+    </div>
+  </div>
+</div>
+```
+
+```css
+.task-skeleton {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.skeleton-checkbox,
+.skeleton-title,
+.skeleton-meta {
+  background: linear-gradient(
+    90deg,
+    var(--bg-interactive) 0%,
+    var(--bg-hover) 50%,
+    var(--bg-interactive) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeleton-checkbox {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.skeleton-title {
+  width: 60%;
+  height: 16px;
+}
+
+.skeleton-meta {
+  width: 40%;
+  height: 12px;
+  margin-top: 0.25rem;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+```
 
 ## Animation and Motion
 
-Animation should feel natural and purposeful, never gratuitous. Animations provide feedback, guide attention, and smooth transitions between states. All animations respect the prefers-reduced-motion media query for users who experience motion sickness or distraction.
-
 ### Transition Timing
-
-Different types of transitions need different durations and easing functions. Quick transitions feel snappy and responsive. Longer transitions smooth over more dramatic changes. Easing creates natural-feeling motion.
 
 ```css
 :root {
+  --duration-instant: 100ms;
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 350ms;
-  
+
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* Respect reduced motion preferences */
@@ -501,180 +988,197 @@ Different types of transitions need different durations and easing functions. Qu
 }
 ```
 
-Use fast transitions for hover states and small changes. Base duration works for most transitions like fading in content or sliding panels. Slow transitions work for complex animations or dramatic state changes.
+### Micro-interactions
 
-### Common Animation Patterns
+**Task Completion Celebration:**
+```javascript
+import confetti from 'canvas-confetti'
 
-**Fade In:** New content appears smoothly rather than popping into existence.
+const handleCompleteTask = async (task) => {
+  // Optimistic update
+  task.completed = true
 
-```css
-.fade-enter-active {
-  transition: opacity var(--duration-base) var(--ease-out);
-}
+  // Trigger confetti
+  confetti({
+    particleCount: 50,
+    spread: 60,
+    origin: { y: 0.8 }
+  })
 
-.fade-enter-from {
-  opacity: 0;
-}
-```
-
-**Slide In:** Panels and drawers slide from off-screen, creating a sense of spatial relationship.
-
-```css
-.slide-enter-active {
-  transition: transform var(--duration-base) var(--ease-out);
-}
-
-.slide-enter-from {
-  transform: translateX(-100%);
+  // Sync to backend
+  await taskStore.completeTask(task.id)
 }
 ```
 
-**Scale:** Elements grow into view, useful for modals and tooltips.
-
+**Hover Lift Effect:**
 ```css
-.scale-enter-active {
-  transition: all var(--duration-base) var(--ease-out);
+.hover-lift {
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
 
-.scale-enter-from {
-  opacity: 0;
-  transform: scale(0.95);
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 ```
 
 ## Accessibility
 
-Accessibility is not optional. Every component, every interaction, every piece of information must be accessible to users of all abilities. This section outlines the standards that must be met.
+All previous accessibility guidelines remain in effect. Additionally:
 
-### Color Contrast
+### Keyboard Shortcuts Discoverability
 
-All text must meet WCAG 2.1 Level AA contrast requirements. Normal text needs a contrast ratio of at least 4.5:1 against its background. Large text (18px bold or 24px regular) needs 3:1. Interactive elements need 3:1 contrast against adjacent colors.
+Show keyboard hint in UI:
+```vue
+<button class="action-button">
+  Create Task
+  <kbd class="keyboard-hint">⌘N</kbd>
+</button>
+```
 
-Use contrast checking tools during development to verify all color combinations meet these requirements. Never rely solely on color to communicate information. Always pair color with text, icons, or other visual indicators.
+### Focus Management for FAB and Command Palette
 
-### Keyboard Navigation
+```javascript
+// FAB: Trap focus in expanded menu
+const trapFocus = (element) => {
+  const focusableElements = element.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  )
+  const firstElement = focusableElements[0]
+  const lastElement = focusableElements[focusableElements.length - 1]
 
-Every interactive element must be accessible via keyboard. Focus indicators must be clearly visible. The tab order must follow a logical sequence. Users should be able to complete all tasks using only the keyboard.
+  element.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault()
+        lastElement.focus()
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault()
+        firstElement.focus()
+      }
+    }
+  })
+}
+```
+
+## Dark Mode - Netflix Standard
+
+### Dark Mode Implementation
 
 ```css
-/* Custom focus styles that meet contrast requirements */
-*:focus-visible {
-  outline: 2px solid var(--color-primary-500);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
+.dark {
+  /* Base backgrounds - Netflix-inspired */
+  --bg-base: #141414;
+  --bg-surface: #1f1f1f;
+  --bg-elevated: #2a2a2a;
+  --bg-interactive: #303030;
+  --bg-hover: #3a3a3a;
 
-/* Skip to main content link for keyboard users */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  background: var(--bg-elevated);
-  padding: 8px;
-  z-index: 100;
-}
+  /* Text - High contrast */
+  --text-primary: #FFFFFF;
+  --text-secondary: #D1D5DB;
+  --text-tertiary: #9CA3AF;
 
-.skip-link:focus {
-  top: 0;
+  /* Borders - Visible against #141414 */
+  --border-subtle: #2a2a2a;
+  --border-default: #3a3a3a;
+  --border-strong: #4a4a4a;
+
+  /* Shadows - Softer in dark mode */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 ```
-
-### Screen Reader Support
-
-Use semantic HTML elements that communicate meaning to assistive technologies. Buttons should be button elements, not divs with click handlers. Links should be anchor elements. Form inputs need associated labels.
-
-Provide ARIA labels for icon-only buttons. Use ARIA live regions for dynamic content updates. Mark decorative images with alt="" to prevent screen readers from announcing them.
-
-```vue
-<!-- Good: Semantic button with accessible label -->
-<button aria-label="Delete task" @click="deleteTask">
-  <i class="pi pi-trash"></i>
-</button>
-
-<!-- Good: Proper form labels -->
-<label for="task-title">Task Title</label>
-<input id="task-title" v-model="title" />
-
-<!-- Good: ARIA live region for notifications -->
-<div role="status" aria-live="polite" aria-atomic="true">
-  Task created successfully
-</div>
-```
-
-### Focus Management
-
-When opening dialogs, move focus to the first focusable element. When closing dialogs, return focus to the element that triggered them. Trap focus within modal dialogs so keyboard users don't accidentally focus elements behind the modal.
-
-### Touch Targets
-
-All interactive elements must be at least 44x44 pixels to meet touch target size requirements. On mobile devices, increase spacing between touch targets to prevent accidental activation.
-
-## Dark Mode
-
-Dark mode is not just inverting colors. It requires thoughtful adjustments to maintain readability, reduce eye strain, and preserve the visual hierarchy established in light mode.
-
-### Dark Mode Colors
-
-Dark mode uses lighter text on darker backgrounds, but pure white on pure black creates too much contrast and causes eye strain. Use off-white text on dark gray backgrounds instead.
-
-Elevation in dark mode is communicated through lighter backgrounds, not shadows. Elements that float above others should be lighter than the base background. This reverses the light mode pattern where elevated elements are darker.
 
 ### Testing Dark Mode
 
-Test dark mode throughout development, not as an afterthought. Verify that custom colors (like user-defined category colors) maintain sufficient contrast in both themes. Ensure images and icons work well against both light and dark backgrounds.
-
-Consider providing different assets for light and dark modes when necessary. Logos and illustrations often need adjustment to work well in both contexts.
+Test dark mode in a truly dark environment (not a bright room with dark mode on). Verify:
+- Text is readable without eye strain
+- Borders and dividers are visible
+- Elevated surfaces appear elevated (lighter than base)
+- Brand colors maintain their vibrancy
+- Images/logos render appropriately
 
 ## Implementation with PrimeVue and Tailwind
 
-PrimeVue provides robust components with built-in accessibility and functionality. Tailwind provides the styling utilities to customize these components to match Coordino's design system. The combination allows rapid development while maintaining design consistency.
-
-### Customizing PrimeVue Themes
-
-PrimeVue components can be styled using CSS variables that override the default theme. Create a custom theme file that applies Coordino's colors and spacing to PrimeVue components.
+### Override PrimeVue Theme Variables
 
 ```css
-/* Override PrimeVue theme variables */
 :root {
-  --primary-color: #3b82f6;
+  /* Brand teal as primary */
+  --primary-color: #14b8a6;
   --primary-color-text: #ffffff;
+
+  /* Surfaces */
   --surface-0: #ffffff;
-  --surface-50: #f9fafb;
-  --surface-100: #f3f4f6;
-  --surface-200: #e5e7eb;
-  --text-color: #111827;
-  --text-color-secondary: #6b7280;
+  --surface-50: #F7F7F7;
+  --surface-100: #EEEEEE;
+
+  /* Text */
+  --text-color: #222222;
+  --text-color-secondary: #717171;
+}
+
+.dark {
+  --primary-color: #2dd4bf;
+  --surface-0: #141414;
+  --surface-50: #1f1f1f;
+  --surface-100: #2a2a2a;
+  --text-color: #FFFFFF;
+  --text-color-secondary: #D1D5DB;
 }
 ```
 
-### Combining PrimeVue and Tailwind
+### Avoid Tailwind Hardcoded Colors
 
-Use PrimeVue for interactive components like dropdowns, calendars, and dialogs. Use Tailwind for layout, spacing, and custom styling. Avoid fighting PrimeVue's built-in styles. Instead, work with them by adding Tailwind utilities for spacing and layout while respecting PrimeVue's component structure.
-
+**Bad:**
 ```vue
-<!-- Good: PrimeVue component with Tailwind utilities -->
-<Button 
-  label="Create Task" 
-  icon="pi pi-plus"
-  class="w-full sm:w-auto"
-/>
-
-<!-- Good: Custom styled PrimeVue component -->
-<Card class="shadow-sm hover:shadow-md transition-shadow">
-  <template #content>
-    <div class="space-y-4">
-      <!-- Content using Tailwind spacing -->
-    </div>
-  </template>
-</Card>
+<div class="bg-gray-900">  <!-- Hardcoded Tailwind color -->
 ```
+
+**Good:**
+```vue
+<div style="background: var(--bg-surface)">  <!-- CSS variable -->
+```
+
+This ensures consistent theming across light and dark modes.
 
 ## Performance Considerations
 
-Beautiful design means nothing if it's slow. Optimize images, lazy-load routes, and use virtual scrolling for long lists. Every animation should run at 60fps. Large operations should show loading states immediately, never leaving users wondering if their action registered.
+- Lazy-load routes
+- Virtual scrolling for lists with 100+ items
+- Optimize images (WebP, proper sizing)
+- Use skeleton screens instead of spinners
+- Debounce search inputs (300ms)
+- Throttle scroll events (100ms)
 
-Test performance on slower devices and slower connections. The application should feel fast even in less-than-ideal conditions. Progressive enhancement ensures core functionality works even if JavaScript fails to load or execute.
+## Metrics to Track
+
+### Speed Metrics
+- Time to create task: Target <5s (currently ~15-20s)
+- Time to find note: Target <3s (currently ~10-15s)
+- Clicks to common action: Target 1-2 (currently 4-6)
+
+### Engagement Metrics
+- Daily task completions (expect +30%)
+- Notes created per week (expect +50%)
+- Keyboard shortcut usage (track power users)
+
+### Quality Metrics
+- Dark mode adoption rate
+- FAB click-through rate
+- Command palette usage
+- "Continue" section engagement
 
 ## Conclusion
 
-These guidelines provide a foundation for creating consistent, accessible, delightful interfaces in Coordino. When faced with decisions not covered here, prioritize user needs over aesthetic preferences, accessibility over novelty, and clarity over cleverness. Great design serves users first and designers second.
+These updated guidelines prioritize **speed, information density, and context retention** over decorative elements. Every design decision should ask: "Does this help users accomplish their work faster?" If the answer is no, reconsider the design.
+
+When in doubt:
+1. **Speed > Beauty** - Fast and simple beats slow and pretty
+2. **Context > Novelty** - Remember user state over adding new features
+3. **Density > Whitespace** - Show more useful information per screen
+4. **Consistency > Creativity** - Use brand teal everywhere, not different colors
+
+Great design serves users first and designers second.

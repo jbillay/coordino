@@ -2,8 +2,36 @@ import { mount } from '@vue/test-utils'
 import DashboardView from '../DashboardView.vue'
 import { describe, it, expect, vi } from 'vitest'
 import { createTestingPinia } from '@pinia/testing'
+import { createRouter, createMemoryHistory } from 'vue-router'
 
 describe('DashboardView.vue', () => {
+  const createRouterForTest = () =>
+    createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/',
+          name: 'dashboard',
+          component: { template: '<div>Dashboard</div>' }
+        },
+        {
+          path: '/tasks',
+          name: 'tasks',
+          component: { template: '<div>Tasks</div>' }
+        },
+        {
+          path: '/notes',
+          name: 'notes',
+          component: { template: '<div>Notes</div>' }
+        },
+        {
+          path: '/meetings',
+          name: 'meetings',
+          component: { template: '<div>Meetings</div>' }
+        }
+      ]
+    })
+
   const getWrapper = () =>
     mount(DashboardView, {
       global: {
@@ -18,9 +46,13 @@ describe('DashboardView.vue', () => {
                   },
                   email: 'test@example.com'
                 }
+              },
+              activity: {
+                recentActivity: []
               }
             }
-          })
+          }),
+          createRouterForTest()
         ],
         stubs: {
           AppLayout: {
@@ -29,11 +61,9 @@ describe('DashboardView.vue', () => {
           Button: {
             template: '<button>{{ label }}</button>',
             props: ['label', 'icon', 'loading']
-          }
-        },
-        mocks: {
-          $route: {
-            meta: {}
+          },
+          ContinueSection: {
+            template: '<div class="continue-section-stub"></div>'
           }
         }
       }
@@ -47,7 +77,6 @@ describe('DashboardView.vue', () => {
 
     const wrapper = getWrapper()
     expect(wrapper.text()).toContain('Good Morning, Test')
-    expect(wrapper.text()).toContain('New Task')
     expect(wrapper.text()).toContain('Urgent')
     expect(wrapper.text()).toContain('High Priority')
     expect(wrapper.text()).toContain('Overdue')
@@ -71,9 +100,13 @@ describe('DashboardView.vue', () => {
                 user: {
                   email: 'test@example.com'
                 }
+              },
+              activity: {
+                recentActivity: []
               }
             }
-          })
+          }),
+          createRouterForTest()
         ],
         stubs: {
           AppLayout: {
@@ -82,11 +115,9 @@ describe('DashboardView.vue', () => {
           Button: {
             template: '<button>{{ label }}</button>',
             props: ['label', 'icon', 'loading']
-          }
-        },
-        mocks: {
-          $route: {
-            meta: {}
+          },
+          ContinueSection: {
+            template: '<div class="continue-section-stub"></div>'
           }
         }
       }
@@ -110,9 +141,13 @@ describe('DashboardView.vue', () => {
             initialState: {
               auth: {
                 user: null
+              },
+              activity: {
+                recentActivity: []
               }
             }
-          })
+          }),
+          createRouterForTest()
         ],
         stubs: {
           AppLayout: {
@@ -121,11 +156,9 @@ describe('DashboardView.vue', () => {
           Button: {
             template: '<button>{{ label }}</button>',
             props: ['label', 'icon', 'loading']
-          }
-        },
-        mocks: {
-          $route: {
-            meta: {}
+          },
+          ContinueSection: {
+            template: '<div class="continue-section-stub"></div>'
           }
         }
       }
