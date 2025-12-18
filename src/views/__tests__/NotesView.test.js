@@ -185,9 +185,9 @@ describe('NotesView.vue', () => {
     it('renders correctly with default state', () => {
       const wrapper = mountComponent()
 
-      expect(wrapper.find('.notes-view').exists()).toBe(true)
-      expect(wrapper.find('.topic-list').exists()).toBe(true)
-      expect(wrapper.find('.notes-header').exists()).toBe(true)
+      expect(wrapper.find('.notes-view-container').exists()).toBe(true)
+      expect(wrapper.find('.notes-topic-sidebar').exists()).toBe(true)
+      expect(wrapper.find('.notes-list-header').exists()).toBe(true)
     })
 
     it('fetches topics and notes on mount', async () => {
@@ -335,8 +335,8 @@ describe('NotesView.vue', () => {
       noteList.vm.$emit('open', mockNotes[0])
       await nextTick()
 
-      expect(wrapper.find('.note-editor').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Edit Note')
+      expect(wrapper.find('.note-editor-container').exists()).toBe(true)
+      expect(wrapper.vm.selectedNote).toEqual(mockNotes[0])
       expect(router.push).toHaveBeenCalledWith({ name: 'notes', query: { noteId: 'note1' } })
     })
 
@@ -515,7 +515,6 @@ describe('NotesView.vue', () => {
 
       // Verify search is active
       expect(wrapper.vm.searchActive).toBe(true)
-      expect(wrapper.vm.currentView).toBe('search')
 
       // Clear search by calling the method directly
       // (In the actual UI, this would be triggered by a button in the search results)
@@ -587,8 +586,8 @@ describe('NotesView.vue', () => {
       await flushPromises() // Wait for onMounted and async operations
       await nextTick()
 
-      expect(wrapper.find('.note-editor').exists()).toBe(true)
-      expect(wrapper.text()).toContain('Edit Note')
+      expect(wrapper.find('.note-editor-container').exists()).toBe(true)
+      expect(wrapper.vm.selectedNote).toBeTruthy()
     })
 
     it('handles invalid note ID gracefully', async () => {

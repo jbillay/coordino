@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import LoginView from '../LoginView.vue'
 import { createTestingPinia } from '@pinia/testing'
 import { useAuthStore } from '@/stores/auth'
@@ -87,6 +87,8 @@ describe('LoginView.vue', () => {
   it('shows validation errors for empty fields', async () => {
     const wrapper = mountComponent()
     await wrapper.find('form').trigger('submit.prevent')
+    await flushPromises()
+    await nextTick()
     expect(authStore.signIn).not.toHaveBeenCalled()
     expect(wrapper.html()).toContain('Email is required')
     expect(wrapper.html()).toContain('Password is required')

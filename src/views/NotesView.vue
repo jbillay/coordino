@@ -12,6 +12,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import KeyboardShortcutsHelp from '@/features/notes/components/KeyboardShortcutsHelp.vue'
 import AriaLiveRegion from '@/components/common/AriaLiveRegion.vue'
 import { useNotesStore } from '@/features/notes/store'
+import { useActivityStore } from '@/stores/activity'
 import { useToast } from 'primevue/usetoast'
 import { useNoteKeyboardShortcuts } from '@/features/notes/composables/useNoteKeyboardShortcuts'
 import { useAccessibilityAnnouncements } from '@/features/notes/composables/useAccessibilityAnnouncements'
@@ -26,6 +27,7 @@ import { useAccessibilityAnnouncements } from '@/features/notes/composables/useA
 const route = useRoute()
 const router = useRouter()
 const notesStore = useNotesStore()
+const activityStore = useActivityStore()
 const toast = useToast()
 
 // Accessibility announcements
@@ -85,18 +87,24 @@ const handleCreateNote = () => {
 }
 
 /**
- * Handle open note for editing
+ * Handle open note for editing (side-by-side view)
  */
 const handleOpenNote = (note) => {
+  // Track activity
+  activityStore.trackActivity('note', note.id, note.title, {
+    topic: note.topic?.name,
+    pinned: note.is_pinned
+  })
+
   selectedNote.value = note
-  currentView.value = 'editor'
+  // Note: currentView stays as 'list' - we show editor alongside list now
   announceNavigation(`editing note: ${note.title}`)
   // Update URL
   router.push({ name: 'notes', query: { noteId: note.id } })
 }
 
 /**
- * Handle close editor
+ * Handle close editor (returns to empty state in side-by-side view)
  */
 const handleCloseEditor = () => {
   selectedNote.value = null
@@ -257,12 +265,10 @@ const confirmDelete = async () => {
 const handleSearch = async (filters) => {
   if (!filters.query || filters.query.trim() === '') {
     searchActive.value = false
-    currentView.value = 'list'
     return
   }
 
   searchActive.value = true
-  currentView.value = 'search'
   searchQuery.value = filters.query
   searchLoading.value = true
 
@@ -295,7 +301,6 @@ const handleClearSearch = () => {
   searchQuery.value = ''
   searchResults.value = []
   searchTime.value = null
-  currentView.value = 'list'
 }
 
 /**
@@ -402,75 +407,57 @@ watch(
 
 <template>
   <AppLayout>
-    <div class="notes-view flex h-full">
+    <div class="notes-view-container">
       <!-- Topic Sidebar -->
-      <TopicList class="flex-shrink-0" />
+      <TopicList class="notes-topic-sidebar" />
 
-      <!-- Main Content Area -->
-      <div class="flex-1 flex flex-col min-w-0">
-        <!-- Header with Search -->
-        <div
-          class="notes-header px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700"
-        >
-          <div class="space-y-4">
-            <!-- Title and Actions Row -->
-            <div class="flex items-center justify-between">
-              <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                  {{
-                    currentView === 'editor'
-                      ? selectedNote
-                        ? 'Edit Note'
-                        : 'New Note'
-                      : noteListTitle
-                  }}
-                </h1>
-              </div>
-
-              <div v-if="currentView === 'list'" class="flex items-center space-x-2">
-                <Button
-                  v-tooltip.bottom="'Keyboard Shortcuts'"
-                  icon="pi pi-question-circle"
-                  class="p-button-text p-button-rounded"
-                  @click="showShortcutsHelp = true"
-                />
-                <Button label="New Note" icon="pi pi-plus" @click="handleCreateNote" />
-              </div>
-            </div>
-
-            <!-- Search Bar (only show in list view) -->
-            <div v-if="currentView === 'list'">
-              <NoteSearchBar
-                :result-count="searchActive ? searchResults.length : null"
-                :search-time="searchTime"
-                @search="handleSearch"
-                @clear="handleClearSearch"
+      <!-- Notes List Panel -->
+      <div class="notes-list-panel">
+        <!-- Header with Search and Actions -->
+        <div class="notes-list-header">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+              {{ noteListTitle }}
+            </h2>
+            <div class="flex items-center gap-2">
+              <Button
+                v-tooltip.bottom="'Keyboard Shortcuts'"
+                icon="pi pi-question-circle"
+                text
+                rounded
+                size="small"
+                @click="showShortcutsHelp = true"
               />
+              <Button label="New Note" icon="pi pi-plus" size="small" @click="handleCreateNote" />
             </div>
           </div>
+
+          <!-- Search Bar -->
+          <NoteSearchBar
+            :result-count="searchActive ? searchResults.length : null"
+            :search-time="searchTime"
+            @search="handleSearch"
+            @clear="handleClearSearch"
+          />
         </div>
 
-        <!-- Content Area -->
-        <div class="flex-1 overflow-hidden">
+        <!-- Notes List Content -->
+        <div class="notes-list-content">
           <!-- Loading State -->
-          <div v-if="notesStore.loading" class="flex items-center justify-center h-full">
-            <div class="text-center">
-              <i class="pi pi-spin pi-spinner text-4xl text-primary-500 mb-4"></i>
-              <p class="text-gray-600 dark:text-gray-400">Loading notes...</p>
-            </div>
+          <div v-if="notesStore.loading" class="loading-state">
+            <i class="pi pi-spin pi-spinner text-4xl text-primary-500 mb-4"></i>
+            <p class="text-gray-600 dark:text-gray-400">Loading notes...</p>
           </div>
 
           <!-- Error State -->
-          <div v-else-if="notesStore.error" class="flex items-center justify-center h-full">
-            <div class="text-center">
-              <i class="pi pi-exclamation-circle text-4xl text-red-500 mb-4"></i>
-              <p class="text-red-600 dark:text-red-400 mb-4">{{ notesStore.error }}</p>
-              <Button label="Retry" icon="pi pi-refresh" @click="notesStore.fetchNotes()" />
-            </div>
+          <div v-else-if="notesStore.error" class="error-state">
+            <i class="pi pi-exclamation-circle text-4xl text-red-500 mb-4"></i>
+            <p class="text-red-600 dark:text-red-400 mb-4">{{ notesStore.error }}</p>
+            <Button label="Retry" icon="pi pi-refresh" @click="notesStore.fetchNotes()" />
           </div>
 
-          <!-- Note List View -->
-          <div v-else-if="currentView === 'list' && !searchActive" class="h-full">
+          <!-- Note List (always visible unless loading/error) -->
+          <div v-else-if="!searchActive">
             <NoteList
               :notes="displayedNotes"
               :title="noteListTitle"
@@ -485,11 +472,8 @@ watch(
             />
           </div>
 
-          <!-- Search Results View -->
-          <div
-            v-else-if="currentView === 'search' && searchActive"
-            class="h-full overflow-y-auto p-6"
-          >
+          <!-- Search Results -->
+          <div v-else class="search-results-container">
             <NoteSearchResults
               :results="searchResults"
               :loading="searchLoading"
@@ -497,19 +481,33 @@ watch(
               @select="handleOpenNote"
             />
           </div>
+        </div>
+      </div>
 
-          <!-- Editor View -->
-          <div v-else-if="currentView === 'editor'" class="h-full">
-            <NoteEditor
-              :note="selectedNote"
-              :topic-id="notesStore.selectedTopicId"
-              @close="handleCloseEditor"
-              @save="handleSaveNote"
-              @pin="handleTogglePin(selectedNote)"
-              @archive="handleToggleArchive(selectedNote)"
-              @delete="handleDeleteNote(selectedNote)"
-            />
-          </div>
+      <!-- Editor Panel (side-by-side with list) -->
+      <div class="notes-editor-panel">
+        <!-- Empty State -->
+        <div v-if="currentView !== 'editor' && !selectedNote" class="editor-empty-state">
+          <i class="pi pi-file-edit text-6xl opacity-30 mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            No note selected
+          </h3>
+          <p class="text-gray-500 dark:text-gray-400">
+            Select a note from the list or create a new one
+          </p>
+        </div>
+
+        <!-- Note Editor -->
+        <div v-else class="note-editor-container">
+          <NoteEditor
+            :note="selectedNote"
+            :topic-id="notesStore.selectedTopicId"
+            @close="handleCloseEditor"
+            @save="handleSaveNote"
+            @pin="handleTogglePin(selectedNote)"
+            @archive="handleToggleArchive(selectedNote)"
+            @delete="handleDeleteNote(selectedNote)"
+          />
         </div>
       </div>
 
@@ -537,11 +535,134 @@ watch(
 </template>
 
 <style scoped>
-.notes-view {
-  height: calc(100vh - 64px); /* Adjust based on header height */
+/* Main Grid Layout: Topic Sidebar | Notes List | Editor */
+.notes-view-container {
+  display: grid;
+  grid-template-columns: 240px 380px 1fr;
+  gap: 1.5rem;
+  height: calc(100vh - 120px);
+  padding: 2rem;
+  max-width: 1800px;
+  margin: 0 auto;
 }
 
-.notes-header {
-  flex-shrink: 0;
+/* Topic Sidebar */
+.notes-topic-sidebar {
+  overflow-y: auto;
+}
+
+/* Notes List Panel */
+.notes-list-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-default, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dark .notes-list-panel {
+  background: var(--bg-surface, #1f1f1f);
+  border-color: var(--border-default, #374151);
+}
+
+.notes-list-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-default, #e5e7eb);
+  background: var(--bg-base, #fafafa);
+}
+
+.dark .notes-list-header {
+  background: var(--bg-base, #141414);
+  border-color: var(--border-default, #374151);
+}
+
+.notes-list-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  text-align: center;
+}
+
+.search-results-container {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Editor Panel */
+.notes-editor-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-default, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dark .notes-editor-panel {
+  background: var(--bg-surface, #1f1f1f);
+  border-color: var(--border-default, #374151);
+}
+
+.editor-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 3rem;
+  text-align: center;
+}
+
+.note-editor-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tablet: Collapse to 2 columns (hide topics on smaller screens) */
+@media (max-width: 1200px) {
+  .notes-view-container {
+    grid-template-columns: 320px 1fr;
+  }
+
+  .notes-topic-sidebar {
+    display: none;
+  }
+}
+
+/* Mobile: Stack vertically */
+@media (max-width: 768px) {
+  .notes-view-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    height: calc(100vh - 100px);
+  }
+
+  .notes-list-panel {
+    max-height: 40vh;
+  }
+
+  .notes-editor-panel {
+    min-height: 50vh;
+  }
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
 }
 </style>

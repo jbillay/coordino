@@ -45,7 +45,7 @@ const props = defineProps({
   }
 })
 
-defineEmits(['edit', 'delete', 'toggle-complete', 'create-task'])
+defineEmits(['edit', 'delete', 'toggle-complete', 'create-task', 'click'])
 
 /**
  * Grouped tasks
@@ -59,11 +59,11 @@ const groupedTasks = computed(() => {
 </script>
 
 <template>
-  <div class="content-card task-list">
+  <div class="task-list">
     <!-- Empty state -->
-    <div v-if="!tasks || tasks.length === 0" class="empty-state text-center py-12">
-      <i class="pi pi-inbox text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
-      <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No tasks found</h3>
+    <div v-if="!tasks || tasks.length === 0" class="empty-state">
+      <i class="pi pi-inbox text-6xl opacity-30 mb-4"></i>
+      <h3 class="text-xl font-semibold mb-2">No tasks found</h3>
       <p class="text-gray-500 dark:text-gray-400 mb-6">
         {{ emptyMessage }}
       </p>
@@ -76,39 +76,39 @@ const groupedTasks = computed(() => {
     </div>
 
     <!-- Grouped tasks -->
-    <div v-else-if="groupBy && groupBy !== 'none'" class="space-y-3">
+    <div v-else-if="groupBy && groupBy !== 'none'" class="space-y-4">
       <div v-for="(tasksInGroup, groupName) in groupedTasks" :key="groupName" class="task-group">
-        <div class="flex items-center justify-between mb-1">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <div class="group-header">
+          <h3 class="group-title">
             {{ groupName }}
-            <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
-              ({{ tasksInGroup.length }})
-            </span>
+            <span class="group-count">({{ tasksInGroup.length }})</span>
           </h3>
         </div>
 
-        <div class="space-y-0">
+        <div class="task-list-container">
           <TaskCard
             v-for="task in tasksInGroup"
             :key="task.id"
             :task="task"
             @edit="$emit('edit', $event)"
             @delete="$emit('delete', $event)"
-            @toggle-complete="$emit('toggle-complete', $event)"
+            @toggle="$emit('toggle-complete', $event)"
+            @click="$emit('click', $event)"
           />
         </div>
       </div>
     </div>
 
     <!-- Flat list -->
-    <div v-else class="space-y-0">
+    <div v-else class="task-list-container">
       <TaskCard
         v-for="task in tasks"
         :key="task.id"
         :task="task"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
-        @toggle-complete="$emit('toggle-complete', $event)"
+        @toggle="$emit('toggle-complete', $event)"
+        @click="$emit('click', $event)"
       />
     </div>
   </div>
@@ -119,15 +119,43 @@ const groupedTasks = computed(() => {
   min-height: 300px;
 }
 
+.task-list-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
 }
 
 .task-group {
   background: transparent;
-  border-radius: 8px;
+}
+
+.group-header {
+  margin-bottom: 0.75rem;
+}
+
+.group-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.group-count {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  margin-left: 0.5rem;
 }
 </style>

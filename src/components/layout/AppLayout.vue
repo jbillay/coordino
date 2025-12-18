@@ -22,6 +22,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
+import GlobalFAB from '@/components/global/GlobalFAB.vue'
+import CommandPalette from '@/components/global/CommandPalette.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -322,6 +324,12 @@ onUnmounted(() => {
     >
       <i :class="showMobileMenu ? 'pi pi-times' : 'pi pi-bars'" aria-hidden="true"></i>
     </button>
+
+    <!-- Command Palette (⌘K / Ctrl+K) -->
+    <CommandPalette />
+
+    <!-- Global FAB for quick actions -->
+    <GlobalFAB />
   </div>
 </template>
 

@@ -10,7 +10,9 @@ import TaskDialog from '@/features/tasks/components/TaskDialog.vue'
 import StatusManager from '@/features/tasks/components/StatusManager.vue'
 import CategoryManager from '@/features/tasks/components/CategoryManager.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import TaskSkeleton from '@/components/skeletons/TaskSkeleton.vue'
 import { useTaskStore } from '@/features/tasks/store'
+import { useActivityStore } from '@/stores/activity'
 import { getTaskStats } from '@/features/tasks/utils'
 import { useTaskFilters } from '@/features/tasks/composables/useTaskFilters'
 import { DEFAULT_GROUP_BY } from '@/constants'
@@ -24,6 +26,7 @@ import { useToast } from 'primevue/usetoast'
  */
 
 const taskStore = useTaskStore()
+const activityStore = useActivityStore()
 const toast = useToast()
 
 // Dialog visibility
@@ -52,6 +55,18 @@ const taskStats = computed(() => getTaskStats(taskStore.tasks))
 const handleCreateTask = () => {
   selectedTask.value = null
   showTaskDialog.value = true
+}
+
+/**
+ * Handle task click - track activity
+ */
+const handleTaskClick = (task) => {
+  activityStore.trackActivity('task', task.id, task.title, {
+    status: task.status?.name,
+    priority: task.priority
+  })
+  // Open task detail dialog
+  handleEditTask(task)
 }
 
 /**
@@ -259,10 +274,7 @@ onBeforeUnmount(async () => {
       <TaskFilters v-model="filters" v-model:sort-by="sortBy" v-model:group-by="groupBy" />
 
       <!-- Loading State -->
-      <div v-if="taskStore.loading" class="text-center py-12">
-        <i class="pi pi-spin pi-spinner text-4xl text-primary-500 mb-4"></i>
-        <p class="text-gray-600 dark:text-gray-400">Loading tasks...</p>
-      </div>
+      <TaskSkeleton v-if="taskStore.loading" :count="8" />
 
       <!-- Error State -->
       <div v-else-if="taskStore.error" class="text-center py-12">
@@ -281,6 +293,7 @@ onBeforeUnmount(async () => {
         @delete="handleDeleteTask"
         @toggle-complete="handleToggleComplete"
         @create-task="handleCreateTask"
+        @click="handleTaskClick"
       />
 
       <!-- Load More Button -->

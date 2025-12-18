@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSchedulingStore } from '../store'
+import { useActivityStore } from '@/stores/activity'
 import { getBreakdown } from '../composables/useEquityScore'
 import EquityScoreCard from '../components/EquityScoreCard.vue'
 import TimezoneGrid from '../components/TimezoneGrid.vue'
@@ -22,6 +23,7 @@ import { format } from 'date-fns'
 const route = useRoute()
 const router = useRouter()
 const store = useSchedulingStore()
+const activityStore = useActivityStore()
 const toast = useToast()
 
 // State
@@ -254,6 +256,12 @@ onMounted(async () => {
   try {
     await store.fetchParticipants()
     await store.fetchMeeting(meetingId)
+
+    // Track activity
+    activityStore.trackActivity('meeting', store.currentMeeting.id, store.currentMeeting.title, {
+      participantCount: store.currentMeeting.participants?.length || 0,
+      proposedTime: store.currentMeeting.proposed_time
+    })
 
     // Initialize edit fields
     const currentTime = new Date(store.currentMeeting.proposed_time)

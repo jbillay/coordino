@@ -145,6 +145,10 @@ describe('TasksView.vue', () => {
             template: '<div class="confirm-dialog"></div>',
             props: ['visible', 'header', 'message', 'severity', 'confirmLabel', 'confirmIcon'],
             emits: ['update:visible', 'confirm']
+          },
+          TaskSkeleton: {
+            template: '<div class="task-skeleton">Loading tasks...</div>',
+            props: ['count']
           }
         }
       },
@@ -447,6 +451,7 @@ describe('TasksView.vue', () => {
     })
 
     it('displays pagination info', async () => {
+      mockDisplayedTasks = [...mockTasks]
       taskStore.totalTasks = 10
       taskStore.tasks = mockTasks
       const wrapper = mountComponent()

@@ -51,11 +51,11 @@ export function useNoteAutosave(options = {}) {
       if (noteId) {
         // Update existing note
         result = await notesStore.updateNote(noteId, noteData)
-      } else if (topicId) {
-        // Create new note
+      } else {
+        // Create new note (topic_id is optional)
         result = await notesStore.createNote({
           ...noteData,
-          topic_id: topicId
+          topic_id: topicId || null
         })
 
         // Update noteId for future saves
