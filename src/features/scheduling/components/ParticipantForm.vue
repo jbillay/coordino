@@ -25,10 +25,10 @@ const emit = defineEmits(['submit', 'cancel'])
 
 // Form data
 const formData = ref({
-  name: props.initialData.name || '',
-  timezone: props.initialData.timezone || '',
-  country_code: props.initialData.country_code || '',
-  notes: props.initialData.notes || ''
+  name: props.initialData?.name || '',
+  timezone: props.initialData?.timezone || '',
+  country_code: props.initialData?.country_code || '',
+  notes: props.initialData?.notes || ''
 })
 
 // Validation errors
