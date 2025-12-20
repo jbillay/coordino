@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import Select from 'primevue/select'
 import { useTaskStore } from '../store'
 
 const props = defineProps({
@@ -24,6 +25,19 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'update:sortBy', 'update:groupBy'])
+
+// Group by options
+const groupByOptions = [
+  { label: 'No grouping', value: 'none', icon: 'pi-list' },
+  { label: 'Group by Status', value: 'status', icon: 'pi-flag' },
+  { label: 'Group by Category', value: 'category', icon: 'pi-tag' },
+  { label: 'Group by Priority', value: 'priority', icon: 'pi-exclamation-circle' }
+]
+
+// Handle group by change
+const handleGroupByChange = (value) => {
+  emit('update:groupBy', value)
+}
 
 const taskStore = useTaskStore()
 
@@ -154,19 +168,52 @@ watch(
       <kbd v-if="!searchQuery" class="search-hint">⌘K</kbd>
     </div>
 
-    <!-- Filter Chips -->
-    <div class="filter-chips">
-      <button
-        v-for="preset in filterPresets"
-        :key="preset.id"
-        class="filter-chip"
-        :class="{ active: activeFilter === preset.id }"
-        @click="toggleFilter(preset.id)"
-      >
-        <i class="pi" :class="preset.icon"></i>
-        <span class="chip-label">{{ preset.label }}</span>
-        <span v-if="preset.count > 0" class="chip-count">{{ preset.count }}</span>
-      </button>
+    <!-- Filter Chips and Group By -->
+    <div class="filters-row">
+      <!-- Filter Chips -->
+      <div class="filter-chips">
+        <button
+          v-for="preset in filterPresets"
+          :key="preset.id"
+          class="filter-chip"
+          :class="{ active: activeFilter === preset.id }"
+          @click="toggleFilter(preset.id)"
+        >
+          <i class="pi" :class="preset.icon"></i>
+          <span class="chip-label">{{ preset.label }}</span>
+          <span v-if="preset.count > 0" class="chip-count">{{ preset.count }}</span>
+        </button>
+      </div>
+
+      <!-- Group By Dropdown -->
+      <div class="group-by-control">
+        <Select
+          :model-value="groupBy"
+          :options="groupByOptions"
+          option-label="label"
+          option-value="value"
+          placeholder="Group by..."
+          size="small"
+          class="group-by-select"
+          @update:model-value="handleGroupByChange"
+        >
+          <template #value="slotProps">
+            <div v-if="slotProps.value" class="select-value">
+              <i
+                class="pi"
+                :class="groupByOptions.find((o) => o.value === slotProps.value)?.icon"
+              ></i>
+              <span>{{ groupByOptions.find((o) => o.value === slotProps.value)?.label }}</span>
+            </div>
+          </template>
+          <template #option="slotProps">
+            <div class="select-option">
+              <i class="pi" :class="slotProps.option.icon"></i>
+              <span>{{ slotProps.option.label }}</span>
+            </div>
+          </template>
+        </Select>
+      </div>
     </div>
   </div>
 </template>
@@ -227,11 +274,20 @@ watch(
   color: var(--text-tertiary);
 }
 
+/* Filters Row - Contains chips and group by */
+.filters-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 /* Filter Chips */
 .filter-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  flex: 1;
 }
 
 .filter-chip {
@@ -296,6 +352,36 @@ watch(
   outline-offset: 2px;
 }
 
+/* Group By Control */
+.group-by-control {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.group-by-select {
+  min-width: 180px;
+}
+
+.select-value,
+.select-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.select-value i,
+.select-option i {
+  font-size: 0.875rem;
+  color: var(--p-text-muted-color);
+}
+
+:deep(.group-by-select .p-select-label) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .filter-bar {
@@ -306,9 +392,27 @@ watch(
     padding: 0.625rem 0.75rem;
   }
 
+  .filters-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-chips {
+    width: 100%;
+  }
+
   .filter-chip {
     font-size: 0.8125rem;
     padding: 0.4375rem 0.75rem;
+  }
+
+  .group-by-control {
+    width: 100%;
+  }
+
+  .group-by-select {
+    width: 100%;
+    min-width: auto;
   }
 }
 
