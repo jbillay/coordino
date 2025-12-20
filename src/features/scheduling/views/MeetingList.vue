@@ -100,8 +100,7 @@ async function deleteMeeting() {
 onMounted(async () => {
   loading.value = true
   try {
-    // Fetch meetings would go here
-    // For now, meetings are loaded from store
+    await store.fetchMeetings()
   } catch (error) {
     console.error('Failed to load meetings:', error)
   } finally {
