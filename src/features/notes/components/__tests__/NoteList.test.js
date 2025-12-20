@@ -97,9 +97,7 @@ describe('NoteList.vue', () => {
   })
 
   it('sorts notes by title when sort option is changed', async () => {
-    const wrapper = mountComponent()
-    const select = wrapper.find('select')
-    await select.setValue('title-asc')
+    const wrapper = mountComponent({ sortBy: 'title-asc' })
     await nextTick()
 
     const regularSection = wrapper.find('[data-testid="regular-notes"]')

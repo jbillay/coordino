@@ -1,6 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
-import Select from 'primevue/select'
+import { computed } from 'vue'
 import NoteCard from './NoteCard.vue'
 
 const props = defineProps({
@@ -24,20 +23,18 @@ const props = defineProps({
     type: String,
     default:
       'Start capturing your thoughts, ideas, and important information by creating your first note.'
+  },
+  viewMode: {
+    type: String,
+    default: 'list'
+  },
+  sortBy: {
+    type: String,
+    default: 'updated'
   }
 })
 
 defineEmits(['open', 'create', 'pin', 'archive', 'delete'])
-
-const viewMode = ref('grid')
-const sortBy = ref('updated')
-
-const sortOptions = [
-  { label: 'Last Updated', value: 'updated' },
-  { label: 'Created Date', value: 'created' },
-  { label: 'Title (A-Z)', value: 'title-asc' },
-  { label: 'Title (Z-A)', value: 'title-desc' }
-]
 
 const pinnedNotes = computed(() => sortNotes(props.notes.filter((note) => note.is_pinned)))
 
@@ -46,7 +43,7 @@ const regularNotes = computed(() => sortNotes(props.notes.filter((note) => !note
 const sortNotes = (notes) => {
   const notesCopy = [...notes]
 
-  switch (sortBy.value) {
+  switch (props.sortBy) {
     case 'updated':
       return notesCopy.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
     case 'created':
@@ -62,78 +59,35 @@ const sortNotes = (notes) => {
 </script>
 
 <template>
-  <div class="note-list h-full flex flex-col">
-    <!-- Header with view controls -->
-    <div
-      class="note-list-header flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700"
-    >
-      <div class="flex items-center space-x-4">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-          {{ title }}
-        </h2>
-        <span v-if="notes.length > 0" class="text-sm text-gray-500 dark:text-gray-400">
-          {{ notes.length }} {{ notes.length === 1 ? 'note' : 'notes' }}
-        </span>
-      </div>
+  <div class="note-list">
+    <!-- Loading State -->
+    <div v-if="loading" data-testid="loading-indicator" class="loading-state">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>Loading notes...</p>
+    </div>
 
-      <div class="flex items-center space-x-2">
-        <!-- View Mode Toggle -->
-        <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-          <Button
-            v-tooltip.bottom="'Grid view'"
-            icon="pi pi-th-large"
-            class="p-button-text p-button-sm"
-            :class="{ 'bg-white dark:bg-gray-700': viewMode === 'grid' }"
-            @click="viewMode = 'grid'"
-          />
-          <Button
-            v-tooltip.bottom="'List view'"
-            icon="pi pi-list"
-            class="p-button-text p-button-sm"
-            :class="{ 'bg-white dark:bg-gray-700': viewMode === 'list' }"
-            @click="viewMode = 'list'"
-          />
-        </div>
-
-        <!-- Sort Select -->
-        <Select
-          v-model="sortBy"
-          :options="sortOptions"
-          option-label="label"
-          option-value="value"
-          placeholder="Sort by"
-          class="w-40"
-        />
-
-        <!-- New Note Button -->
-        <Button
-          label="New Note"
-          icon="pi pi-plus"
-          data-testid="new-note-button"
-          @click="$emit('create')"
-        />
-      </div>
+    <!-- Empty State -->
+    <div v-else-if="notes.length === 0" data-testid="empty-state" class="empty-state">
+      <i class="pi pi-file"></i>
+      <h3>{{ emptyStateTitle }}</h3>
+      <p>{{ emptyStateMessage }}</p>
+      <Button
+        label="Create Your First Note"
+        icon="pi pi-plus"
+        size="large"
+        @click="$emit('create')"
+      />
     </div>
 
     <!-- Notes Content -->
-    <div class="flex-1 overflow-y-auto p-6">
+    <div v-else class="notes-content">
       <!-- Pinned Notes Section -->
-      <div v-if="pinnedNotes.length > 0" data-testid="pinned-notes" class="mb-8">
-        <div class="flex items-center space-x-2 mb-4">
-          <i class="pi pi-star-fill text-primary-500"></i>
-          <h3
-            class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
-          >
-            Pinned Notes
-          </h3>
+      <div v-if="pinnedNotes.length > 0" data-testid="pinned-notes" class="notes-section">
+        <div class="section-header">
+          <i class="pi pi-star-fill"></i>
+          <h3>Pinned</h3>
         </div>
-        <div
-          class="notes-grid"
-          :class="{
-            'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4': viewMode === 'grid',
-            'space-y-3': viewMode === 'list'
-          }"
-        >
+        <div class="notes-grid" :class="viewMode">
           <NoteCard
             v-for="note in pinnedNotes"
             :key="note.id"
@@ -147,20 +101,11 @@ const sortNotes = (notes) => {
       </div>
 
       <!-- Regular Notes Section -->
-      <div v-if="regularNotes.length > 0" data-testid="regular-notes">
-        <h3
-          v-if="pinnedNotes.length > 0"
-          class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-4"
-        >
-          All Notes
-        </h3>
-        <div
-          class="notes-grid"
-          :class="{
-            'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4': viewMode === 'grid',
-            'space-y-3': viewMode === 'list'
-          }"
-        >
+      <div v-if="regularNotes.length > 0" data-testid="regular-notes" class="notes-section">
+        <div v-if="pinnedNotes.length > 0" class="section-header">
+          <h3>Recent</h3>
+        </div>
+        <div class="notes-grid" :class="viewMode">
           <NoteCard
             v-for="note in regularNotes"
             :key="note.id"
@@ -172,51 +117,132 @@ const sortNotes = (notes) => {
           />
         </div>
       </div>
-
-      <!-- Empty State -->
-      <div
-        v-if="notes.length === 0"
-        data-testid="empty-state"
-        class="flex flex-col items-center justify-center h-full min-h-[400px] text-center"
-      >
-        <i class="pi pi-file text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
-        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          {{ emptyStateTitle }}
-        </h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
-          {{ emptyStateMessage }}
-        </p>
-        <Button
-          label="Create Your First Note"
-          icon="pi pi-plus"
-          size="large"
-          @click="$emit('create')"
-        />
-      </div>
-
-      <!-- Loading State -->
-      <div
-        v-if="loading"
-        data-testid="loading-indicator"
-        class="flex items-center justify-center h-full min-h-[400px]"
-      >
-        <i class="pi pi-spin pi-spinner text-4xl text-primary-500"></i>
-      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .note-list {
-  background: #f9fafb;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
 }
 
-.dark .note-list {
-  background: #111827;
+/* Loading & Empty States */
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 400px;
+  padding: 3rem 2rem;
+  text-align: center;
 }
 
-/* List view specific styling */
-.notes-grid.space-y-3 > * {
-  width: 100%;
+.loading-state i {
+  font-size: 2.5rem;
+  color: var(--p-primary-color);
+  margin-bottom: 1rem;
+}
+
+.loading-state p {
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+}
+
+.empty-state i {
+  font-size: 4rem;
+  color: var(--p-text-muted-color);
+  opacity: 0.3;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: var(--p-text-muted-color);
+  max-width: 360px;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Notes Content */
+.notes-content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+/* Notes Section */
+.notes-section {
+  margin-bottom: 2rem;
+}
+
+.notes-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0 0.25rem;
+}
+
+.section-header i {
+  font-size: 0.75rem;
+  color: var(--p-primary-color);
+}
+
+.section-header h3 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--p-text-muted-color);
+}
+
+/* Notes Grid */
+.notes-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notes-grid.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+/* Smooth scrolling */
+.notes-content {
+  scroll-behavior: smooth;
+}
+
+.notes-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notes-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notes-content::-webkit-scrollbar-thumb {
+  background: var(--p-surface-400);
+  border-radius: 3px;
+}
+
+.notes-content::-webkit-scrollbar-thumb:hover {
+  background: var(--p-surface-500);
 }
 </style>

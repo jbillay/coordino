@@ -150,66 +150,60 @@ defineExpose({
       />
     </div>
 
-    <!-- Search Filters -->
-    <div v-if="showFilters" class="search-filters mt-3 flex flex-wrap items-center gap-2">
-      <!-- Topic Filter -->
-      <Select
-        v-model="selectedTopicId"
-        :options="topicOptions"
-        option-label="label"
-        option-value="value"
-        placeholder="All Topics"
-        class="w-48"
-        show-clear
-        @change="handleFilterChange"
-      />
-
-      <!-- Date Range Filter -->
-      <Select
-        v-model="dateRange"
-        :options="dateRangeOptions"
-        option-label="label"
-        option-value="value"
-        placeholder="Any Time"
-        class="w-40"
-        @change="handleFilterChange"
-      />
-
-      <!-- Pinned Filter -->
-      <div class="flex items-center space-x-2">
-        <Checkbox
-          v-model="showPinnedOnly"
-          input-id="pinned-filter"
-          :binary="true"
+    <!-- Search Filters - Compact inline layout -->
+    <div v-if="showFilters" class="search-filters">
+      <div class="filter-row">
+        <!-- Topic Filter -->
+        <Select
+          v-model="selectedTopicId"
+          :options="topicOptions"
+          option-label="label"
+          option-value="value"
+          placeholder="All Topics"
+          size="small"
+          show-clear
           @change="handleFilterChange"
         />
-        <label for="pinned-filter" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-          Pinned only
-        </label>
+
+        <!-- Date Range Filter -->
+        <Select
+          v-model="dateRange"
+          :options="dateRangeOptions"
+          option-label="label"
+          option-value="value"
+          placeholder="Any Time"
+          size="small"
+          @change="handleFilterChange"
+        />
       </div>
 
-      <!-- Archived Filter -->
-      <div class="flex items-center space-x-2">
-        <Checkbox
-          v-model="includeArchived"
-          input-id="archived-filter"
-          :binary="true"
-          @change="handleFilterChange"
-        />
-        <label
-          for="archived-filter"
-          class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
-        >
-          Include archived
-        </label>
+      <div class="filter-checkboxes">
+        <!-- Pinned Filter -->
+        <div class="checkbox-item">
+          <Checkbox
+            v-model="showPinnedOnly"
+            input-id="pinned-filter"
+            :binary="true"
+            @change="handleFilterChange"
+          />
+          <label for="pinned-filter">Pinned only</label>
+        </div>
+
+        <!-- Archived Filter -->
+        <div class="checkbox-item">
+          <Checkbox
+            v-model="includeArchived"
+            input-id="archived-filter"
+            :binary="true"
+            @change="handleFilterChange"
+          />
+          <label for="archived-filter">Include archived</label>
+        </div>
       </div>
     </div>
 
     <!-- Search Info -->
-    <div
-      v-if="searchQuery && resultCount !== null"
-      class="search-info mt-2 text-sm text-gray-600 dark:text-gray-400"
-    >
+    <div v-if="searchQuery && resultCount !== null" class="search-info">
       <span v-if="resultCount === 0">No results found</span>
       <span v-else>
         {{ resultCount }} {{ resultCount === 1 ? 'result' : 'results' }} found
@@ -218,3 +212,53 @@ defineExpose({
     </div>
   </div>
 </template>
+
+<style scoped>
+.note-search-bar {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.search-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-row :deep(.p-select) {
+  flex: 1;
+  min-width: 140px;
+}
+
+.filter-checkboxes {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.checkbox-item label {
+  font-size: 0.8125rem;
+  color: var(--p-text-muted-color);
+  cursor: pointer;
+  user-select: none;
+}
+
+.search-info {
+  font-size: 0.8125rem;
+  color: var(--p-text-muted-color);
+}
+</style>

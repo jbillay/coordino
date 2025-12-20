@@ -3,6 +3,8 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Toast from 'primevue/toast'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
 import TopicList from '@/features/notes/components/TopicList.vue'
 import NoteList from '@/features/notes/components/NoteList.vue'
 import NoteEditor from '@/features/notes/components/NoteEditor.vue'
@@ -40,6 +42,17 @@ const selectedNote = ref(null)
 const showDeleteConfirm = ref(false)
 const noteToDelete = ref(null)
 const showShortcutsHelp = ref(false)
+
+// Note list view controls
+const viewMode = ref('list')
+const sortBy = ref('updated')
+
+const sortOptions = [
+  { label: 'Last Updated', value: 'updated' },
+  { label: 'Created Date', value: 'created' },
+  { label: 'Title (A-Z)', value: 'title-asc' },
+  { label: 'Title (Z-A)', value: 'title-desc' }
+]
 
 // Search state
 const searchActive = ref(false)
@@ -415,11 +428,14 @@ watch(
       <div class="notes-list-panel">
         <!-- Header with Search and Actions -->
         <div class="notes-list-header">
-          <div class="flex items-center justify-between mb-3">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-              {{ noteListTitle }}
-            </h2>
-            <div class="flex items-center gap-2">
+          <div class="header-top">
+            <div class="header-title">
+              <h2>{{ noteListTitle }}</h2>
+              <span v-if="displayedNotes.length > 0" class="note-count">
+                {{ displayedNotes.length }} {{ displayedNotes.length === 1 ? 'note' : 'notes' }}
+              </span>
+            </div>
+            <div class="header-actions">
               <Button
                 v-tooltip.bottom="'Keyboard Shortcuts'"
                 icon="pi pi-question-circle"
@@ -428,7 +444,7 @@ watch(
                 size="small"
                 @click="showShortcutsHelp = true"
               />
-              <Button label="New Note" icon="pi pi-plus" size="small" @click="handleCreateNote" />
+              <Button label="New Note" icon="pi pi-plus" @click="handleCreateNote" />
             </div>
           </div>
 
@@ -439,6 +455,38 @@ watch(
             @search="handleSearch"
             @clear="handleClearSearch"
           />
+
+          <!-- View Controls -->
+          <div class="view-controls">
+            <!-- View Mode Toggle -->
+            <div class="view-mode-toggle">
+              <Button
+                v-tooltip.bottom="'List view'"
+                icon="pi pi-list"
+                text
+                :class="{ active: viewMode === 'list' }"
+                @click="viewMode = 'list'"
+              />
+              <Button
+                v-tooltip.bottom="'Grid view'"
+                icon="pi pi-th-large"
+                text
+                :class="{ active: viewMode === 'grid' }"
+                @click="viewMode = 'grid'"
+              />
+            </div>
+
+            <!-- Sort Select -->
+            <Select
+              v-model="sortBy"
+              :options="sortOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Sort by"
+              size="small"
+              class="sort-select"
+            />
+          </div>
         </div>
 
         <!-- Notes List Content -->
@@ -464,6 +512,8 @@ watch(
               :loading="notesStore.loading"
               :empty-state-title="emptyStateTitle"
               :empty-state-message="emptyStateMessage"
+              :view-mode="viewMode"
+              :sort-by="sortBy"
               @open="handleOpenNote"
               @create="handleCreateNote"
               @pin="handleTogglePin"
@@ -567,14 +617,77 @@ watch(
 }
 
 .notes-list-header {
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border-default, #e5e7eb);
-  background: var(--bg-base, #fafafa);
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--p-surface-border);
+  background: var(--p-surface-0);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.dark .notes-list-header {
-  background: var(--bg-base, #141414);
-  border-color: var(--border-default, #374151);
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-title h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+  margin: 0;
+}
+
+.note-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--p-text-muted-color);
+  padding: 0.25rem 0.625rem;
+  background: var(--p-surface-100);
+  border-radius: 12px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.view-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--p-surface-border);
+}
+
+.view-mode-toggle {
+  display: flex;
+  align-items: center;
+  background: var(--p-surface-100);
+  border-radius: 8px;
+  padding: 0.125rem;
+}
+
+.view-mode-toggle :deep(.p-button) {
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.view-mode-toggle :deep(.p-button.active) {
+  background: var(--p-surface-0);
+  color: var(--p-primary-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.sort-select {
+  min-width: 160px;
 }
 
 .notes-list-content {
