@@ -1,4 +1,12 @@
-# Logs
+# === Dependencies ===
+node_modules
+
+# === Build Outputs ===
+dist
+dist-ssr
+*.local
+
+# === Logs ===
 logs
 *.log
 npm-debug.log*
@@ -7,34 +15,43 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# === Environment Variables ===
+.env
+.env.local
+.env.*.local
 
-# Editor directories and files
+# === Editor Directories and Files ===
+# VS Code - ignore all except extensions.json
 .vscode/*
 !.vscode/extensions.json
+# Other editors
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-.env
-.playwright-mcp
-
-# Claude Code local settings
-.claude/settings.local.json
-
-# Test coverage and reports
+# === Test Coverage and Reports ===
 coverage/
 html/
+.nyc_output/
 playwright-report/
 test-results/
-.vercel/
-.specify/
-.vscode/
 
+# === Deployment ===
+.vercel/
+
+# === AI/Development Tools ===
+.specify/
+.playwright-mcp
+
+# === Claude Code Local Settings ===
+.claude/settings.local.json
+
+# === OS-specific ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
