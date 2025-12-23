@@ -57,7 +57,19 @@ const router = createRouter({
     {
       path: '/notes',
       name: 'notes',
-      component: () => import('@/views/NotesView.vue'),
+      component: () => import('@/views/NotesListView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/notes/new',
+      name: 'notes-create',
+      component: () => import('@/views/NoteEditorView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/notes/:id/edit',
+      name: 'notes-edit',
+      component: () => import('@/views/NoteEditorView.vue'),
       meta: { requiresAuth: true }
     },
     {

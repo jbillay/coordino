@@ -34,7 +34,7 @@ const props = defineProps({
   }
 })
 
-defineEmits(['open', 'create', 'pin', 'archive', 'delete'])
+defineEmits(['open-note', 'create', 'toggle-pin', 'archive', 'delete-note'])
 
 const pinnedNotes = computed(() => sortNotes(props.notes.filter((note) => note.is_pinned)))
 
@@ -92,10 +92,10 @@ const sortNotes = (notes) => {
             v-for="note in pinnedNotes"
             :key="note.id"
             :note="note"
-            @click="$emit('open', note)"
-            @pin="$emit('pin', note)"
+            @click="$emit('open-note', note)"
+            @pin="$emit('toggle-pin', note)"
             @archive="$emit('archive', note)"
-            @delete="$emit('delete', note)"
+            @delete="$emit('delete-note', note)"
           />
         </div>
       </div>
@@ -110,10 +110,10 @@ const sortNotes = (notes) => {
             v-for="note in regularNotes"
             :key="note.id"
             :note="note"
-            @click="$emit('open', note)"
-            @pin="$emit('pin', note)"
+            @click="$emit('open-note', note)"
+            @pin="$emit('toggle-pin', note)"
             @archive="$emit('archive', note)"
-            @delete="$emit('delete', note)"
+            @delete="$emit('delete-note', note)"
           />
         </div>
       </div>

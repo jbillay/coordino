@@ -81,11 +81,11 @@ describe('NoteList.vue', () => {
     expect(regularSection.findAllComponents({ name: 'NoteCard' }).length).toBe(2)
   })
 
-  it('emits "open" when a note is clicked', async () => {
+  it('emits "open-note" when a note is clicked', async () => {
     const wrapper = mountComponent()
     const noteCard = wrapper.findComponent({ name: 'NoteCard' })
     await noteCard.trigger('click')
-    expect(wrapper.emitted('open')[0][0]).toEqual(notes[0])
+    expect(wrapper.emitted('open-note')[0][0]).toEqual(notes[0])
   })
 
   it('sorts notes by last updated by default', () => {

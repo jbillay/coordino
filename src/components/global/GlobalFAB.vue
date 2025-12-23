@@ -20,7 +20,7 @@ const createTask = () => {
 
 const createNote = () => {
   closeMenu()
-  router.push({ name: 'notes', query: { action: 'create' } })
+  router.push({ name: 'notes-create' })
 }
 
 const createMeeting = () => {
@@ -124,6 +124,7 @@ const handleEscape = (event) => {
   pointer-events: none;
   transform: translateY(20px);
   transition: all 0.2s ease-out;
+  z-index: 1000;
 }
 
 .fab-menu.expanded {

@@ -121,11 +121,12 @@ const triggerAutosaveInternal = () => {
 // Format timestamp
 const formatTimestamp = (timestamp) => formatNoteTimestamp(timestamp)
 
-// Force save on unmount
+// Force save on unmount (only for existing notes, not new ones)
 onBeforeUnmount(() => {
-  if (localTitle.value || localContent.value) {
+  // Only autosave for existing notes to prevent duplicate creation
+  if (props.note?.id && (localTitle.value || localContent.value)) {
     forceSave({
-      id: props.note?.id,
+      id: props.note.id,
       title: localTitle.value,
       content: localContent.value,
       topic_id: props.topicId || props.note?.topic_id

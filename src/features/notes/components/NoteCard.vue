@@ -28,7 +28,7 @@ const formatTimestamp = (timestamp) => formatNoteTimestamp(timestamp)
       'opacity-60': note.archived_at,
       'border-l-4 border-primary-500': note.is_pinned
     }"
-    @click="$emit('click')"
+    @click="$emit('click', note)"
   >
     <template #content>
       <div class="space-y-3">
@@ -69,19 +69,19 @@ const formatTimestamp = (timestamp) => formatNoteTimestamp(timestamp)
               :icon="note.is_pinned ? 'pi pi-star-fill' : 'pi pi-star'"
               class="p-button-rounded p-button-text p-button-sm"
               :class="{ 'text-primary-500': note.is_pinned }"
-              @click.stop="$emit('pin')"
+              @click.stop="$emit('pin', note)"
             />
             <Button
               v-tooltip.bottom="note.archived_at ? 'Unarchive note' : 'Archive note'"
               :icon="note.archived_at ? 'pi pi-inbox' : 'pi pi-box'"
               class="p-button-rounded p-button-text p-button-sm"
-              @click.stop="$emit('archive')"
+              @click.stop="$emit('archive', note)"
             />
             <Button
               v-tooltip.bottom="'Delete note'"
               icon="pi pi-trash"
               class="p-button-rounded p-button-text p-button-sm p-button-danger"
-              @click.stop="$emit('delete')"
+              @click.stop="$emit('delete', note)"
             />
           </div>
         </div>

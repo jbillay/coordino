@@ -14,6 +14,75 @@ import { generateHeatmap, getTopSuggestions } from './composables/useHeatmap'
 import { fetchHolidays, checkHoliday } from './composables/useHolidays'
 import { DEFAULT_CONFIG } from './utils'
 
+/**
+ * Convert work_days array to work_week_pattern string
+ * @param {number[]} workDays - Array of ISO day numbers (1=Monday, ..., 7=Sunday)
+ * @returns {string} Pattern string (e.g., 'MTWTF' for Mon-Fri)
+ */
+function workDaysToPattern(workDays) {
+  if (!workDays || workDays.length === 0) {
+    return ''
+  }
+
+  const dayMap = {
+    1: 'M', // Monday
+    2: 'T', // Tuesday
+    3: 'W', // Wednesday
+    4: 'Th', // Thursday
+    5: 'F', // Friday
+    6: 'Sa', // Saturday
+    7: 'Su' // Sunday
+  }
+
+  return workDays
+    .sort((a, b) => a - b)
+    .map((day) => dayMap[day])
+    .filter(Boolean)
+    .join('')
+}
+
+/**
+ * Convert work_week_pattern string to work_days array
+ * @param {string} pattern - Pattern string (e.g., 'MTWTF')
+ * @returns {number[]} Array of ISO day numbers (1=Monday, ..., 7=Sunday)
+ */
+function patternToWorkDays(pattern) {
+  if (!pattern) {
+    return []
+  }
+
+  const days = []
+  const remaining = pattern
+
+  // Check for multi-character codes first (order matters!)
+  if (remaining.includes('Su')) {
+    days.push(7)
+  } // Sunday
+  if (remaining.includes('Th')) {
+    days.push(4)
+  } // Thursday
+  if (remaining.includes('Sa')) {
+    days.push(6)
+  } // Saturday
+
+  // Then single character codes
+  // For 'M', 'T', 'W', 'F' - check they're not part of longer codes
+  if (remaining.includes('M') && !remaining.match(/M[oO]/)) {
+    days.push(1)
+  } // Monday
+  if (remaining.includes('T') && !remaining.includes('Th') && !remaining.match(/T[uU]/)) {
+    days.push(2)
+  } // Tuesday
+  if (remaining.includes('W')) {
+    days.push(3)
+  } // Wednesday
+  if (remaining.includes('F')) {
+    days.push(5)
+  } // Friday
+
+  return days.sort((a, b) => a - b)
+}
+
 export const useSchedulingStore = defineStore('scheduling', () => {
   const { supabase } = useSupabase()
   const authStore = useAuthStore()
@@ -596,11 +665,11 @@ export const useSchedulingStore = defineStore('scheduling', () => {
       return {
         green_start: customConfig.green_start,
         green_end: customConfig.green_end,
-        orange_morning_start: customConfig.orange_morning_start,
-        orange_morning_end: customConfig.orange_morning_end,
-        orange_evening_start: customConfig.orange_evening_start,
-        orange_evening_end: customConfig.orange_evening_end,
-        work_days: customConfig.work_days
+        orange_morning_start: customConfig.orange_start_morning,
+        orange_morning_end: customConfig.orange_end_morning,
+        orange_evening_start: customConfig.orange_start_evening,
+        orange_evening_end: customConfig.orange_end_evening,
+        work_days: patternToWorkDays(customConfig.work_week_pattern)
       }
     }
 
@@ -623,8 +692,27 @@ export const useSchedulingStore = defineStore('scheduling', () => {
         throw fetchError
       }
 
-      countryConfigurations.value = data || []
-      return data
+      // Map database column names to internal format for all configurations
+      const mappedData = (data || []).map((config) => ({
+        ...config,
+        orange_morning_start: config.orange_start_morning,
+        orange_morning_end: config.orange_end_morning,
+        orange_evening_start: config.orange_start_evening,
+        orange_evening_end: config.orange_end_evening,
+        work_days: patternToWorkDays(config.work_week_pattern)
+      }))
+
+      // Remove database column names from mapped objects
+      mappedData.forEach((config) => {
+        delete config.orange_start_morning
+        delete config.orange_end_morning
+        delete config.orange_start_evening
+        delete config.orange_end_evening
+        delete config.work_week_pattern
+      })
+
+      countryConfigurations.value = mappedData
+      return mappedData
     } catch (err) {
       error.value = err.message
       throw err
@@ -634,6 +722,7 @@ export const useSchedulingStore = defineStore('scheduling', () => {
   }
 
   // T110: Create a new country configuration
+  // UPDATED: Now converts work_days to work_week_pattern
   async function createCountryConfiguration(configData) {
     loading.value = true
     error.value = null
@@ -645,11 +734,11 @@ export const useSchedulingStore = defineStore('scheduling', () => {
           country_code: configData.country_code,
           green_start: configData.green_start,
           green_end: configData.green_end,
-          orange_morning_start: configData.orange_morning_start,
-          orange_morning_end: configData.orange_morning_end,
-          orange_evening_start: configData.orange_evening_start,
-          orange_evening_end: configData.orange_evening_end,
-          work_days: configData.work_days
+          orange_start_morning: configData.orange_morning_start,
+          orange_end_morning: configData.orange_morning_end,
+          orange_start_evening: configData.orange_evening_start,
+          orange_end_evening: configData.orange_evening_end,
+          work_week_pattern: workDaysToPattern(configData.work_days)
         })
         .select()
         .single()
@@ -658,9 +747,25 @@ export const useSchedulingStore = defineStore('scheduling', () => {
         throw insertError
       }
 
+      // Map database column names back to internal format
+      const mappedData = {
+        ...data,
+        orange_morning_start: data.orange_start_morning,
+        orange_morning_end: data.orange_end_morning,
+        orange_evening_start: data.orange_start_evening,
+        orange_evening_end: data.orange_end_evening,
+        work_days: patternToWorkDays(data.work_week_pattern)
+      }
+      // Remove database column names from the mapped object
+      delete mappedData.orange_start_morning
+      delete mappedData.orange_end_morning
+      delete mappedData.orange_start_evening
+      delete mappedData.orange_end_evening
+      delete mappedData.work_week_pattern
+
       // Add to local list
-      countryConfigurations.value.push(data)
-      return data
+      countryConfigurations.value.push(mappedData)
+      return mappedData
     } catch (err) {
       error.value = err.message
       throw err
@@ -674,9 +779,32 @@ export const useSchedulingStore = defineStore('scheduling', () => {
     loading.value = true
     error.value = null
     try {
+      // Map internal column names to database column names
+      const dbUpdates = { ...updates }
+      if (updates.orange_morning_start !== undefined) {
+        dbUpdates.orange_start_morning = updates.orange_morning_start
+        delete dbUpdates.orange_morning_start
+      }
+      if (updates.orange_morning_end !== undefined) {
+        dbUpdates.orange_end_morning = updates.orange_morning_end
+        delete dbUpdates.orange_morning_end
+      }
+      if (updates.orange_evening_start !== undefined) {
+        dbUpdates.orange_start_evening = updates.orange_evening_start
+        delete dbUpdates.orange_evening_start
+      }
+      if (updates.orange_evening_end !== undefined) {
+        dbUpdates.orange_end_evening = updates.orange_evening_end
+        delete dbUpdates.orange_evening_end
+      }
+      if (updates.work_days !== undefined) {
+        dbUpdates.work_week_pattern = workDaysToPattern(updates.work_days)
+        delete dbUpdates.work_days
+      }
+
       const { data, error: updateError } = await supabase
         .from('country_configurations')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
         .eq('user_id', authStore.user.id)
         .select()
@@ -686,13 +814,29 @@ export const useSchedulingStore = defineStore('scheduling', () => {
         throw updateError
       }
 
+      // Map database column names back to internal format
+      const mappedData = {
+        ...data,
+        orange_morning_start: data.orange_start_morning,
+        orange_morning_end: data.orange_end_morning,
+        orange_evening_start: data.orange_start_evening,
+        orange_evening_end: data.orange_end_evening,
+        work_days: patternToWorkDays(data.work_week_pattern)
+      }
+      // Remove database column names from the mapped object
+      delete mappedData.orange_start_morning
+      delete mappedData.orange_end_morning
+      delete mappedData.orange_start_evening
+      delete mappedData.orange_end_evening
+      delete mappedData.work_week_pattern
+
       // Update in local list
       const index = countryConfigurations.value.findIndex((c) => c.id === id)
       if (index !== -1) {
-        countryConfigurations.value[index] = data
+        countryConfigurations.value[index] = mappedData
       }
 
-      return data
+      return mappedData
     } catch (err) {
       error.value = err.message
       throw err
