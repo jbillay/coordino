@@ -88,7 +88,8 @@ watch(
       }
       errors.value = {}
     }
-  }
+  },
+  { immediate: true }
 )
 </script>
 

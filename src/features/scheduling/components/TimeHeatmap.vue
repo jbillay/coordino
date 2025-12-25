@@ -157,10 +157,8 @@ function handleKeyDown(event, currentHour) {
       return
   }
 
-  // Focus next cell
-  if (cellRefs.value[nextHour]) {
-    cellRefs.value[nextHour].focus()
-  }
+  // Select and focus next cell
+  selectHour(nextHour)
 }
 </script>
 

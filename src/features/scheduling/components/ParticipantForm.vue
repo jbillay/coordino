@@ -88,7 +88,10 @@ function validateForm() {
 // Handle form submission
 function handleSubmit() {
   if (validateForm()) {
-    emit('submit', { ...formData.value })
+    emit('submit', {
+      ...formData.value,
+      name: formData.value.name.trim()
+    })
   }
 }
 </script>

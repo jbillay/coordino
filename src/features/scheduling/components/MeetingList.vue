@@ -48,7 +48,9 @@ const displayedMeetings = computed(() => {
   const query = searchQuery.value.toLowerCase()
   return props.meetings.filter((meeting) => {
     const titleMatch = meeting.title?.toLowerCase().includes(query)
-    const participantMatch = meeting.participants?.some((p) => p.name.toLowerCase().includes(query))
+    const participantMatch = meeting.participants?.some((p) =>
+      p.name?.toLowerCase().includes(query)
+    )
     return titleMatch || participantMatch
   })
 })

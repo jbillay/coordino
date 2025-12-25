@@ -23,7 +23,12 @@ export const useNotesStore = defineStore('notes', () => {
   let notesChannel = null
 
   // Computed Properties
-  const selectedTopic = computed(() => topics.value.find((t) => t.id === selectedTopicId.value))
+  const selectedTopic = computed(() => {
+    if (selectedTopicId.value === null) {
+      return null
+    }
+    return topics.value.find((t) => t.id === selectedTopicId.value)
+  })
 
   const filteredNotes = computed(() => {
     let filtered = notes.value
@@ -588,6 +593,8 @@ export const useNotesStore = defineStore('notes', () => {
     // Real-time
     setupRealtimeSubscriptions,
     cleanupRealtimeSubscriptions,
+    handleTopicChange,
+    handleNoteChange,
 
     // Initialize
     initialize

@@ -43,11 +43,9 @@ const breadcrumb = computed(() => {
  * Load note data if in edit mode
  */
 onMounted(async () => {
-  // Load topics
-  await notesStore.fetchTopics()
-
   if (isEditMode.value) {
     loading.value = true
+    await notesStore.fetchTopics()
     const noteId = route.params.id
 
     // Find note in store
@@ -70,6 +68,7 @@ onMounted(async () => {
     loading.value = false
   } else {
     // Create mode - initialize empty note
+    await notesStore.fetchTopics()
     note.value = {
       title: '',
       content: '',

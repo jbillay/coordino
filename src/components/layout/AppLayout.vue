@@ -19,13 +19,14 @@
  * @slot default - Main page content
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 import GlobalFAB from '@/components/global/GlobalFAB.vue'
 import CommandPalette from '@/components/global/CommandPalette.vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
 
@@ -231,7 +232,7 @@ onUnmounted(() => {
     <!-- Main Content Area -->
     <div class="app-main" :class="{ 'main-dark': themeStore.currentTheme === 'dark' }">
       <!-- Optional Top Header for Actions -->
-      <header v-if="$route.meta.showHeader !== false" class="main-header">
+      <header v-if="route.meta.showHeader !== false" class="main-header">
         <slot name="header">
           <!-- Default header content can go here -->
         </slot>
