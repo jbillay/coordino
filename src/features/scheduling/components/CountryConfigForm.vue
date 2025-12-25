@@ -247,6 +247,9 @@ function handleSubmit() {
                 :class="{ invalid: !!errors.orange_morning_start }"
                 aria-label="Acceptable early hours start time"
               />
+              <small v-if="errors.orange_morning_start" class="error-message" role="alert">
+                {{ errors.orange_morning_start }}
+              </small>
             </div>
 
             <div class="form-field">
@@ -259,6 +262,9 @@ function handleSubmit() {
                 :class="{ invalid: !!errors.orange_morning_end }"
                 aria-label="Acceptable early hours end time"
               />
+              <small v-if="errors.orange_morning_end" class="error-message" role="alert">
+                {{ errors.orange_morning_end }}
+              </small>
             </div>
           </div>
         </div>
@@ -277,6 +283,9 @@ function handleSubmit() {
                 :class="{ invalid: !!errors.orange_evening_start }"
                 aria-label="Acceptable late hours start time"
               />
+              <small v-if="errors.orange_evening_start" class="error-message" role="alert">
+                {{ errors.orange_evening_start }}
+              </small>
             </div>
 
             <div class="form-field">
@@ -289,6 +298,9 @@ function handleSubmit() {
                 :class="{ invalid: !!errors.orange_evening_end }"
                 aria-label="Acceptable late hours end time"
               />
+              <small v-if="errors.orange_evening_end" class="error-message" role="alert">
+                {{ errors.orange_evening_end }}
+              </small>
             </div>
           </div>
         </div>

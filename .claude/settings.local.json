@@ -73,7 +73,13 @@
       "Bash(gh issue list:*)",
       "Bash(gh issue view:*)",
       "Bash(gh issue comment:*)",
-      "Bash(gh issue close:*)"
+      "Bash(gh issue close:*)",
+      "Bash(npx vitest:*)",
+      "Bash(node -e:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(test:*)",
+      "Bash(npm run lint:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
