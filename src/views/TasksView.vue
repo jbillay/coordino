@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
@@ -25,6 +26,8 @@ import { useToast } from 'primevue/usetoast'
  * @component
  */
 
+const route = useRoute()
+const router = useRouter()
 const taskStore = useTaskStore()
 const activityStore = useActivityStore()
 const toast = useToast()
@@ -158,6 +161,15 @@ const handleTaskSaved = () => {
  */
 onMounted(async () => {
   await taskStore.initialize()
+
+  // Check if coming from FAB with action=create query parameter
+  if (route?.query?.action === 'create') {
+    // Open the new task dialog
+    handleCreateTask()
+
+    // Clean up the query parameter from the URL
+    router?.replace({ name: 'tasks' })
+  }
 })
 
 /**

@@ -94,10 +94,22 @@ describe('TasksView.vue', () => {
     vi.clearAllMocks()
   })
 
-  const mountComponent = (options = {}) =>
-    mount(TasksView, {
+  const mountComponent = (options = {}) => {
+    const defaultRoute = {
+      query: {},
+      meta: {}
+    }
+    const defaultRouter = {
+      replace: vi.fn()
+    }
+
+    return mount(TasksView, {
       global: {
         plugins: [pinia],
+        mocks: {
+          $route: options.global?.mocks?.$route || defaultRoute,
+          $router: options.global?.mocks?.$router || defaultRouter
+        },
         stubs: {
           AppLayout: {
             template: '<div class="app-layout"><slot /></div>'
@@ -154,6 +166,7 @@ describe('TasksView.vue', () => {
       },
       ...options
     })
+  }
 
   describe('Component Initialization', () => {
     it('renders correctly with default state', () => {
