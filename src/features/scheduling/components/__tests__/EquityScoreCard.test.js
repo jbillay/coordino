@@ -3,85 +3,97 @@ import { mount } from '@vue/test-utils'
 import EquityScoreCard from '../EquityScoreCard.vue'
 
 describe('EquityScoreCard.vue', () => {
-  const mockBreakdown = {
-    green: 3,
-    orange: 1,
-    red: 0,
-    critical: 0
-  }
-
   const mountComponent = (props = {}) =>
     mount(EquityScoreCard, {
       props: {
         score: 85,
-        breakdown: mockBreakdown,
         ...props
       },
       global: {
         stubs: {
+          Card: {
+            template:
+              '<div class="card-stub"><div class="title"><slot name="title" /></div><div class="content"><slot name="content" /></div></div>'
+          },
           Badge: {
-            template: '<span class="badge-stub">{{ value }}</span>',
+            template: '<span class="badge-stub" :data-severity="severity">{{ value }}</span>',
             props: ['value', 'severity']
           }
         }
       }
     })
 
-  it('renders the main title', () => {
+  it('renders the component', () => {
     const wrapper = mountComponent()
-    expect(wrapper.find('.card-title').text()).toBe('Meeting Equity Score')
+    expect(wrapper.find('.card-stub').exists()).toBe(true)
+  })
+
+  it('displays the title "Global Equity Score"', () => {
+    const wrapper = mountComponent()
+    expect(wrapper.text()).toContain('Global Equity Score')
   })
 
   it('displays the score value correctly', () => {
     const wrapper = mountComponent({ score: 85 })
-    expect(wrapper.find('.score-value').text()).toBe('85')
+    expect(wrapper.html()).toContain('85')
+    expect(wrapper.html()).toContain('out of 100')
+  })
+
+  it('displays "--" when score is null', () => {
+    const wrapper = mountComponent({ score: null })
+    expect(wrapper.html()).toContain('--')
   })
 
   it.each([
-    [95, 'Excellent meeting time for all participants'],
-    [80, 'Good meeting time with minor compromises'],
-    [65, 'Acceptable meeting time with some conflicts'],
-    [45, 'Challenging meeting time for several participants'],
-    [20, 'Poor meeting time - consider finding a better slot']
-  ])('displays the correct description for a score of %i', (score, description) => {
+    [85, 'Excellent'],
+    [50, 'Good'],
+    [30, 'Fair'],
+    [0, 'Poor']
+  ])('displays the correct quality badge for score %i', (score, quality) => {
     const wrapper = mountComponent({ score })
-    expect(wrapper.find('.score-subtitle').text()).toBe(description)
+    const badge = wrapper.find('.badge-stub')
+    expect(badge.text()).toBe(quality)
   })
 
   it.each([
-    [90, 'var(--p-green-500)'],
-    [70, 'var(--p-orange-500)'],
-    [50, 'var(--p-yellow-600)'],
-    [30, 'var(--p-red-500)']
-  ])('applies the correct color for a score of %i', (score, color) => {
+    [85, 'success'],
+    [50, 'warn'],
+    [30, 'danger']
+  ])('applies the correct severity for score %i', (score, severity) => {
     const wrapper = mountComponent({ score })
-    const progressCircle = wrapper.find('.progress-ring-progress')
-    expect(progressCircle.attributes('stroke')).toBe(color)
+    const badge = wrapper.find('.badge-stub')
+    expect(badge.attributes('data-severity')).toBe(severity)
   })
 
-  it('displays the correct breakdown counts', () => {
-    const wrapper = mountComponent()
-    const items = wrapper.findAll('.breakdown-item')
-    expect(items[0].text()).toContain('3') // Green
-    expect(items[1].text()).toContain('1') // Orange
-    expect(items[2].text()).toContain('0') // Red
-    expect(items[3].text()).toContain('0') // Critical
+  it('does not show badge when score is null', () => {
+    const wrapper = mountComponent({ score: null })
+    const badge = wrapper.find('.badge-stub')
+    expect(badge.exists()).toBe(false)
   })
 
-  it('conditionally shows the critical breakdown item', async () => {
-    const wrapper = mountComponent({ breakdown: { ...mockBreakdown, critical: 0 } })
-    // The 4th item is always rendered, let's check its content
-    expect(wrapper.findAll('.breakdown-item')[3].text()).toContain('0')
-
-    await wrapper.setProps({ breakdown: { ...mockBreakdown, critical: 2 } })
-    expect(wrapper.findAll('.breakdown-item')[3].text()).toContain('2')
+  it('renders SVG circle for score visualization', () => {
+    const wrapper = mountComponent({ score: 85 })
+    expect(wrapper.find('svg').exists()).toBe(true)
+    expect(wrapper.findAll('circle').length).toBe(2) // background + progress
   })
 
-  it('calculates the stroke-dashoffset correctly', () => {
-    const wrapper = mountComponent({ score: 25 })
-    const circumference = 2 * Math.PI * 70
-    const expectedOffset = circumference - 0.25 * circumference
-    const progressCircle = wrapper.find('.progress-ring-progress')
-    expect(parseFloat(progressCircle.attributes('stroke-dashoffset'))).toBeCloseTo(expectedOffset)
+  it('calculates stroke color based on score', () => {
+    const wrapper75 = mountComponent({ score: 75 })
+    const wrapper50 = mountComponent({ score: 50 })
+    const wrapper30 = mountComponent({ score: 30 })
+
+    // Green for >= 71
+    expect(wrapper75.vm.scoreColor).toBe('#10B981')
+    // Orange for >= 41
+    expect(wrapper50.vm.scoreColor).toBe('#F59E0B')
+    // Red for < 41
+    expect(wrapper30.vm.scoreColor).toBe('#EF4444')
+  })
+
+  it('calculates dashOffset correctly based on score', () => {
+    const wrapper = mountComponent({ score: 50 })
+    const circumference = 2 * Math.PI * 85
+    const expectedOffset = circumference * (1 - 0.5)
+    expect(wrapper.vm.dashOffset).toBeCloseTo(expectedOffset)
   })
 })

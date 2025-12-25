@@ -5,7 +5,8 @@ import Card from 'primevue/card'
 import Button from 'primevue/button'
 import MeetingForm from './MeetingForm.vue'
 import ParticipantList from './ParticipantList.vue'
-import EquityScoreDisplay from './EquityScoreDisplay.vue'
+import EquityScoreCard from './EquityScoreCard.vue'
+import ParticipantBreakdown from './ParticipantBreakdown.vue'
 import ParticipantDialog from './ParticipantDialog.vue'
 import TimeSlotHeatmap from './TimeSlotHeatmap.vue'
 import OptimalTimeSuggestions from './OptimalTimeSuggestions.vue'
@@ -349,122 +350,118 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Content Grid -->
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-auto">
-      <!-- Left Column: Meeting Details -->
-      <div class="space-y-6">
-        <!-- Meeting Form -->
-        <Card>
-          <template #title>
-            <h3 class="text-lg font-semibold">Meeting Details</h3>
-          </template>
-          <template #content>
-            <MeetingForm
-              ref="meetingFormRef"
-              :meeting="localMeeting"
-              @update:meeting="handleMeetingUpdate"
-              @input="markDirty"
-            />
-          </template>
-        </Card>
+    <!-- Content -->
+    <div class="flex-1 overflow-auto space-y-6">
+      <!-- Meeting Details -->
+      <Card>
+        <template #title>
+          <h3 class="text-lg font-semibold">Meeting Details</h3>
+        </template>
+        <template #content>
+          <MeetingForm
+            ref="meetingFormRef"
+            :meeting="localMeeting"
+            @update:meeting="handleMeetingUpdate"
+            @input="markDirty"
+          />
+        </template>
+      </Card>
 
-        <!-- Participants -->
-        <Card>
-          <template #title>
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold">Participants</h3>
-              <Button
-                label="Add"
-                icon="pi pi-plus"
-                size="small"
-                @click="showAddParticipantDialog"
-              />
-            </div>
-          </template>
-          <template #content>
-            <ParticipantList
-              :participants="selectedParticipants"
-              :participant-statuses="store.participantStatuses"
-              :removable="true"
-              @add="showAddParticipantDialog"
-              @remove="handleRemoveParticipant"
-            />
-          </template>
-        </Card>
+      <!-- Equity Score and Participant Breakdown Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <EquityScoreCard :score="store.equityScore?.score || null" />
+        <ParticipantBreakdown :breakdown="store.equityScore" />
       </div>
 
-      <!-- Right Column: Equity Score and Analysis -->
-      <div class="space-y-6">
-        <EquityScoreDisplay
-          :score="store.equityScore?.score || null"
-          :breakdown="store.equityScore"
-        />
-
-        <!-- Meeting Summary -->
-        <Card v-if="!isNewMeeting">
-          <template #title>
-            <h3 class="text-lg font-semibold">Meeting Summary</h3>
-          </template>
-          <template #content>
-            <div class="space-y-3 text-sm">
-              <div class="flex items-center space-x-2">
-                <i class="pi pi-calendar text-gray-500"></i>
-                <span class="font-medium">Created:</span>
-                <span>{{ formatDate(localMeeting.created_at) }}</span>
-              </div>
-              <div v-if="localMeeting.updated_at" class="flex items-center space-x-2">
-                <i class="pi pi-clock text-gray-500"></i>
-                <span class="font-medium">Last Updated:</span>
-                <span>{{ formatDate(localMeeting.updated_at) }}</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <i class="pi pi-users text-gray-500"></i>
-                <span class="font-medium">Participants:</span>
-                <span>{{ selectedParticipants.length }}</span>
-              </div>
-            </div>
-          </template>
-        </Card>
-      </div>
-    </div>
-
-    <!-- Optimal Time Analysis Section -->
-    <div v-if="selectedParticipants.length > 0 && localMeeting.proposed_time" class="mt-6">
+      <!-- Participant Details Table -->
       <Card>
         <template #title>
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Optimal Time Analysis</h3>
+            <h3 class="text-lg font-semibold">Participant Details</h3>
             <Button
-              label="Analyze Times"
-              icon="pi pi-chart-bar"
-              :loading="store.loadingSuggestions"
-              @click="handleAnalyzeOptimalTimes"
+              label="Add Participant"
+              icon="pi pi-plus"
+              size="small"
+              @click="showAddParticipantDialog"
             />
           </div>
         </template>
         <template #content>
-          <div v-if="showOptimalAnalysis" class="space-y-6">
-            <!-- Top 3 Suggestions -->
-            <OptimalTimeSuggestions
-              :suggestions="topSuggestions"
-              :loading="store.loadingSuggestions"
-              :show-details="true"
-              @suggestion-selected="handleSuggestionSelected"
-            />
+          <ParticipantList
+            :participants="selectedParticipants"
+            :participant-statuses="store.participantStatuses"
+            :removable="true"
+            @add="showAddParticipantDialog"
+            @remove="handleRemoveParticipant"
+          />
+        </template>
+      </Card>
 
-            <!-- Heatmap -->
-            <div class="border-t pt-6">
-              <TimeSlotHeatmap
-                :slots="store.heatmapData"
+      <!-- Optimal Time Analysis Section -->
+      <div v-if="selectedParticipants.length > 0 && localMeeting.proposed_time">
+        <Card>
+          <template #title>
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold">Optimal Time Analysis</h3>
+              <Button
+                label="Analyze Times"
+                icon="pi pi-chart-bar"
                 :loading="store.loadingSuggestions"
-                @slot-selected="handleSlotSelected"
+                @click="handleAnalyzeOptimalTimes"
               />
             </div>
-          </div>
-          <div v-else class="text-center p-4 text-gray-500">
-            <p>
-              Click "Analyze Times" to see optimal meeting time suggestions and a 24-hour heatmap.
-            </p>
+          </template>
+          <template #content>
+            <div v-if="showOptimalAnalysis" class="space-y-6">
+              <!-- Optimal Time Suggestions -->
+              <OptimalTimeSuggestions
+                :suggestions="topSuggestions"
+                :loading="store.loadingSuggestions"
+                :show-details="true"
+                @suggestion-selected="handleSuggestionSelected"
+              />
+
+              <!-- Heatmap -->
+              <div class="border-t pt-6">
+                <h4 class="text-md font-semibold mb-4">24-Hour Availability Heatmap</h4>
+                <TimeSlotHeatmap
+                  :slots="store.heatmapData"
+                  :loading="store.loadingSuggestions"
+                  @slot-selected="handleSlotSelected"
+                />
+              </div>
+            </div>
+            <div v-else class="text-center p-4 text-gray-500">
+              <p>
+                Click "Analyze Times" to see optimal meeting time suggestions and a 24-hour heatmap.
+              </p>
+            </div>
+          </template>
+        </Card>
+      </div>
+
+      <!-- Meeting Summary -->
+      <Card v-if="!isNewMeeting">
+        <template #title>
+          <h3 class="text-lg font-semibold">Meeting Summary</h3>
+        </template>
+        <template #content>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center space-x-2">
+              <i class="pi pi-calendar text-gray-500"></i>
+              <span class="font-medium">Created:</span>
+              <span>{{ formatDate(localMeeting.created_at) }}</span>
+            </div>
+            <div v-if="localMeeting.updated_at" class="flex items-center space-x-2">
+              <i class="pi pi-clock text-gray-500"></i>
+              <span class="font-medium">Last Updated:</span>
+              <span>{{ formatDate(localMeeting.updated_at) }}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <i class="pi pi-users text-gray-500"></i>
+              <span class="font-medium">Participants:</span>
+              <span>{{ selectedParticipants.length }}</span>
+            </div>
           </div>
         </template>
       </Card>

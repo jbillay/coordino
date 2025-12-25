@@ -28,11 +28,18 @@ vi.mock('../ParticipantList.vue', () => ({
     props: ['participants', 'participantStatuses', 'removable']
   }
 }))
-vi.mock('../EquityScoreDisplay.vue', () => ({
+vi.mock('../EquityScoreCard.vue', () => ({
   default: {
-    name: 'EquityScoreDisplay',
-    template: '<div class="mock-equity-score-display"><slot /></div>',
-    props: ['score', 'breakdown']
+    name: 'EquityScoreCard',
+    template: '<div class="mock-equity-score-card"><slot /></div>',
+    props: ['score']
+  }
+}))
+vi.mock('../ParticipantBreakdown.vue', () => ({
+  default: {
+    name: 'ParticipantBreakdown',
+    template: '<div class="mock-participant-breakdown"><slot /></div>',
+    props: ['breakdown']
   }
 }))
 vi.mock('../ParticipantDialog.vue', () => ({
