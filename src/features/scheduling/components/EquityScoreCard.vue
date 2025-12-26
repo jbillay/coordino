@@ -10,7 +10,7 @@ const props = defineProps({
   }
 })
 
-const displayScore = computed(() => (props.score !== null ? props.score : '--'))
+const displayScore = computed(() => (props.score !== null ? Math.round(props.score) : '--'))
 
 const scoreColor = computed(() => {
   if (props.score === null) {
