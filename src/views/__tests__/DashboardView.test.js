@@ -6,6 +6,7 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useTaskStore } from '@/features/tasks/store'
 import { useNotesStore } from '@/features/notes/store'
+import { useSchedulingStore } from '@/features/scheduling/store'
 import { getTaskStats } from '@/features/tasks/utils'
 
 // Mock the tasks utility
@@ -21,6 +22,9 @@ vi.mock('@/features/tasks/store')
 
 // Mock the notes store
 vi.mock('@/features/notes/store')
+
+// Mock the scheduling store
+vi.mock('@/features/scheduling/store')
 
 const mockPush = vi.fn()
 vi.mock('vue-router', async () => {
@@ -47,7 +51,17 @@ describe('DashboardView.vue', () => {
       routes: [
         { path: '/', component: DashboardView },
         { path: '/tasks', name: 'tasks', component: { template: '<div>Tasks</div>' } },
-        { path: '/notes', name: 'notes', component: { template: '<div>Notes</div>' } }
+        { path: '/notes', name: 'notes', component: { template: '<div>Notes</div>' } },
+        {
+          path: '/scheduling',
+          name: 'scheduling',
+          component: { template: '<div>Scheduling</div>' }
+        },
+        {
+          path: '/scheduling/:id',
+          name: 'scheduling-detail',
+          component: { template: '<div>Meeting Detail</div>' }
+        }
       ]
     })
 
@@ -68,6 +82,14 @@ describe('DashboardView.vue', () => {
       loading: false,
       fetchNotes: vi.fn(),
       unsubscribe: vi.fn()
+    })
+
+    vi.mocked(useSchedulingStore).mockReturnValue({
+      meetings: [],
+      recentMeetings: [],
+      loading: false,
+      fetchMeetings: vi.fn(),
+      ...stubs.schedulingStore
     })
 
     Object.assign(authStore, {
@@ -197,6 +219,137 @@ describe('DashboardView.vue', () => {
       const wrapper = createWrapper()
       await wrapper.find('[aria-label="View overdue tasks"]').trigger('click')
       expect(mockPush).toHaveBeenCalledWith({ name: 'tasks', query: { filter: 'overdue' } })
+    })
+  })
+
+  describe('Meetings Section', () => {
+    it('calls schedulingStore.fetchMeetings on mount', () => {
+      createWrapper()
+      const schedulingStore = useSchedulingStore()
+      expect(schedulingStore.fetchMeetings).toHaveBeenCalledTimes(1)
+    })
+
+    it('shows skeleton loaders when scheduling store is loading', () => {
+      const wrapper = createWrapper(
+        {},
+        {},
+        {
+          schedulingStore: { loading: true, recentMeetings: [] }
+        }
+      )
+      expect(wrapper.findAll('.meeting-item-skeleton')).toHaveLength(3)
+    })
+
+    it('shows empty state when no meetings exist', () => {
+      const wrapper = createWrapper(
+        {},
+        {},
+        {
+          schedulingStore: { loading: false, recentMeetings: [] }
+        }
+      )
+      expect(wrapper.text()).toContain('No meetings scheduled')
+    })
+
+    it('displays recent meetings correctly', () => {
+      const mockMeetings = [
+        {
+          id: '1',
+          title: 'Team Sync',
+          proposed_time: '2025-01-15T14:00:00Z',
+          participant_count: 3,
+          equity_score: 85,
+          updated_at: '2025-01-10T10:00:00Z'
+        }
+      ]
+      const wrapper = createWrapper(
+        {},
+        {},
+        {
+          schedulingStore: { loading: false, recentMeetings: mockMeetings }
+        }
+      )
+      expect(wrapper.text()).toContain('Team Sync')
+      expect(wrapper.text()).toContain('3')
+      expect(wrapper.text()).toContain('85')
+    })
+
+    it('navigates to meeting detail when meeting is clicked', async () => {
+      const mockMeetings = [
+        {
+          id: 'meeting-123',
+          title: 'Team Sync',
+          proposed_time: '2025-01-15T14:00:00Z',
+          participant_count: 3,
+          updated_at: '2025-01-10T10:00:00Z'
+        }
+      ]
+      const wrapper = createWrapper(
+        {},
+        {},
+        {
+          schedulingStore: { loading: false, recentMeetings: mockMeetings }
+        }
+      )
+
+      await wrapper.find('.meeting-item').trigger('click')
+
+      expect(mockPush).toHaveBeenCalledWith({
+        name: 'scheduling-detail',
+        params: { id: 'meeting-123' }
+      })
+    })
+
+    it('navigates to scheduling page when "View All" is clicked', async () => {
+      const wrapper = createWrapper()
+      const buttons = wrapper.findAll('button')
+      const viewAllBtn = buttons.find((btn) => btn.text().includes('View All'))
+      await viewAllBtn.trigger('click')
+      expect(mockPush).toHaveBeenCalledWith({ name: 'scheduling' })
+    })
+
+    it('does not show equity badge when score is null', () => {
+      const mockMeetings = [
+        {
+          id: '1',
+          title: 'Team Sync',
+          proposed_time: '2025-01-15T14:00:00Z',
+          participant_count: 3,
+          equity_score: null,
+          updated_at: '2025-01-10T10:00:00Z'
+        }
+      ]
+      const wrapper = createWrapper(
+        {},
+        {},
+        {
+          schedulingStore: { loading: false, recentMeetings: mockMeetings }
+        }
+      )
+      expect(wrapper.find('.equity-badge').exists()).toBe(false)
+    })
+
+    it('shows correct equity badge class for excellent score', () => {
+      const mockMeetings = [
+        {
+          id: '1',
+          title: 'Team Sync',
+          proposed_time: '2025-01-15T14:00:00Z',
+          participant_count: 3,
+          equity_score: 85,
+          updated_at: '2025-01-10T10:00:00Z'
+        }
+      ]
+      const wrapper = createWrapper(
+        {},
+        {},
+        {
+          schedulingStore: { loading: false, recentMeetings: mockMeetings }
+        }
+      )
+      const badge = wrapper.find('.equity-badge')
+      expect(badge.exists()).toBe(true)
+      expect(badge.classes()).toContain('equity-excellent')
     })
   })
 })

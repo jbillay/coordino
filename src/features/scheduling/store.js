@@ -187,6 +187,11 @@ export const useSchedulingStore = defineStore('scheduling', () => {
   // Top 3 optimal time suggestions (US2)
   const topSuggestions = computed(() => getTopSuggestions(heatmapData.value, 3))
 
+  // Recent meetings for dashboard (sorted by updated_at, limited to 5)
+  const recentMeetings = computed(() =>
+    [...meetings.value].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 5)
+  )
+
   // Actions - Participant Management
   async function createParticipant(participantData) {
     loading.value = true
@@ -890,6 +895,7 @@ export const useSchedulingStore = defineStore('scheduling', () => {
     equityScore,
     heatmapData,
     topSuggestions,
+    recentMeetings,
 
     // Actions
     createParticipant,

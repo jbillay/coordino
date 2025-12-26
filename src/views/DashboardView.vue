@@ -21,8 +21,9 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useTaskStore } from '@/features/tasks/store'
 import { useNotesStore } from '@/features/notes/store'
+import { useSchedulingStore } from '@/features/scheduling/store'
 import { getTaskStats } from '@/features/tasks/utils'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, format } from 'date-fns'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import TaskCard from '@/features/tasks/components/TaskCard.vue'
 import ContinueSection from '@/components/dashboard/ContinueSection.vue'
@@ -32,10 +33,12 @@ const router = useRouter()
 const authStore = useAuthStore()
 const taskStore = useTaskStore()
 const notesStore = useNotesStore()
+const schedulingStore = useSchedulingStore()
 
 onMounted(() => {
   taskStore.initialize()
   notesStore.fetchNotes()
+  schedulingStore.fetchMeetings()
 })
 
 onBeforeUnmount(() => {
@@ -118,6 +121,80 @@ const togglePin = async (note) => {
   } catch (error) {
     console.error('Failed to toggle pin:', error)
   }
+}
+
+/**
+ * Format meeting date
+ * @param {string} dateString - ISO date string
+ * @returns {string} Formatted date (e.g., "Mon, Oct 26")
+ */
+const formatMeetingDate = (dateString) => {
+  try {
+    return format(new Date(dateString), 'EEE, MMM d')
+  } catch {
+    return dateString
+  }
+}
+
+/**
+ * Format meeting time with "at" prefix
+ * @param {string} dateString - ISO date string
+ * @returns {string} Formatted time (e.g., "at 10:00 AM EST")
+ */
+const formatMeetingTime = (dateString) => {
+  try {
+    return `at ${format(new Date(dateString), 'h:mm a zzz')}`
+  } catch {
+    return dateString
+  }
+}
+
+/**
+ * Navigate to meeting detail
+ * @param {string} meetingId - Meeting ID
+ */
+const navigateToMeeting = (meetingId) => {
+  router.push({ name: 'scheduling-detail', params: { id: meetingId } })
+}
+
+/**
+ * Navigate to scheduling main page
+ */
+const navigateToScheduling = () => {
+  router.push({ name: 'scheduling' })
+}
+
+/**
+ * Get equity score badge CSS class
+ * @param {number} score - Equity score (0-100)
+ * @returns {string} CSS class name
+ */
+const getEquityBadgeClass = (score) => {
+  if (score >= 71) {
+    return 'equity-excellent'
+  }
+  if (score >= 41) {
+    return 'equity-good'
+  }
+  return 'equity-fair'
+}
+
+/**
+ * Get equity score color for timeline bar
+ * @param {number} score - Equity score (0-100)
+ * @returns {string} CSS gradient color
+ */
+const getEquityColor = (score) => {
+  if (score === null || score === undefined) {
+    return 'linear-gradient(to right, #9ca3af 0%, #9ca3af 100%)' // gray
+  }
+  if (score >= 71) {
+    return 'linear-gradient(to right, #10b981 0%, #10b981 100%)' // green
+  }
+  if (score >= 41) {
+    return 'linear-gradient(to right, #f59e0b 0%, #f59e0b 100%)' // orange
+  }
+  return 'linear-gradient(to right, #ef4444 0%, #ef4444 100%)' // red
 }
 </script>
 
@@ -336,71 +413,83 @@ const togglePin = async (note) => {
       <div class="content-card">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">Upcoming Meetings</h2>
-          <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-            View Calendar
-          </a>
+          <button
+            class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            @click="navigateToScheduling"
+          >
+            View All
+          </button>
         </div>
-        <div class="space-y-4">
-          <!-- Meeting 1 -->
-          <div class="meeting-item">
-            <div class="flex items-start justify-between mb-2">
-              <div>
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-                  Weekly Sync with Tokyo Team
-                </h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Monday at 8:00 AM EST (9:00 PM JST)
-                </p>
-              </div>
-            </div>
-            <div class="meeting-timeline">
-              <div
-                class="timeline-bar"
-                style="background: linear-gradient(to right, #10b981 0%, #10b981 100%)"
-              ></div>
-            </div>
-          </div>
 
-          <!-- Meeting 2 -->
-          <div class="meeting-item">
-            <div class="flex items-start justify-between mb-2">
-              <div>
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-                  Design Review - London & NYC
-                </h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Tuesday at 2:00 PM EST (7:00 PM GMT)
-                </p>
-              </div>
-            </div>
-            <div class="meeting-timeline">
-              <div
-                class="timeline-bar"
-                style="background: linear-gradient(to right, #f59e0b 0%, #f59e0b 100%)"
-              ></div>
-            </div>
-          </div>
-
-          <!-- Meeting 3 -->
-          <div class="meeting-item">
-            <div class="flex items-start justify-between mb-2">
-              <div>
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-                  Product Strategy Session
-                </h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                  Thu, Oct 26 at 10:00 AM EST (3:00 PM GMT)
-                </p>
-              </div>
-            </div>
-            <div class="meeting-timeline">
-              <div
-                class="timeline-bar"
-                style="background: linear-gradient(to right, #f59e0b 0%, #f59e0b 100%)"
-              ></div>
-            </div>
+        <!-- Loading State: Skeleton Loader -->
+        <div v-if="schedulingStore.loading" class="space-y-4">
+          <div v-for="i in 3" :key="i" class="meeting-item-skeleton">
+            <div class="skeleton-line skeleton-title mb-2"></div>
+            <div class="skeleton-line skeleton-subtitle mb-2"></div>
+            <div class="skeleton-line skeleton-timeline"></div>
           </div>
         </div>
+
+        <!-- Empty State -->
+        <div
+          v-else-if="schedulingStore.recentMeetings.length === 0"
+          class="text-center text-gray-500 dark:text-gray-400 py-8"
+        >
+          <i class="pi pi-calendar text-4xl text-gray-300 mb-3"></i>
+          <p class="mb-3">No meetings scheduled</p>
+          <button
+            class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            @click="navigateToScheduling"
+          >
+            Schedule a Meeting
+          </button>
+        </div>
+
+        <!-- Meetings List -->
+        <TransitionGroup v-else name="meeting-list" tag="div" class="space-y-4">
+          <div
+            v-for="meeting in schedulingStore.recentMeetings"
+            :key="meeting.id"
+            class="meeting-item cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 -mx-2 px-2 rounded-lg transition-colors"
+            @click="navigateToMeeting(meeting.id)"
+          >
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <h3 class="text-sm font-semibold text-gray-900 dark:text-white flex-1">
+                    {{ meeting.title }}
+                  </h3>
+                  <!-- Equity Score Badge -->
+                  <span
+                    v-if="meeting.equity_score !== null && meeting.equity_score !== undefined"
+                    class="equity-badge"
+                    :class="getEquityBadgeClass(meeting.equity_score)"
+                  >
+                    {{ Math.round(meeting.equity_score) }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                  <span>
+                    {{ formatMeetingDate(meeting.proposed_time) }}
+                    {{ formatMeetingTime(meeting.proposed_time) }}
+                  </span>
+                  <span v-if="meeting.participant_count > 0" class="flex items-center gap-1">
+                    <i class="pi pi-users text-xs"></i>
+                    {{ meeting.participant_count }}
+                  </span>
+                </div>
+              </div>
+              <i class="pi pi-chevron-right text-gray-400 text-xs mt-1"></i>
+            </div>
+            <!-- Equity Score Timeline -->
+            <div class="meeting-timeline">
+              <div
+                class="timeline-bar"
+                :style="{ background: getEquityColor(meeting.equity_score) }"
+              ></div>
+            </div>
+          </div>
+        </TransitionGroup>
       </div>
     </div>
   </AppLayout>
@@ -653,10 +742,42 @@ const togglePin = async (note) => {
   @apply h-3 w-1/2;
 }
 
+/* Skeleton Loader for Meetings */
+.meeting-item-skeleton {
+  @apply pb-4 animate-pulse;
+}
+
+.meeting-item-skeleton:not(:last-child) {
+  @apply border-b border-gray-200 dark:border-gray-700;
+}
+
+.skeleton-timeline {
+  @apply h-2 w-full;
+}
+
 /* Topic Badge */
 .topic-badge {
   @apply px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0;
   white-space: nowrap;
+}
+
+/* Equity Score Badge */
+.equity-badge {
+  @apply px-2 py-0.5 text-xs font-bold rounded-full flex-shrink-0;
+  min-width: 2rem;
+  text-align: center;
+}
+
+.equity-badge.equity-excellent {
+  @apply bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400;
+}
+
+.equity-badge.equity-good {
+  @apply bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400;
+}
+
+.equity-badge.equity-fair {
+  @apply bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400;
 }
 
 /* Quick Action Button */
@@ -689,6 +810,27 @@ const togglePin = async (note) => {
   position: absolute;
 }
 
+/* Meeting List Transitions */
+.meeting-list-move,
+.meeting-list-enter-active,
+.meeting-list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.meeting-list-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.meeting-list-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.meeting-list-leave-active {
+  position: absolute;
+}
+
 /* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .stat-card,
@@ -706,7 +848,14 @@ const togglePin = async (note) => {
     transition: none;
   }
 
-  .note-item-skeleton {
+  .meeting-list-move,
+  .meeting-list-enter-active,
+  .meeting-list-leave-active {
+    transition: none;
+  }
+
+  .note-item-skeleton,
+  .meeting-item-skeleton {
     animation: none;
   }
 
