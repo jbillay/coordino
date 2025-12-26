@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSchedulingStore } from '../store'
 import { useActivityStore } from '@/stores/activity'
+import { getBreakdown } from '../composables/useEquityScore'
 import EquityScoreCard from '../components/EquityScoreCard.vue'
 import ParticipantBreakdown from '../components/ParticipantBreakdown.vue'
 import TimezoneGrid from '../components/TimezoneGrid.vue'
@@ -34,6 +35,19 @@ const showAddParticipantDialog = ref(false)
 const deleteDialogVisible = ref(false)
 const heatmapLoading = ref(false)
 const screenReaderMessage = ref('')
+
+// Computed - Participant breakdown for ParticipantBreakdown component
+const participantBreakdown = computed(() => {
+  const breakdown = getBreakdown(store.participantsWithStatus)
+  // Transform property names to match ParticipantBreakdown component expectations
+  return {
+    green_count: breakdown.green,
+    orange_count: breakdown.orange,
+    red_count: breakdown.red,
+    critical_count: breakdown.critical,
+    total: breakdown.total
+  }
+})
 
 // Computed - Available participants to add
 const availableParticipants = computed(() => {
@@ -355,8 +369,8 @@ onMounted(async () => {
 
       <!-- Equity Score and Participant Breakdown Row -->
       <div class="equity-section">
-        <EquityScoreCard :score="store.equityScore?.score || null" />
-        <ParticipantBreakdown :breakdown="store.equityScore" />
+        <EquityScoreCard :score="store.equityScore" />
+        <ParticipantBreakdown :breakdown="participantBreakdown" />
       </div>
 
       <!-- Participant Details Table -->
