@@ -20,7 +20,9 @@ import { computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useTaskStore } from '@/features/tasks/store'
+import { useNotesStore } from '@/features/notes/store'
 import { getTaskStats } from '@/features/tasks/utils'
+import { formatDistanceToNow } from 'date-fns'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import TaskCard from '@/features/tasks/components/TaskCard.vue'
 import ContinueSection from '@/components/dashboard/ContinueSection.vue'
@@ -29,13 +31,16 @@ import StatCardSkeleton from '@/components/skeletons/StatCardSkeleton.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 const taskStore = useTaskStore()
+const notesStore = useNotesStore()
 
 onMounted(() => {
   taskStore.initialize()
+  notesStore.fetchNotes()
 })
 
 onBeforeUnmount(() => {
   taskStore.unsubscribeFromTasks()
+  notesStore.unsubscribe()
 })
 
 const taskStats = computed(() => getTaskStats(taskStore.tasks))
@@ -78,6 +83,42 @@ const getUserFirstName = computed(() => {
   }
   return 'there'
 })
+
+/**
+ * Format timestamp as relative time
+ * @param {string} timestamp - ISO timestamp
+ * @returns {string} Relative time string (e.g., "2 hours ago")
+ */
+const formatNoteTime = (timestamp) => formatDistanceToNow(new Date(timestamp), { addSuffix: true })
+
+/**
+ * Calculate estimated read time based on word count
+ * @param {string} htmlContent - HTML content of the note
+ * @returns {string} Read time string (e.g., "2 min read")
+ */
+const getReadTime = (htmlContent) => {
+  if (!htmlContent) {
+    return '< 1 min read'
+  }
+  // Strip HTML tags and count words
+  const text = htmlContent.replace(/<[^>]*>/g, '').trim()
+  const wordCount = text.split(/\s+/).filter((word) => word.length > 0).length
+  // Average reading speed: 200 words per minute
+  const minutes = Math.ceil(wordCount / 200)
+  return minutes < 1 ? '< 1 min read' : `${minutes} min read`
+}
+
+/**
+ * Toggle pin status for a note
+ * @param {Object} note - Note object to toggle
+ */
+const togglePin = async (note) => {
+  try {
+    await notesStore.togglePin(note.id)
+  } catch (error) {
+    console.error('Failed to toggle pin:', error)
+  }
+}
 </script>
 
 <template>
@@ -201,34 +242,92 @@ const getUserFirstName = computed(() => {
         <div class="content-card">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-gray-900 dark:text-white">Recent Notes</h2>
-            <a href="#" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+            <router-link
+              :to="{ name: 'notes' }"
+              class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
               View All
-            </a>
+            </router-link>
           </div>
-          <div class="space-y-4">
-            <!-- Note Item 1 -->
-            <div class="note-item">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                Project Alpha Kickoff Ideas
-              </h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400">Updated 2 minutes ago</p>
-            </div>
 
-            <!-- Note Item 2 -->
-            <div class="note-item">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                Q4 Planning Session
-              </h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400">Updated 1 hour ago</p>
+          <!-- Loading State: Skeleton Loader -->
+          <div v-if="notesStore.loading" class="space-y-4">
+            <div v-for="i in 5" :key="i" class="note-item-skeleton">
+              <div class="skeleton-line skeleton-title"></div>
+              <div class="skeleton-line skeleton-subtitle"></div>
             </div>
+          </div>
 
-            <!-- Note Item 3 -->
-            <div class="note-item">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                Competitor Analysis Summary
-              </h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400">Updated 3 days ago</p>
+          <!-- Notes List -->
+          <TransitionGroup
+            v-else-if="notesStore.recentNotes.length > 0"
+            name="note-list"
+            tag="div"
+            class="space-y-4"
+          >
+            <div
+              v-for="note in notesStore.recentNotes"
+              :key="note.id"
+              class="note-item group"
+              @click="router.push({ name: 'notes-edit', params: { id: note.id } })"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                  <!-- Title with Topic Badge -->
+                  <div class="flex items-center gap-2 mb-1">
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-white truncate flex-1">
+                      <i
+                        v-if="note.is_pinned"
+                        class="pi pi-star-fill text-yellow-500 text-xs mr-1"
+                      ></i>
+                      {{ note.title }}
+                    </h3>
+                    <span
+                      v-if="note.topic"
+                      class="topic-badge"
+                      :style="{
+                        backgroundColor: note.topic.color + '20',
+                        color: note.topic.color
+                      }"
+                    >
+                      {{ note.topic.name }}
+                    </span>
+                  </div>
+
+                  <!-- Metadata: Time and Read Time -->
+                  <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <span>Updated {{ formatNoteTime(note.updated_at) }}</span>
+                    <span class="text-gray-400">•</span>
+                    <span>{{ getReadTime(note.content) }}</span>
+                  </div>
+                </div>
+
+                <!-- Quick Actions (visible on hover) -->
+                <div
+                  class="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <button
+                    class="quick-action-btn"
+                    :aria-label="note.is_pinned ? 'Unpin note' : 'Pin note'"
+                    @click.stop="togglePin(note)"
+                  >
+                    <i
+                      :class="
+                        note.is_pinned
+                          ? 'pi pi-star-fill text-yellow-500'
+                          : 'pi pi-star text-gray-400'
+                      "
+                    ></i>
+                  </button>
+                  <i class="pi pi-chevron-right text-gray-400 text-xs"></i>
+                </div>
+              </div>
             </div>
+          </TransitionGroup>
+
+          <!-- Empty State -->
+          <div v-else class="text-center text-gray-500 dark:text-gray-400 py-8">
+            No notes yet. Start capturing your ideas!
           </div>
         </div>
       </div>
@@ -537,6 +636,59 @@ const getUserFirstName = computed(() => {
   }
 }
 
+/* Skeleton Loader for Notes */
+.note-item-skeleton {
+  @apply p-3 rounded-lg animate-pulse;
+}
+
+.skeleton-line {
+  @apply bg-gray-200 dark:bg-gray-700 rounded;
+}
+
+.skeleton-title {
+  @apply h-4 w-3/4 mb-2;
+}
+
+.skeleton-subtitle {
+  @apply h-3 w-1/2;
+}
+
+/* Topic Badge */
+.topic-badge {
+  @apply px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0;
+  white-space: nowrap;
+}
+
+/* Quick Action Button */
+.quick-action-btn {
+  @apply p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors;
+}
+
+.quick-action-btn:focus-visible {
+  @apply outline-2 outline-offset-2 outline-blue-500;
+}
+
+/* Note List Transitions */
+.note-list-move,
+.note-list-enter-active,
+.note-list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.note-list-enter-from {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.note-list-leave-to {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.note-list-leave-active {
+  position: absolute;
+}
+
 /* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .stat-card,
@@ -546,6 +698,20 @@ const getUserFirstName = computed(() => {
 
   .stat-card.interactive:hover {
     transform: none;
+  }
+
+  .note-list-move,
+  .note-list-enter-active,
+  .note-list-leave-active {
+    transition: none;
+  }
+
+  .note-item-skeleton {
+    animation: none;
+  }
+
+  .quick-action-btn {
+    transition: none;
   }
 }
 </style>
