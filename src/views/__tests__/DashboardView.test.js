@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useTaskStore } from '@/features/tasks/store'
+import { useNotesStore } from '@/features/notes/store'
 import { getTaskStats } from '@/features/tasks/utils'
 
 // Mock the tasks utility
@@ -17,6 +18,9 @@ vi.mock('@/features/tasks/utils', () => ({
 
 // Mock the task store
 vi.mock('@/features/tasks/store')
+
+// Mock the notes store
+vi.mock('@/features/notes/store')
 
 const mockPush = vi.fn()
 vi.mock('vue-router', async () => {
@@ -42,7 +46,8 @@ describe('DashboardView.vue', () => {
       history: createMemoryHistory(),
       routes: [
         { path: '/', component: DashboardView },
-        { path: '/tasks', name: 'tasks', component: { template: '<div>Tasks</div>' } }
+        { path: '/tasks', name: 'tasks', component: { template: '<div>Tasks</div>' } },
+        { path: '/notes', name: 'notes', component: { template: '<div>Notes</div>' } }
       ]
     })
 
@@ -55,6 +60,14 @@ describe('DashboardView.vue', () => {
       initialize: vi.fn(),
       unsubscribeFromTasks: vi.fn(),
       ...taskStoreState
+    })
+
+    vi.mocked(useNotesStore).mockReturnValue({
+      notes: [],
+      recentNotes: [],
+      loading: false,
+      fetchNotes: vi.fn(),
+      unsubscribe: vi.fn()
     })
 
     Object.assign(authStore, {

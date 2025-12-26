@@ -100,6 +100,11 @@ export function useNoteAutosave(options = {}) {
    * @param {Object} noteData - Note data { title, content }
    */
   const triggerAutosave = (noteData) => {
+    // Only autosave existing notes - new notes require explicit save
+    if (!noteId) {
+      return
+    }
+
     if (!noteData.title || !noteData.content) {
       return
     }
