@@ -3,8 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSchedulingStore } from '../store'
 import { useActivityStore } from '@/stores/activity'
-import { getBreakdown } from '../composables/useEquityScore'
 import EquityScoreCard from '../components/EquityScoreCard.vue'
+import ParticipantBreakdown from '../components/ParticipantBreakdown.vue'
 import TimezoneGrid from '../components/TimezoneGrid.vue'
 import ParticipantList from '../components/ParticipantList.vue'
 import TimeHeatmap from '../components/TimeHeatmap.vue'
@@ -34,9 +34,6 @@ const showAddParticipantDialog = ref(false)
 const deleteDialogVisible = ref(false)
 const heatmapLoading = ref(false)
 const screenReaderMessage = ref('')
-
-// Computed - Status breakdown for equity card
-const statusBreakdown = computed(() => getBreakdown(store.participantsWithStatus))
 
 // Computed - Available participants to add
 const availableParticipants = computed(() => {
@@ -356,10 +353,34 @@ onMounted(async () => {
         </template>
       </Card>
 
-      <!-- Equity Score Card -->
-      <div class="score-section">
-        <EquityScoreCard :score="store.equityScore" :breakdown="statusBreakdown" />
+      <!-- Equity Score and Participant Breakdown Row -->
+      <div class="equity-section">
+        <EquityScoreCard :score="store.equityScore?.score || null" />
+        <ParticipantBreakdown :breakdown="store.equityScore" />
       </div>
+
+      <!-- Participant Details Table -->
+      <Card class="list-card">
+        <template #title>
+          <div class="card-title-row">
+            <span>Participant Details</span>
+            <Button
+              label="Add Participant"
+              icon="pi pi-plus"
+              size="small"
+              @click="showAddParticipantDialog = true"
+            />
+          </div>
+        </template>
+        <template #content>
+          <ParticipantList
+            :participants="store.participantsWithStatus"
+            :loading="store.loading"
+            :show-actions="true"
+            @delete="removeParticipantFromMeeting"
+          />
+        </template>
+      </Card>
 
       <!-- Optimal Time Suggestions (US2 - T073, T074, T076) -->
       <Card
@@ -434,29 +455,6 @@ onMounted(async () => {
         :participants="store.participantsWithStatus"
         :suggestions="store.topSuggestions"
       />
-
-      <!-- Participant List -->
-      <Card class="list-card">
-        <template #title>
-          <div class="card-title-row">
-            <span>Participant Details</span>
-            <Button
-              label="Add Participant"
-              icon="pi pi-plus"
-              size="small"
-              @click="showAddParticipantDialog = true"
-            />
-          </div>
-        </template>
-        <template #content>
-          <ParticipantList
-            :participants="store.participantsWithStatus"
-            :loading="store.loading"
-            :show-actions="true"
-            @delete="removeParticipantFromMeeting"
-          />
-        </template>
-      </Card>
 
       <!-- Meeting Notes -->
       <Card v-if="store.currentMeeting.notes" class="notes-card">
@@ -594,8 +592,17 @@ onMounted(async () => {
   gap: 0.5rem;
 }
 
-.score-section {
+.equity-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
   margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .equity-section {
+    grid-template-columns: 1fr;
+  }
 }
 
 .grid-card,

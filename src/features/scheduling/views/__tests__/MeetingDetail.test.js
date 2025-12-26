@@ -264,20 +264,6 @@ describe('MeetingDetail.vue', () => {
     expect(wrapper.vm.formatHour(23)).toBe('11:00 PM')
   })
 
-  it('computes status breakdown correctly', async () => {
-    store.participantsWithStatus = [
-      { status: 'green' },
-      { status: 'green' },
-      { status: 'orange' },
-      { status: 'red' }
-    ]
-
-    await wrapper.vm.$nextTick()
-
-    // statusBreakdown uses getBreakdown from useEquityScore
-    expect(wrapper.vm.statusBreakdown).toBeDefined()
-  })
-
   it('computes available participants correctly', async () => {
     store.currentMeeting = {
       ...mockMeeting,
