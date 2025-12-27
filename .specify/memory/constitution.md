@@ -2,34 +2,41 @@
   ============================================================================
   SYNC IMPACT REPORT
   ============================================================================
-  Version: 1.0.0 → Created initial constitution
+  Version: 1.0.0 → 1.1.0
 
-  New Principles:
-  - I. User Experience First
-  - II. Accessibility is Non-Negotiable (WCAG 2.1 Level AA)
-  - III. Security by Design (Row Level Security)
-  - IV. Phased Implementation Strategy
-  - V. Component-First Architecture
-  - VI. No TypeScript (JavaScript with Composition API)
-  - VII. Context7 for Library Documentation
+  Modified Principles:
+  - VII. Context7 for Library Documentation → Enhanced with specific examples
 
-  New Sections:
-  - Technical Stack Requirements
-  - Development Workflow
-  - Governance
+  Added Principles:
+  - VIII. Testing Strategy (NEW) - 80% minimum coverage requirement
+  - IX. Design System Consistency (NEW) - Brand teal, Netflix-style dark mode
 
-  Template Sync Status:
-  ✅ plan-template.md - Constitution Check section aligns with principles
-  ✅ spec-template.md - User Stories section supports UX-first and phased approach
-  ✅ tasks-template.md - Phase organization supports incremental delivery
+  Added Sections:
+  - Testing Requirements (NEW) - Comprehensive testing pyramid and coverage
+  - Design System Standards (NEW) - Color system, typography, spacing rules
+
+  Removed Sections:
+  - None
+
+  Templates Requiring Updates:
+  ✅ plan-template.md - Constitution Check section updated to include testing and design gates
+  ✅ spec-template.md - User Stories section already supports UX-first and phased approach
+  ✅ tasks-template.md - Phase organization supports incremental delivery and test-first approach
 
   Follow-up TODOs:
   - None - all placeholders resolved
 
+  Version Bump Rationale:
+  - MINOR bump (1.0.0 → 1.1.0) - Added two new principles (Testing Strategy, Design System)
+  - Not MAJOR because no existing principles removed or incompatibly changed
+  - Not PATCH because new constitutional requirements added, not just clarifications
+
   Notes:
-  - Initial constitution created from existing project documentation
-  - Ratification date set to project inception based on git history
-  - Principles derived from CLAUDE.md, ARCHITECTURE.md, DESIGN_GUIDELINES.md
+  - Added Testing Strategy principle based on TESTING_STRATEGY.md and TESTING_GUIDE.md
+  - Added Design System principle based on DESIGN_GUIDELINES.md
+  - Enhanced Context7 principle with specific library examples
+  - Integrated testing requirements throughout workflow sections
+  - Added design system standards to complement existing UX principle
   ============================================================================
 -->
 
@@ -129,11 +136,62 @@
 **Rationale**: Library APIs change frequently. Using stale documentation leads to broken implementations and wasted time. Context7 provides current, accurate information.
 
 **Enforcement**:
-- Context7 tools must be invoked for PrimeVue component usage
-- Context7 tools must be invoked for Supabase API patterns
-- Context7 tools must be invoked for date-fns, Vue Router, Pinia APIs
+- Context7 tools MUST be invoked for PrimeVue component usage (Button, Dialog, DataTable, etc.)
+- Context7 tools MUST be invoked for Supabase API patterns (auth, database queries, realtime)
+- Context7 tools MUST be invoked for date-fns formatting and manipulation
+- Context7 tools MUST be invoked for Vue Router navigation guards and route configuration
+- Context7 tools MUST be invoked for Pinia store patterns and plugin usage
 - Any third-party library integration requires Context7 lookup first
 - Documentation links in code comments should reference Context7-verified current versions
+
+### VIII. Testing Strategy
+
+**Minimum 80% code coverage is required for all new code.** Tests follow the testing pyramid: many unit tests (60-75%), some integration tests (20-30%), few E2E tests (5-10%). Write tests as you build features—testing is not a separate phase.
+
+**Rationale**: High test coverage provides confidence to refactor, catches regressions early, and serves as executable documentation. The testing pyramid ensures fast feedback while covering critical user journeys.
+
+**Enforcement**:
+- All utility functions MUST have 100% unit test coverage
+- All composables MUST have 100% unit test coverage
+- New Vue components MUST have 80%+ test coverage
+- Store actions and mutations MUST be tested
+- Critical user flows (login, task creation, note saving) MUST have E2E tests
+- Tests run in watch mode during development (<30s locally, <2min in CI)
+- Coverage reports block PRs below 80% threshold
+- Use Vitest for unit/integration, Playwright for E2E
+- Pre-commit hooks enforce passing tests
+
+**Test-First Approach**:
+- Write tests FIRST, ensure they FAIL, then implement
+- Tests for User Story N must exist before User Story N implementation begins
+- Each commit should include both code and corresponding tests
+
+### IX. Design System Consistency
+
+**Brand identity and design system must be consistent throughout the application.** Use brand teal (#14b8a6) as primary color, Netflix-style dark mode (#141414, not pure black), and follow spacing/typography scales precisely.
+
+**Rationale**: Consistent design reduces cognitive load, reinforces brand identity, and creates a cohesive user experience. Arbitrary color choices and inconsistent spacing make the application feel unprofessional and difficult to navigate.
+
+**Enforcement**:
+- Primary color MUST be brand teal (#14b8a6) everywhere
+- Dark mode MUST use #141414 as base background (NOT #000000 pure black)
+- Elevated surfaces in dark mode: #1f1f1f (cards), #2a2a2a (modals)
+- Typography MUST follow type scale (--text-base: 1rem minimum for body text)
+- Spacing MUST use CSS variables (--space-2, --space-4, etc.) from Tailwind scale
+- No hardcoded colors or spacing values in components
+- All animations MUST respect prefers-reduced-motion
+- Interactive elements MUST have hover and focus states
+
+**Color System**:
+- Brand teal: #14b8a6 (primary), #0d9488 (hover/focus)
+- Semantic colors: success (#10b981), warning (#f59e0b), error (#ef4444), info (#3b82f6)
+- Text hierarchy: --text-primary, --text-secondary, --text-tertiary
+
+**Spacing Philosophy**:
+- Information density over decorative whitespace
+- Compact task cards: 0.625rem (10px) vertical padding, not 1.25rem (20px)
+- Show 8-10 tasks per screen vs. 3-4 with excessive padding
+- Consistent gaps: forms (1rem between fields), navigation (0.5rem between items)
 
 ## Technical Stack Requirements
 
@@ -158,6 +216,13 @@
 - **Supabase** for authentication, database, and realtime subscriptions
 - **PostgreSQL** (via Supabase) with Row Level Security policies
 - **Supabase Edge Functions** for scheduled tasks (future: reminder notifications)
+
+### Testing Tools
+- **Vitest** for unit and integration tests (5-10x faster than Jest, native ESM)
+- **@vue/test-utils** for component testing (official Vue testing library)
+- **Playwright** for E2E tests (cross-browser, auto-wait, industry standard)
+- **@vitest/coverage-v8** for coverage reporting (native V8 coverage, accurate)
+- **Husky** for git hooks (enforce quality gates before commit)
 
 ### Hosting
 - **Vercel** for frontend hosting with automatic GitHub deployments
@@ -190,6 +255,41 @@
 - **Never show raw errors**: Display friendly messages, log technical details
 - **Optimistic updates** where appropriate, with rollback on failure
 
+### Testing Requirements
+
+**Unit Tests** (60-75% of tests):
+- Location: `src/**/__tests__/*.test.js`
+- Speed: <10ms each
+- Isolated: No network, no database
+- Cover: Utilities, composables, store logic
+- Example: `src/utils/__tests__/validation.test.js`
+
+**Integration Tests** (20-30% of tests):
+- Location: `src/**/__tests__/integration/*.test.js`
+- Speed: <100ms each
+- Cover: Component + store interactions, API integrations
+- Example: `src/features/tasks/__tests__/integration/task-creation.test.js`
+
+**E2E Tests** (5-10% of tests):
+- Location: `tests/e2e/*.spec.js`
+- Speed: <5s each
+- Cover: Critical user journeys only (login, create task, complete workflow)
+- Example: `tests/e2e/task-management.spec.js`
+
+**Coverage Thresholds** (enforced in CI):
+- Branches: 80%
+- Functions: 80%
+- Lines: 80%
+- Statements: 80%
+
+**Test Quality Standards**:
+- All tests must be isolated (no dependencies on each other)
+- Test names clearly describe behavior (not implementation)
+- Use AAA pattern: Arrange, Act, Assert
+- Mock external dependencies (Supabase), not internal logic
+- Tests run fast (<30s locally, <2min in CI)
+- Pre-commit hooks block commits with failing tests
+
 ### Accessibility Testing Requirements
 
 - **Keyboard navigation**: Test every interactive flow with Tab, Enter, Escape
@@ -213,6 +313,31 @@
 - **Never expose**: Raw error messages, stack traces, database errors
 - **Logging**: Technical errors logged for debugging, user sees friendly message
 - **Validation**: Client-side for UX (immediate feedback), server-side for security (database constraints)
+
+### Design System Requirements
+
+**Color Usage**:
+- Primary color: Brand teal (#14b8a6) for primary buttons, active states, FAB
+- Never use generic blue (#3b82f6) or hardcoded colors
+- Dark mode: #141414 base (NOT #000000), #1f1f1f surfaces, #2a2a2a elevated
+- Use CSS variables (var(--brand-teal-500)) instead of Tailwind hardcoded colors
+
+**Typography**:
+- Minimum body text: 16px (1rem) - NEVER use 14px for body content
+- Type scale: --text-xs (12px) for timestamps, --text-sm (14px) for metadata
+- Font weights: --font-medium (500) for labels, --font-semibold (600) for headings
+- Line height: --leading-normal (1.5) for body text
+
+**Spacing**:
+- Use Tailwind spacing scale exclusively (--space-2, --space-4, etc.)
+- Compact task cards: 0.625rem (10px) vertical padding
+- Dashboard cards: 1.5rem (24px) internal padding, 1rem (16px) gaps
+- Forms: 1rem between fields, 0.5rem label-to-input
+
+**Animation**:
+- Transition timing: --duration-fast (150ms) for UI interactions
+- Easing: --ease-out (cubic-bezier(0, 0, 0.2, 1)) for natural motion
+- MUST respect prefers-reduced-motion media query
 
 ## Governance
 
@@ -239,6 +364,8 @@
 - **Pull Requests**: Must verify compliance with all principles
 - **Phase Completion**: Cannot proceed without constitution compliance
 - **Code Reviews**: Reviewers must check constitution adherence
+- **Testing**: All PRs must include tests and pass 80% coverage threshold
+- **Design Review**: New UI components must follow design system standards
 - **Complexity**: Any violation of principles must be explicitly justified with rationale
 
 ### Principle Conflicts
@@ -255,8 +382,10 @@ For day-to-day development decisions not covered by this constitution:
 - Refer to **CLAUDE.md** for general project philosophy and best practices
 - Refer to **ARCHITECTURE.md** for system design patterns and database schemas
 - Refer to **DESIGN_GUIDELINES.md** for UI/UX standards and component patterns
-- Refer to **IMPLEMENTATION_PLAN.md** for phase-specific implementation details
+- Refer to **TESTING_STRATEGY.md** for comprehensive testing approach and CI/CD
+- Refer to **TESTING_GUIDE.md** for practical testing examples and patterns
+- Refer to **IMPLEMENTATION_GUIDE.md** for phase-specific implementation details
 
 When CLAUDE.md conflicts with this constitution, this constitution takes precedence.
 
-**Version**: 1.0.0 | **Ratified**: 2025-06-13 | **Last Amended**: 2025-12-10
+**Version**: 1.1.0 | **Ratified**: 2025-06-13 | **Last Amended**: 2025-12-27
