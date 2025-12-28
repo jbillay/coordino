@@ -187,5 +187,10 @@ const handleEscape = (event) => {
   .fab-item span {
     font-size: 13px;
   }
+
+  /* Ensure minimum touch target size (44x44px) */
+  .fab-item {
+    min-height: 44px;
+  }
 }
 </style>

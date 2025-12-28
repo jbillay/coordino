@@ -256,7 +256,15 @@ const handleMagicLink = async () => {
 
             <!-- Password Field -->
             <div class="form-group">
-              <label for="password" class="form-label">Password</label>
+              <div class="flex items-center justify-between mb-2">
+                <label for="password" class="form-label">Password</label>
+                <router-link
+                  to="/reset-password"
+                  class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium hover:underline"
+                >
+                  Forgot Password?
+                </router-link>
+              </div>
               <div class="relative">
                 <Password
                   id="password"

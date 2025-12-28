@@ -74,4 +74,12 @@ defineEmits(['select', 'edit', 'delete'])
 .topic-card:hover .drag-handle {
   opacity: 1;
 }
+
+/* Mobile: Ensure minimum touch target size (44x44px) */
+@media (max-width: 768px) {
+  .topic-card :deep(button) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
 </style>

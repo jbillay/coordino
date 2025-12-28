@@ -42,7 +42,10 @@ export default defineConfig({
     },
 
     // Test file patterns
-    include: ['src/**/__tests__/**/*.{test,spec}.{js,jsx}'],
+    include: ['src/**/__tests__/**/*.{test,spec}.{js,jsx}', 'tests/**/*.{test,spec}.{js,jsx}'],
+
+    // Exclude E2E tests (they use Playwright, not Vitest)
+    exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'tests/e2e/**'],
 
     // Setup files
     setupFiles: ['./src/__tests__/setup.js'],

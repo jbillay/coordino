@@ -132,3 +132,177 @@ export const hasMaxLength = (value, maxLength) => {
   }
   return value.length <= maxLength
 }
+
+/**
+ * Validates email address with detailed error messages
+ * Used for profile management (FR-007)
+ * @param {string} email - Email address to validate
+ * @returns {{valid: boolean, error?: string}} Validation result
+ */
+export const validateEmail = (email) => {
+  if (!email) {
+    return { valid: false, error: 'Email is required' }
+  }
+
+  if (typeof email !== 'string') {
+    return { valid: false, error: 'Email must be a string' }
+  }
+
+  const trimmedEmail = email.trim()
+
+  if (!trimmedEmail) {
+    return { valid: false, error: 'Email cannot be empty' }
+  }
+
+  if (!EMAIL_REGEX.test(trimmedEmail)) {
+    return { valid: false, error: 'Invalid email format' }
+  }
+
+  if (trimmedEmail.length > 254) {
+    return { valid: false, error: 'Email exceeds maximum length (254 characters)' }
+  }
+
+  return { valid: true }
+}
+
+/**
+ * Validates password strength for user account configuration (FR-003)
+ * Requirements: minimum 8 characters, uppercase, lowercase, numbers, special characters
+ * @param {string} password - Password to validate
+ * @returns {{valid: boolean, errors: string[]}} Validation result with specific error messages
+ */
+export const validatePasswordStrength = (password) => {
+  const errors = []
+
+  if (!password) {
+    return { valid: false, errors: ['Password is required'] }
+  }
+
+  if (typeof password !== 'string') {
+    return { valid: false, errors: ['Password must be a string'] }
+  }
+
+  // Minimum 8 characters (FR-003)
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long')
+  }
+
+  // Must contain uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter')
+  }
+
+  // Must contain lowercase letter
+  if (!/[a-z]/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter')
+  }
+
+  // Must contain number
+  if (!/[0-9]/.test(password)) {
+    errors.push('Password must contain at least one number')
+  }
+
+  // Must contain special character
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
+    errors.push('Password must contain at least one special character (!@#$%^&* etc.)')
+  }
+
+  // Maximum length check (reasonable limit)
+  if (password.length > 128) {
+    errors.push('Password exceeds maximum length (128 characters)')
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  }
+}
+
+/**
+ * Validates timezone identifier (IANA format)
+ * @param {string} timezone - Timezone identifier (e.g., "America/New_York")
+ * @returns {{valid: boolean, error?: string}} Validation result
+ */
+export const validateTimezone = (timezone) => {
+  if (!timezone) {
+    return { valid: false, error: 'Timezone is required' }
+  }
+
+  if (typeof timezone !== 'string') {
+    return { valid: false, error: 'Timezone must be a string' }
+  }
+
+  // Validate using Intl.DateTimeFormat
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: timezone })
+    return { valid: true }
+  } catch {
+    return { valid: false, error: 'Invalid timezone identifier' }
+  }
+}
+
+/**
+ * Validates theme value
+ * @param {string} theme - Theme value ("light" or "dark")
+ * @returns {{valid: boolean, error?: string}} Validation result
+ */
+export const validateTheme = (theme) => {
+  const validThemes = ['light', 'dark']
+
+  if (!theme) {
+    return { valid: false, error: 'Theme is required' }
+  }
+
+  if (!validThemes.includes(theme)) {
+    return { valid: false, error: 'Theme must be "light" or "dark"' }
+  }
+
+  return { valid: true }
+}
+
+/**
+ * Validates date format
+ * @param {string} format - Date format string
+ * @returns {{valid: boolean, error?: string}} Validation result
+ */
+export const validateDateFormat = (format) => {
+  const validFormats = ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD']
+
+  if (!format) {
+    return { valid: false, error: 'Date format is required' }
+  }
+
+  if (!validFormats.includes(format)) {
+    return {
+      valid: false,
+      error: 'Date format must be one of: MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD'
+    }
+  }
+
+  return { valid: true }
+}
+
+/**
+ * Validates hex color format (FR-046)
+ * Supports both 3-char (#FFF) and 6-char (#FFFFFF) formats
+ * @param {string} color - Hex color code
+ * @returns {{valid: boolean, error?: string}} Validation result
+ */
+export const validateHexColor = (color) => {
+  if (!color) {
+    return { valid: false, error: 'Color is required' }
+  }
+
+  if (typeof color !== 'string') {
+    return { valid: false, error: 'Color must be a string' }
+  }
+
+  // Hex color regex: # followed by either 3 or 6 hex digits
+  const hexColorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
+
+  if (!hexColorRegex.test(color)) {
+    return { valid: false, error: 'Invalid hex color format (use #FFF or #FFFFFF)' }
+  }
+
+  return { valid: true }
+}

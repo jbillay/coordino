@@ -31,7 +31,33 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+### Core Principles Alignment
+
+- [ ] **User Experience First**: Design prioritizes intuitive interactions and smooth user experience
+- [ ] **Accessibility (WCAG 2.1 AA)**: Color contrast ratios, keyboard navigation, screen reader support planned
+- [ ] **Security by Design**: Row Level Security policies designed for all user data tables
+- [ ] **Phased Implementation**: Feature broken into complete, testable phases with clear completion criteria
+- [ ] **Component-First Architecture**: Components focused, composable, <300 lines each
+- [ ] **No TypeScript**: Vue 3 Composition API with JavaScript (no .ts files)
+- [ ] **Context7 Usage**: Library documentation accessed via Context7 for PrimeVue, Supabase, date-fns, Vue Router, Pinia
+- [ ] **Testing Strategy**: 80% minimum coverage planned with test pyramid (60-75% unit, 20-30% integration, 5-10% E2E)
+- [ ] **Design System Consistency**: Brand teal (#14b8a6), Netflix dark mode (#141414), spacing/typography scales followed
+
+### Testing Requirements Gate
+
+- [ ] **Unit Tests**: Utilities and composables have 100% coverage plans
+- [ ] **Integration Tests**: Component + store interaction tests planned
+- [ ] **E2E Tests**: Critical user journeys identified (login, core workflows)
+- [ ] **Test-First**: Tests written BEFORE implementation in all phases
+- [ ] **Coverage Enforcement**: CI configured to block <80% coverage PRs
+
+### Design System Gate
+
+- [ ] **Color System**: Brand teal used for primary actions, no hardcoded colors
+- [ ] **Dark Mode**: #141414 base background (NOT #000000 pure black)
+- [ ] **Typography**: 16px (1rem) minimum body text, type scale followed
+- [ ] **Spacing**: Tailwind spacing scale (--space-*) used exclusively
+- [ ] **Animations**: prefers-reduced-motion respected in all transitions
 
 ## Project Structure
 

@@ -130,6 +130,51 @@ const closeMobileMenu = () => {
 }
 
 /**
+ * Focus trap handler for mobile menu
+ * Ensures focus stays within the menu when it's open
+ * Handles Tab, Shift+Tab, and Escape keys
+ * @param {KeyboardEvent} event - Keyboard event
+ */
+const handleMobileFocusTrap = (event) => {
+  if (!showMobileMenu.value || !mobileMenuRef.value) {
+    return
+  }
+
+  const { key, shiftKey } = event
+
+  // Close menu on Escape
+  if (key === 'Escape') {
+    event.preventDefault()
+    closeMobileMenu()
+    return
+  }
+
+  // Handle Tab key for focus trap
+  if (key === 'Tab') {
+    // Get all focusable elements within the mobile menu
+    const focusableElements = mobileMenuRef.value.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+
+    if (focusableElements.length === 0) {
+      return
+    }
+
+    const firstFocusable = focusableElements[0]
+    const lastFocusable = focusableElements[focusableElements.length - 1]
+
+    // Shift+Tab on first element: wrap to last element
+    if (shiftKey && document.activeElement === firstFocusable) {
+      event.preventDefault()
+      lastFocusable.focus()
+    } else if (!shiftKey && document.activeElement === lastFocusable) {
+      event.preventDefault()
+      firstFocusable.focus()
+    }
+  }
+}
+
+/**
  * Handles user sign out
  * Closes menus, signs out user, and redirects to login page
  */
@@ -158,10 +203,12 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleMobileFocusTrap)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleMobileFocusTrap)
 })
 </script>
 
@@ -642,7 +689,7 @@ onUnmounted(() => {
 }
 
 .close-btn {
-  @apply w-8 h-8 rounded-lg
+  @apply w-11 h-11 rounded-lg
          flex items-center justify-center
          text-gray-600 dark:text-gray-400
          hover:bg-gray-100 dark:hover:bg-gray-800

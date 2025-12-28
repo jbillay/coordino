@@ -23,6 +23,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
+    "test:a11y": "playwright test tests/e2e/accessibility.spec.js",
+    "test:a11y:ui": "playwright test tests/e2e/accessibility.spec.js --ui",
     "prepare": "husky"
   },
   "dependencies": {
@@ -38,13 +40,17 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "isomorphic-dompurify": "^2.34.0",
+    "jszip": "3.10.1",
+    "papaparse": "5.5.3",
     "pinia": "^3.0.4",
     "tailwindcss-primeui": "^0.6.1",
     "vue": "^3.5.26",
     "vue-router": "^4.6.4",
+    "vue-virtual-scroller": "^2.0.0-beta.8",
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.11.0",
     "@pinia/testing": "^1.0.3",
     "@playwright/test": "^1.57.0",
     "@vitejs/plugin-vue": "^6.0.3",
@@ -53,6 +59,7 @@
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.23",
+    "axe-core": "4.11.0",
     "dotenv": "^17.2.3",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
@@ -68,7 +75,8 @@
     "primevue": "^4.5.4",
     "tailwindcss": "^4.1.18",
     "vite": "^7.3.0",
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.14",
+    "vitest-axe": "0.1.0"
   },
   "lint-staged": {
     "*.{js,vue}": [

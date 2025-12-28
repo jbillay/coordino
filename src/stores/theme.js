@@ -32,9 +32,20 @@ export const useThemeStore = defineStore('theme', () => {
   }
 
   function setTheme(theme) {
+    // Validate theme value
+    const validThemes = ['light', 'dark']
+    if (!validThemes.includes(theme)) {
+      return {
+        success: false,
+        error: 'Theme must be "light" or "dark"'
+      }
+    }
+
     if (currentTheme.value !== theme) {
       currentTheme.value = theme
     }
+
+    return { success: true }
   }
 
   function toggleTheme() {
@@ -43,8 +54,15 @@ export const useThemeStore = defineStore('theme', () => {
 
   function init() {
     const initialTheme = getInitialTheme()
-    setTheme(initialTheme)
-    applyTheme(initialTheme)
+    const result = setTheme(initialTheme)
+
+    // If invalid theme, fall back to light
+    if (!result.success) {
+      setTheme('light')
+      applyTheme('light')
+    } else {
+      applyTheme(initialTheme)
+    }
 
     watch(currentTheme, (newTheme) => {
       if (newTheme) {
