@@ -643,28 +643,33 @@ describe('Notes Store', () => {
 
         const newOrder = [originalTopics[2], originalTopics[0], originalTopics[1]]
 
-        const eq = vi.fn().mockResolvedValue({ data: null, error: null })
-        const update = vi.fn(() => ({ eq }))
-        mockFrom.mockReturnValue({ update })
+        // Mock RPC call for batch update (FR-032)
+        const mockRpc = vi.fn().mockResolvedValue({ data: null, error: null })
+        mockSupabase.rpc = mockRpc
 
         const result = await store.reorderTopics(newOrder)
 
         expect(result.success).toBe(true)
-        expect(update).toHaveBeenCalledTimes(3)
-        expect(update).toHaveBeenCalledWith({ display_order: 0 })
-        expect(update).toHaveBeenCalledWith({ display_order: 1 })
-        expect(update).toHaveBeenCalledWith({ display_order: 2 })
+        expect(mockRpc).toHaveBeenCalledTimes(1)
+        expect(mockRpc).toHaveBeenCalledWith('batch_update_topic_order', {
+          topic_updates: [
+            { id: 't3', display_order: 0 },
+            { id: 't1', display_order: 1 },
+            { id: 't2', display_order: 2 }
+          ]
+        })
         expect(store.topics).toEqual(newOrder)
       })
 
       it('should return error on reorder failure', async () => {
         const topics = [{ id: 't1', name: 'Topic 1' }]
 
-        const eq = vi.fn(() => {
-          throw new Error('Update failed')
+        // Mock RPC call failure
+        const mockRpc = vi.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Update failed' }
         })
-        const update = vi.fn(() => ({ eq }))
-        mockFrom.mockReturnValue({ update })
+        mockSupabase.rpc = mockRpc
 
         const result = await store.reorderTopics(topics)
 
@@ -1401,36 +1406,25 @@ describe('Notes Store', () => {
         expect(store.notes[0].title).toBe('Existing Note')
       })
 
-      it('should handle INSERT when note fetch returns no data', async () => {
-        const single = vi.fn().mockResolvedValue({ data: null, error: null })
-        const eq = vi.fn(() => ({ single }))
-        const select = vi.fn(() => ({ eq }))
-        mockFrom.mockReturnValue({ select })
-
+      it('should handle INSERT when note has no topic_id', async () => {
+        // With optimized real-time (FR-033), we use local cache instead of database fetch
         const payload = {
           eventType: 'INSERT',
-          new: { id: 'n1', title: 'New Note' },
+          new: { id: 'n1', title: 'New Note', topic_id: null },
           old: null
         }
 
         await store.handleNoteChange(payload)
 
-        expect(store.notes).toHaveLength(0)
+        // Note should be added without topic info
+        expect(store.notes).toHaveLength(1)
+        expect(store.notes[0].title).toBe('New Note')
+        expect(store.notes[0].topic).toBeUndefined()
       })
 
-      it('should handle INSERT when topic not found', async () => {
-        const newNote = {
-          id: 'n1',
-          title: 'New Note',
-          topic_id: 't999',
-          topic: { id: 't999', name: 'Topic' }
-        }
-
-        const single = vi.fn().mockResolvedValue({ data: newNote, error: null })
-        const eq = vi.fn(() => ({ single }))
-        const select = vi.fn(() => ({ eq }))
-        mockFrom.mockReturnValue({ select })
-
+      it('should handle INSERT when topic not found in local cache', async () => {
+        // With optimized real-time (FR-033), topic info from local cache
+        // If topic not in cache, note is added without topic info
         const payload = {
           eventType: 'INSERT',
           new: { id: 'n1', title: 'New Note', topic_id: 't999' },
@@ -1440,31 +1434,29 @@ describe('Notes Store', () => {
         await store.handleNoteChange(payload)
 
         expect(store.notes).toHaveLength(1)
+        expect(store.notes[0].title).toBe('New Note')
+        expect(store.notes[0].topic).toBeUndefined()
       })
 
-      it('should handle UPDATE event by fetching updated note', async () => {
-        store.notes = [{ id: 'n1', title: 'Original Note' }]
-
-        const updatedNote = {
-          id: 'n1',
-          title: 'Updated Note',
-          topic: { id: 't1', name: 'Topic 1' }
-        }
-
-        const single = vi.fn().mockResolvedValue({ data: updatedNote, error: null })
-        const eq = vi.fn(() => ({ single }))
-        const select = vi.fn(() => ({ eq }))
-        mockFrom.mockReturnValue({ select })
+      it('should handle UPDATE event using local topic cache', async () => {
+        // Set up local state with note and topic (FR-033)
+        store.notes = [{ id: 'n1', title: 'Original Note', topic_id: 't1' }]
+        store.topics = [{ id: 't1', name: 'Topic 1', color: '#3b82f6' }]
 
         const payload = {
           eventType: 'UPDATE',
-          new: { id: 'n1', title: 'Updated Note' },
+          new: { id: 'n1', title: 'Updated Note', topic_id: 't1' },
           old: { id: 'n1', title: 'Original Note' }
         }
 
         await store.handleNoteChange(payload)
 
         expect(store.notes[0].title).toBe('Updated Note')
+        expect(store.notes[0].topic).toEqual({
+          id: 't1',
+          name: 'Topic 1',
+          color: '#3b82f6'
+        })
       })
 
       it('should handle UPDATE when note not found in local state', async () => {
@@ -1489,23 +1481,21 @@ describe('Notes Store', () => {
         expect(store.notes[0].id).toBe('n1')
       })
 
-      it('should handle UPDATE when fetch returns no data', async () => {
-        store.notes = [{ id: 'n1', title: 'Note 1' }]
-
-        const single = vi.fn().mockResolvedValue({ data: null, error: null })
-        const eq = vi.fn(() => ({ single }))
-        const select = vi.fn(() => ({ eq }))
-        mockFrom.mockReturnValue({ select })
+      it('should handle UPDATE when topic not in local cache', async () => {
+        // With optimized real-time (FR-033), if topic not in cache, note updated without topic info
+        store.notes = [{ id: 'n1', title: 'Note 1', topic_id: 't1' }]
+        store.topics = [] // No topics in cache
 
         const payload = {
           eventType: 'UPDATE',
-          new: { id: 'n1', title: 'Updated Note' },
+          new: { id: 'n1', title: 'Updated Note', topic_id: 't1' },
           old: { id: 'n1', title: 'Original Note' }
         }
 
         await store.handleNoteChange(payload)
 
-        expect(store.notes[0].title).toBe('Note 1')
+        expect(store.notes[0].title).toBe('Updated Note')
+        expect(store.notes[0].topic).toBeUndefined()
       })
 
       it('should handle DELETE event and update topic count', () => {

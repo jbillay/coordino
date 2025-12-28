@@ -181,12 +181,14 @@ export const useNotesStore = defineStore('notes', () => {
         display_order: index
       }))
 
-      // Update in database
-      for (const update of updates) {
-        await supabase
-          .from('topics')
-          .update({ display_order: update.display_order })
-          .eq('id', update.id)
+      // Batch update in database using PostgreSQL function (FR-032)
+      // This reduces multiple database calls to a single RPC call
+      const { error: rpcError } = await supabase.rpc('batch_update_topic_order', {
+        topic_updates: updates
+      })
+
+      if (rpcError) {
+        throw rpcError
       }
 
       // Update local state
@@ -469,29 +471,39 @@ export const useNotesStore = defineStore('notes', () => {
   const handleNoteChange = async (payload) => {
     const { eventType, new: newRecord, old: oldRecord } = payload
 
+    // Helper function to attach topic info from local cache (FR-033)
+    // Avoids N+1 query pattern by using locally cached topic data
+    const attachTopicInfo = (note) => {
+      if (!note.topic_id) {
+        return note
+      }
+
+      const topic = topics.value.find((t) => t.id === note.topic_id)
+      if (topic) {
+        return {
+          ...note,
+          topic: {
+            id: topic.id,
+            name: topic.name,
+            color: topic.color
+          }
+        }
+      }
+
+      return note
+    }
+
     switch (eventType) {
       case 'INSERT':
         if (!notes.value.find((n) => n.id === newRecord.id)) {
-          // Fetch the note with topic info
-          const { data } = await supabase
-            .from('notes')
-            .select(
-              `
-              *,
-              topic:topics(id, name, color)
-            `
-            )
-            .eq('id', newRecord.id)
-            .single()
+          // Use local topic cache instead of database query (FR-033)
+          const noteWithTopic = attachTopicInfo(newRecord)
+          notes.value.unshift(noteWithTopic)
 
-          if (data) {
-            notes.value.unshift(data)
-
-            // Update topic note count
-            const topic = topics.value.find((t) => t.id === data.topic_id)
-            if (topic) {
-              topic.note_count++
-            }
+          // Update topic note count
+          const topic = topics.value.find((t) => t.id === newRecord.topic_id)
+          if (topic) {
+            topic.note_count++
           }
         }
         break
@@ -499,21 +511,9 @@ export const useNotesStore = defineStore('notes', () => {
       case 'UPDATE': {
         const updateIndex = notes.value.findIndex((n) => n.id === newRecord.id)
         if (updateIndex !== -1) {
-          // Fetch updated note with topic info
-          const { data } = await supabase
-            .from('notes')
-            .select(
-              `
-              *,
-              topic:topics(id, name, color)
-            `
-            )
-            .eq('id', newRecord.id)
-            .single()
-
-          if (data) {
-            notes.value[updateIndex] = data
-          }
+          // Use local topic cache instead of database query (FR-033)
+          const noteWithTopic = attachTopicInfo(newRecord)
+          notes.value[updateIndex] = noteWithTopic
         }
         break
       }
