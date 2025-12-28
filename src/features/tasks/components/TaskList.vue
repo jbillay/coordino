@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { RecycleScroller } from 'vue-virtual-scroller'
 import Button from 'primevue/button'
 import TaskCard from './TaskCard.vue'
 import { groupTasks } from '../utils'
@@ -7,6 +8,7 @@ import { groupTasks } from '../utils'
 /**
  * TaskList Component
  * Displays tasks in a list or grouped by specified field
+ * Uses virtual scrolling for datasets >100 items (FR-029)
  *
  * @component
  */
@@ -48,7 +50,12 @@ const props = defineProps({
 defineEmits(['edit', 'delete', 'toggle-complete', 'create-task', 'click'])
 
 /**
- * Grouped tasks
+ * Should use virtual scrolling (>100 tasks)
+ */
+const shouldUseVirtualScroll = computed(() => props.tasks.length > 100)
+
+/**
+ * Grouped tasks - memoized to avoid unnecessary recalculations (FR-031)
  */
 const groupedTasks = computed(() => {
   if (!props.groupBy || props.groupBy === 'none') {
@@ -99,12 +106,35 @@ const groupedTasks = computed(() => {
       </div>
     </div>
 
-    <!-- Flat list -->
-    <div v-else class="task-list-container">
+    <!-- Flat list with virtual scrolling (>100 tasks) -->
+    <div v-else-if="shouldUseVirtualScroll" class="task-list-container" data-testid="task-list">
+      <RecycleScroller
+        :items="tasks"
+        :item-size="80"
+        key-field="id"
+        class="virtual-scroller"
+        :buffer="200"
+      >
+        <template #default="{ item }">
+          <TaskCard
+            :task="item"
+            data-testid="task-item"
+            @edit="$emit('edit', $event)"
+            @delete="$emit('delete', $event)"
+            @toggle="$emit('toggle-complete', $event)"
+            @click="$emit('click', $event)"
+          />
+        </template>
+      </RecycleScroller>
+    </div>
+
+    <!-- Flat list (≤100 tasks) -->
+    <div v-else class="task-list-container" data-testid="task-list">
       <TaskCard
         v-for="task in tasks"
         :key="task.id"
         :task="task"
+        data-testid="task-item"
         @edit="$emit('edit', $event)"
         @delete="$emit('delete', $event)"
         @toggle="$emit('toggle-complete', $event)"
@@ -124,6 +154,11 @@ const groupedTasks = computed(() => {
   border: 1px solid var(--border-default);
   border-radius: 8px;
   overflow: hidden;
+}
+
+.virtual-scroller {
+  height: 600px;
+  max-height: calc(100vh - 400px);
 }
 
 .empty-state {
