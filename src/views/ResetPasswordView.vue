@@ -37,25 +37,31 @@ const confirmPassword = ref('')
 const passwordMismatch = ref(false)
 
 // Determine which mode based on URL parameters
-const hasResetToken = computed(() => {
-  return !!(route.query.token || route.hash.includes('type=recovery'))
-})
+const hasResetToken = computed(() => !!(route.query.token || route.hash.includes('type=recovery')))
 
 // Password strength validation
 const passwordStrength = computed(() => {
-  if (!newPassword.value) return null
+  if (!newPassword.value) {
+    return null
+  }
   const validation = validatePasswordStrength(newPassword.value)
   return validation
 })
 
 // Password strength indicator properties
 const strengthLevel = computed(() => {
-  if (!newPassword.value) return null
+  if (!newPassword.value) {
+    return null
+  }
   const validation = passwordStrength.value
   if (!validation.valid) {
     const errorCount = validation.errors.length
-    if (errorCount >= 4) return 'weak'
-    if (errorCount >= 2) return 'medium'
+    if (errorCount >= 4) {
+      return 'weak'
+    }
+    if (errorCount >= 2) {
+      return 'medium'
+    }
     return 'medium'
   }
   return 'strong'
@@ -95,7 +101,7 @@ const passwordRequirements = computed(() => {
     { text: 'One uppercase letter', met: /[A-Z]/.test(pwd) },
     { text: 'One lowercase letter', met: /[a-z]/.test(pwd) },
     { text: 'One number', met: /[0-9]/.test(pwd) },
-    { text: 'One special character', met: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd) }
+    { text: 'One special character', met: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pwd) }
   ]
 })
 
@@ -145,7 +151,7 @@ const handleRetry = () => {
 // Check for recovery token in URL hash on mount
 onMounted(() => {
   // Supabase Auth uses URL hash for recovery tokens
-  const hash = window.location.hash
+  const { hash } = window.location
   if (hash.includes('type=recovery')) {
     // Token is automatically handled by Supabase Auth
     // User can now set new password
@@ -154,7 +160,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center px-4 py-12" style="background-color: var(--bg-base)">
+  <div
+    class="min-h-screen flex items-center justify-center px-4 py-12"
+    style="background-color: var(--bg-base)"
+  >
     <div class="w-full max-w-md">
       <!-- Header -->
       <div class="text-center mb-8">
@@ -166,9 +175,10 @@ onMounted(() => {
           {{ hasResetToken ? 'Set New Password' : 'Reset Password' }}
         </h1>
         <p class="text-gray-600 dark:text-gray-400">
-          {{ hasResetToken
-            ? 'Enter your new password below'
-            : 'Enter your email to receive a reset link'
+          {{
+            hasResetToken
+              ? 'Enter your new password below'
+              : 'Enter your email to receive a reset link'
           }}
         </p>
       </div>
@@ -184,27 +194,33 @@ onMounted(() => {
       </Message>
 
       <!-- Error Message -->
-      <Message
-        v-if="passwordReset.error.value"
-        severity="error"
-        :closable="false"
-        class="mb-4"
-      >
+      <Message v-if="passwordReset.error.value" severity="error" :closable="false" class="mb-4">
         <div class="flex flex-col gap-2">
           <span>{{ passwordReset.error.value }}</span>
-          <Button
-            label="Request New Link"
-            size="small"
-            severity="secondary"
-            text
-            @click="router.push('/reset-password')"
-            class="self-start"
-          />
+          <div class="flex gap-2">
+            <Button
+              label="Try Again"
+              size="small"
+              severity="secondary"
+              text
+              class="self-start"
+              @click="handleRetry"
+            />
+            <Button
+              v-if="hasResetToken"
+              label="Request New Link"
+              size="small"
+              severity="secondary"
+              text
+              class="self-start"
+              @click="router.push('/reset-password')"
+            />
+          </div>
         </div>
       </Message>
 
       <!-- Request Reset Form (Email Flow) -->
-      <form v-if="!hasResetToken" @submit.prevent="handleRequestReset" class="space-y-6">
+      <form v-if="!hasResetToken" class="space-y-6" @submit.prevent="handleRequestReset">
         <div class="form-group">
           <label for="email" class="form-label">Email address</label>
           <div class="relative">
@@ -236,7 +252,7 @@ onMounted(() => {
       </form>
 
       <!-- Set New Password Form (Token Flow) -->
-      <form v-else @submit.prevent="handleUpdatePassword" class="space-y-6">
+      <form v-else class="space-y-6" @submit.prevent="handleUpdatePassword">
         <!-- New Password Field -->
         <div class="form-group">
           <label for="new-password" class="form-label">New Password</label>
@@ -254,8 +270,8 @@ onMounted(() => {
                   class: 'w-full pl-11'
                 }
               }"
-              @input="validatePasswordMatch"
               required
+              @input="validatePasswordMatch"
             />
             <i
               class="pi pi-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10"
@@ -300,7 +316,13 @@ onMounted(() => {
                   class="text-xs"
                   aria-hidden="true"
                 ></i>
-                <span :class="req.met ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'">
+                <span
+                  :class="
+                    req.met
+                      ? 'text-gray-900 dark:text-gray-100'
+                      : 'text-gray-500 dark:text-gray-400'
+                  "
+                >
                   {{ req.text }}
                 </span>
               </li>
@@ -326,8 +348,8 @@ onMounted(() => {
                   class: 'w-full pl-11'
                 }
               }"
-              @input="validatePasswordMatch"
               required
+              @input="validatePasswordMatch"
             />
             <i
               class="pi pi-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10"

@@ -14,7 +14,7 @@
  * <SettingsView />
  */
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
+import { onBeforeRouteLeave } from 'vue-router'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
@@ -22,8 +22,6 @@ import ProfileSettings from '@/components/settings/ProfileSettings.vue'
 import PreferencesSettings from '@/components/settings/PreferencesSettings.vue'
 import AccountSettings from '@/components/settings/AccountSettings.vue'
 import DataExportSettings from '@/components/settings/DataExportSettings.vue'
-
-const router = useRouter()
 
 // Active tab index
 const activeTab = ref(0)
@@ -50,6 +48,9 @@ const handleBeforeRouteLeave = () => {
   return true
 }
 
+// Register navigation guard
+onBeforeRouteLeave(handleBeforeRouteLeave)
+
 onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload)
 })
@@ -67,7 +68,6 @@ const handleChanges = (changed) => {
 const handleSaved = () => {
   hasUnsavedChanges.value = false
 }
-
 </script>
 
 <template>
@@ -82,7 +82,11 @@ const handleSaved = () => {
       </div>
 
       <!-- Tab Navigation -->
-      <TabView v-model:activeIndex="activeTab" class="settings-tabs" aria-label="Settings sections">
+      <TabView
+        v-model:active-index="activeTab"
+        class="settings-tabs"
+        aria-label="Settings sections"
+      >
         <!-- Profile Tab -->
         <TabPanel aria-label="Profile settings">
           <template #header>
@@ -137,7 +141,10 @@ const handleSaved = () => {
         aria-atomic="true"
       >
         <div class="flex items-center gap-2">
-          <i class="pi pi-exclamation-triangle text-yellow-600 dark:text-yellow-400" aria-hidden="true"></i>
+          <i
+            class="pi pi-exclamation-triangle text-yellow-600 dark:text-yellow-400"
+            aria-hidden="true"
+          ></i>
           <span class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
             You have unsaved changes
           </span>
