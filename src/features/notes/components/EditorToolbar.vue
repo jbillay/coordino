@@ -259,4 +259,12 @@ watch(showLinkDialog, (isVisible) => {
 .toolbar-divider {
   margin: 0 0.25rem;
 }
+
+/* Mobile: Ensure minimum touch target size (44x44px) */
+@media (max-width: 768px) {
+  .toolbar-group :deep(button) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
 </style>

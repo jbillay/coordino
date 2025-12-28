@@ -122,4 +122,22 @@ const formatTimestamp = (timestamp) => formatNoteTimestamp(timestamp)
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Mobile: Always show actions and ensure minimum touch target size (44x44px) */
+@media (max-width: 768px) {
+  .note-actions {
+    opacity: 1;
+  }
+
+  /* Ensure action buttons are at least 44x44px */
+  .note-actions :deep(button) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Keyboard focus: always show actions when focused */
+.note-card:focus-within .note-actions {
+  opacity: 1;
+}
 </style>

@@ -42,7 +42,7 @@ export default defineConfig({
     },
 
     // Test file patterns
-    include: ['src/**/__tests__/**/*.{test,spec}.{js,jsx}'],
+    include: ['src/**/__tests__/**/*.{test,spec}.{js,jsx}', 'tests/**/*.{test,spec}.{js,jsx}'],
 
     // Setup files
     setupFiles: ['./src/__tests__/setup.js'],

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import NoteCard from './NoteCard.vue'
 
 const props = defineProps({
@@ -34,7 +34,7 @@ const props = defineProps({
   }
 })
 
-defineEmits(['open-note', 'create', 'toggle-pin', 'archive', 'delete-note'])
+const emit = defineEmits(['open-note', 'create', 'toggle-pin', 'archive', 'delete-note', 'open'])
 
 const pinnedNotes = computed(() => sortNotes(props.notes.filter((note) => note.is_pinned)))
 
@@ -56,6 +56,63 @@ const sortNotes = (notes) => {
       return notesCopy
   }
 }
+
+// Arrow key navigation (FR-026)
+const focusedNoteIndex = ref(-1)
+const noteRefs = ref([])
+
+// Combined list of all notes in display order (pinned first, then regular)
+const allNotes = computed(() => [...pinnedNotes.value, ...regularNotes.value])
+
+// Set note ref
+const setNoteRef = (el, index) => {
+  if (el) {
+    noteRefs.value[index] = el
+  }
+}
+
+// Handle keyboard navigation
+const handleKeyDown = (event) => {
+  if (allNotes.value.length === 0) return
+
+  const { key } = event
+
+  if (key === 'ArrowDown' || key === 'ArrowUp') {
+    event.preventDefault()
+
+    if (key === 'ArrowDown') {
+      // Move focus down
+      focusedNoteIndex.value =
+        focusedNoteIndex.value < allNotes.value.length - 1
+          ? focusedNoteIndex.value + 1
+          : focusedNoteIndex.value
+    } else if (key === 'ArrowUp') {
+      // Move focus up
+      focusedNoteIndex.value = focusedNoteIndex.value > 0 ? focusedNoteIndex.value - 1 : 0
+    }
+
+    // Focus the note element
+    const noteElement = noteRefs.value[focusedNoteIndex.value]
+    if (noteElement) {
+      noteElement.$el?.focus() || noteElement.focus()
+    }
+  } else if (key === 'Enter') {
+    // Open focused note
+    if (focusedNoteIndex.value >= 0 && focusedNoteIndex.value < allNotes.value.length) {
+      const note = allNotes.value[focusedNoteIndex.value]
+      emit('open', note)
+    }
+  }
+}
+
+// Set up keyboard listeners
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeyDown)
+})
 </script>
 
 <template>
@@ -89,9 +146,11 @@ const sortNotes = (notes) => {
         </div>
         <div class="notes-grid" :class="viewMode">
           <NoteCard
-            v-for="note in pinnedNotes"
+            v-for="(note, index) in pinnedNotes"
             :key="note.id"
+            :ref="(el) => setNoteRef(el, index)"
             :note="note"
+            :tabindex="0"
             @click="$emit('open-note', note)"
             @pin="$emit('toggle-pin', note)"
             @archive="$emit('archive', note)"
@@ -107,9 +166,11 @@ const sortNotes = (notes) => {
         </div>
         <div class="notes-grid" :class="viewMode">
           <NoteCard
-            v-for="note in regularNotes"
+            v-for="(note, index) in regularNotes"
             :key="note.id"
+            :ref="(el) => setNoteRef(el, index + pinnedNotes.length)"
             :note="note"
+            :tabindex="0"
             @click="$emit('open-note', note)"
             @pin="$emit('toggle-pin', note)"
             @archive="$emit('archive', note)"

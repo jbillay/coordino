@@ -298,6 +298,18 @@ const handleToggle = () => {
   .task-title {
     font-size: 0.9375rem; /* Slightly larger on mobile */
   }
+
+  /* Ensure action buttons are at least 44x44px */
+  .task-actions :deep(button) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Ensure checkbox is at least 44x44px */
+  .task-checkbox {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }
 
 /* Respect prefers-reduced-motion */

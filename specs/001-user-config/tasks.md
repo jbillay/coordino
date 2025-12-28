@@ -24,16 +24,16 @@
 
 **Purpose**: Project initialization, database migrations, and dependency installation
 
-- [ ] T001 Install new NPM dependencies: vue-virtual-scroller@^2.0.0-beta.8, jszip@^3.10.1, papaparse@^5.4.1
-- [ ] T002 Create Supabase migration file: supabase/migrations/YYYYMMDDHHMMSS_add_completed_tours_to_users_extended.sql
-- [ ] T003 Apply database migration to add completed_tours TEXT[] column to users_extended table
-- [ ] T004 Verify migration: Query users_extended schema to confirm completed_tours column exists with default '{}'
-- [ ] T005 [P] Customize Supabase Auth email template for password reset (Dashboard > Authentication > Email Templates)
-- [ ] T006 [P] Create src/components/settings/ directory for settings-specific components
-- [ ] T007 [P] Create src/components/common/ subdirectories if not exist
-- [ ] T008 [P] Create tests/unit/utils/, tests/unit/composables/ directories
-- [ ] T009 [P] Create tests/integration/settings/, tests/integration/export/ directories
-- [ ] T010 [P] Create tests/e2e/ directory if not exist
+- [X] T001 Install new NPM dependencies: vue-virtual-scroller@^2.0.0-beta.8, jszip@^3.10.1, papaparse@^5.4.1
+- [X] T002 Create Supabase migration file: supabase/migrations/YYYYMMDDHHMMSS_add_completed_tours_to_users_extended.sql
+- [X] T003 Apply database migration to add completed_tours TEXT[] column to users_extended table
+- [X] T004 Verify migration: Query users_extended schema to confirm completed_tours column exists with default '{}'
+- [ ] T005 [P] Customize Supabase Auth email template for password reset (Dashboard > Authentication > Email Templates) (MANUAL: See quickstart.md lines 145-187)
+- [X] T006 [P] Create src/components/settings/ directory for settings-specific components
+- [X] T007 [P] Create src/components/common/ subdirectories if not exist
+- [X] T008 [P] Create tests/unit/utils/, tests/unit/composables/ directories
+- [X] T009 [P] Create tests/integration/settings/, tests/integration/export/ directories
+- [X] T010 [P] Create tests/e2e/ directory if not exist
 
 **Checkpoint**: Foundation ready - dependencies installed, database migrated, directories created
 
@@ -47,14 +47,14 @@
 
 ### Utilities (Required by multiple stories)
 
-- [ ] T011 [P] Create src/utils/validation.js with validateEmail() and validatePassword() functions
-- [ ] T012 [P] Create src/utils/sanitization.js with sanitizeContent() for user-generated content
-- [ ] T013 Create tests/unit/utils/validation.test.js - test email/password validation (WRITE FIRST, ENSURE FAILS)
-- [ ] T014 Create tests/unit/utils/sanitization.test.js - test content sanitization (WRITE FIRST, ENSURE FAILS)
+- [X] T011 [P] Create src/utils/validation.js with validateEmail() and validatePassword() functions
+- [X] T012 [P] Create src/utils/sanitization.js with sanitizeContent() for user-generated content
+- [X] T013 Create tests/unit/utils/validation.test.js - test email/password validation (WRITE FIRST, ENSURE FAILS)
+- [X] T014 Create tests/unit/utils/sanitization.test.js - test content sanitization (WRITE FIRST, ENSURE FAILS)
 
 ### Router Configuration
 
-- [ ] T015 Add /settings route to src/router/index.js with lazy-loaded SettingsView component
+- [X] T015 Add /settings route to src/router/index.js with lazy-loaded SettingsView component (ALREADY EXISTS)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -68,12 +68,12 @@
 
 ### Tests for User Story 1 (REQUIRED - write FIRST, ensure FAIL)
 
-- [ ] T016 [P] [US1] Create tests/unit/composables/usePasswordReset.test.js - test password reset flow state machine
-- [ ] T017 [P] [US1] Create tests/e2e/password-reset.spec.js - test complete password reset journey (SC-001: <3 min completion)
+- [X] T016 [P] [US1] Create tests/unit/composables/usePasswordReset.test.js - test password reset flow state machine (18 tests passing)
+- [X] T017 [P] [US1] Create tests/e2e/password-reset.spec.js - test complete password reset journey (SC-001: <3 min completion)
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Create src/composables/usePasswordReset.js - implement password reset flow (resetPassword, updatePassword, error handling)
+- [X] T018 [US1] Create src/composables/usePasswordReset.js - implement password reset flow (resetPassword, updatePassword, error handling)
 - [ ] T019 [US1] Add "Forgot Password" link to login view (modify existing LoginView.vue)
 - [ ] T020 [US1] Create src/views/ResetPasswordView.vue - password reset form with validation
 - [ ] T021 [US1] Add /reset-password route to src/router/index.js

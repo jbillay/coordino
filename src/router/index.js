@@ -39,6 +39,12 @@ const router = createRouter({
       meta: { requiresAuth: false, layout: 'empty' }
     },
     {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('@/views/ResetPasswordView.vue'),
+      meta: { requiresAuth: false, layout: 'empty' }
+    },
+    {
       path: '/auth/callback',
       name: 'auth-callback',
       component: () => import('@/views/AuthCallbackView.vue'),
@@ -147,7 +153,7 @@ router.beforeEach(async (to, from, next) => {
     // Redirect to login with return URL
     next({ name: 'login', query: { redirect: to.fullPath } })
   } else if (
-    (to.name === 'landing' || to.name === 'login' || to.name === 'signup') &&
+    (to.name === 'landing' || to.name === 'login' || to.name === 'signup' || to.name === 'reset-password') &&
     authStore.isAuthenticated
   ) {
     // Redirect authenticated users away from landing and auth pages
