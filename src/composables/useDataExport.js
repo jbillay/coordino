@@ -57,11 +57,38 @@ export function useDataExport() {
 
     // Fetch each entity type
     for (const entityType of entities) {
-      const { data, error: fetchError } = await supabase
-        .from(entityType)
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true })
+      let data = []
+      let fetchError = null
+
+      // Handle meeting_participants separately (join table without user_id)
+      if (entityType === 'meeting_participants') {
+        // First get user's meetings
+        const { data: userMeetings } = await supabase
+          .from('meetings')
+          .select('id')
+          .eq('user_id', userId)
+
+        if (userMeetings && userMeetings.length > 0) {
+          const meetingIds = userMeetings.map((m) => m.id)
+          const { data: participantsData, error: participantsError } = await supabase
+            .from('meeting_participants')
+            .select('*')
+            .in('meeting_id', meetingIds)
+
+          data = participantsData
+          fetchError = participantsError
+        }
+      } else {
+        // Standard fetch with user_id filter
+        const { data: entityData, error: entityError } = await supabase
+          .from(entityType)
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true })
+
+        data = entityData
+        fetchError = entityError
+      }
 
       if (fetchError) {
         throw new Error(`Failed to fetch ${entityType}: ${fetchError.message}`)
