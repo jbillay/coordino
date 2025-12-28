@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import { definePreset } from '@primeuix/themes'
 import Aura from '@primeuix/themes/aura'
+import VueVirtualScroller from 'vue-virtual-scroller'
 import App from './App.vue'
 import router from './router'
 
@@ -15,6 +16,9 @@ import Tooltip from 'primevue/tooltip'
 
 // PrimeIcons CSS
 import 'primeicons/primeicons.css'
+
+// Vue Virtual Scroller CSS
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
 // Tailwind CSS
 import './assets/styles/main.css'
@@ -79,6 +83,7 @@ app.use(PrimeVue, {
   }
 })
 app.use(ToastService)
+app.use(VueVirtualScroller)
 
 // Register only essential global components and directives
 // Button - Used frequently across the app

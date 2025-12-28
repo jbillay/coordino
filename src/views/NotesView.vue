@@ -13,6 +13,7 @@ import NoteSearchResults from '@/features/notes/components/NoteSearchResults.vue
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import KeyboardShortcutsHelp from '@/features/notes/components/KeyboardShortcutsHelp.vue'
 import AriaLiveRegion from '@/components/common/AriaLiveRegion.vue'
+import DataVolumeWarning from '@/components/common/DataVolumeWarning.vue'
 import { useNotesStore } from '@/features/notes/store'
 import { useActivityStore } from '@/stores/activity'
 import { useToast } from 'primevue/usetoast'
@@ -63,6 +64,9 @@ const searchLoading = ref(false)
 
 // Filter notes based on selected topic
 const displayedNotes = computed(() => notesStore.filteredNotes)
+
+// Total notes count for data volume warning
+const totalNotesCount = computed(() => notesStore.notes?.length || 0)
 
 // Get title for note list
 const noteListTitle = computed(() => {
@@ -455,6 +459,9 @@ watch(
             @search="handleSearch"
             @clear="handleClearSearch"
           />
+
+          <!-- Data Volume Warning (FR-035, FR-036) -->
+          <DataVolumeWarning type="notes" :count="totalNotesCount" />
 
           <!-- View Controls -->
           <div class="view-controls">

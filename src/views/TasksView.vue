@@ -12,6 +12,7 @@ import StatusManager from '@/features/tasks/components/StatusManager.vue'
 import CategoryManager from '@/features/tasks/components/CategoryManager.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import TaskSkeleton from '@/components/skeletons/TaskSkeleton.vue'
+import DataVolumeWarning from '@/components/common/DataVolumeWarning.vue'
 import { useTaskStore } from '@/features/tasks/store'
 import { useActivityStore } from '@/stores/activity'
 import { getTaskStats } from '@/features/tasks/utils'
@@ -281,6 +282,9 @@ onBeforeUnmount(async () => {
           </template>
         </Card>
       </div>
+
+      <!-- Data Volume Warning (FR-035, FR-036) -->
+      <DataVolumeWarning type="tasks" :count="taskStore.totalTasks" />
 
       <!-- Filters -->
       <TaskFilters v-model="filters" v-model:sort-by="sortBy" v-model:group-by="groupBy" />

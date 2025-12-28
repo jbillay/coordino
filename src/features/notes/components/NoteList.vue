@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
+import { RecycleScroller } from 'vue-virtual-scroller'
 import NoteCard from './NoteCard.vue'
+import Button from 'primevue/button'
 
 const props = defineProps({
   notes: {
@@ -36,6 +38,10 @@ const props = defineProps({
 
 const emit = defineEmits(['open-note', 'create', 'toggle-pin', 'archive', 'delete-note', 'open'])
 
+// Should use virtual scrolling for >100 notes (FR-030)
+const shouldUseVirtualScroll = computed(() => props.notes.length > 100)
+
+// Memoized to avoid unnecessary recalculations (FR-031)
 const pinnedNotes = computed(() => sortNotes(props.notes.filter((note) => note.is_pinned)))
 
 const regularNotes = computed(() => sortNotes(props.notes.filter((note) => !note.is_pinned)))
@@ -138,8 +144,32 @@ onBeforeUnmount(() => {
       />
     </div>
 
-    <!-- Notes Content -->
-    <div v-else class="notes-content">
+    <!-- Notes Content with Virtual Scrolling (>100 notes) -->
+    <div v-else-if="shouldUseVirtualScroll" class="notes-content" data-testid="note-list">
+      <RecycleScroller
+        :items="allNotes"
+        :item-size="120"
+        key-field="id"
+        class="virtual-scroller"
+        :buffer="200"
+      >
+        <template #default="{ item, index }">
+          <NoteCard
+            :ref="(el) => setNoteRef(el, index)"
+            :note="item"
+            :tabindex="0"
+            data-testid="note-item"
+            @click="$emit('open-note', item)"
+            @pin="$emit('toggle-pin', item)"
+            @archive="$emit('archive', item)"
+            @delete="$emit('delete-note', item)"
+          />
+        </template>
+      </RecycleScroller>
+    </div>
+
+    <!-- Notes Content (≤100 notes) -->
+    <div v-else class="notes-content" data-testid="note-list">
       <!-- Pinned Notes Section -->
       <div v-if="pinnedNotes.length > 0" data-testid="pinned-notes" class="notes-section">
         <div class="section-header">
@@ -153,6 +183,7 @@ onBeforeUnmount(() => {
             :ref="(el) => setNoteRef(el, index)"
             :note="note"
             :tabindex="0"
+            data-testid="note-item"
             @click="$emit('open-note', note)"
             @pin="$emit('toggle-pin', note)"
             @archive="$emit('archive', note)"
@@ -173,6 +204,7 @@ onBeforeUnmount(() => {
             :ref="(el) => setNoteRef(el, index + pinnedNotes.length)"
             :note="note"
             :tabindex="0"
+            data-testid="note-item"
             @click="$emit('open-note', note)"
             @pin="$emit('toggle-pin', note)"
             @archive="$emit('archive', note)"
@@ -241,6 +273,12 @@ onBeforeUnmount(() => {
 .notes-content {
   height: 100%;
   overflow-y: auto;
+  padding: 1rem;
+}
+
+.virtual-scroller {
+  height: 600px;
+  max-height: calc(100vh - 350px);
   padding: 1rem;
 }
 
