@@ -39,6 +39,7 @@
     "@vueuse/core": "^14.1.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "file-saver": "2.0.5",
     "isomorphic-dompurify": "^2.34.0",
     "jszip": "3.10.1",
     "papaparse": "5.5.3",
