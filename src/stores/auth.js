@@ -431,7 +431,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       return {
         success: true,
-        message: 'A verification email has been sent to your new email address. Please verify to complete the change.'
+        message:
+          'A verification email has been sent to your new email address. Please verify to complete the change.'
       }
     } catch (e) {
       const friendlyError = getErrorMessage(e)
@@ -492,7 +493,8 @@ export const useAuthStore = defineStore('auth', () => {
       // Supabase automatically invalidates all other sessions on password change
       return {
         success: true,
-        message: 'Your password has been updated successfully. All other sessions have been signed out for security.'
+        message:
+          'Your password has been updated successfully. All other sessions have been signed out for security.'
       }
     } catch (e) {
       const friendlyError = getErrorMessage(e)

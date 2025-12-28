@@ -210,7 +210,7 @@ describe('Theme Persistence Integration', () => {
         update: vi.fn(() => updateChain)
       })
 
-      const result = await themeStore.setTheme('dark')
+      await themeStore.setTheme('dark')
 
       // Should still update localStorage even if DB sync fails
       expect(localStorageMock.setItem).toHaveBeenCalledWith('coordino-theme', 'dark')

@@ -160,19 +160,25 @@ test.describe('Keyboard Navigation Support (SC-007)', () => {
     // Verify focus is visible
     const hasFocusIndicator = await page.evaluate(() => {
       const activeEl = document.activeElement
-      if (!activeEl) return false
+      if (!activeEl) {
+        return false
+      }
       const styles = window.getComputedStyle(activeEl)
       return styles.outline !== 'none' || styles.boxShadow !== 'none'
     })
     expect(hasFocusIndicator).toBe(true)
   })
 
-  test('All interactive elements should have visible focus indicators (FR-023)', async ({ page }) => {
+  test('All interactive elements should have visible focus indicators (FR-023)', async ({
+    page
+  }) => {
     await signInAndNavigate(page, '/dashboard')
     await page.waitForLoadState('networkidle')
 
     // Get all interactive elements
-    const interactiveElements = await page.$$('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])')
+    const interactiveElements = await page.$$(
+      'button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
 
     expect(interactiveElements.length).toBeGreaterThan(0)
 
@@ -180,11 +186,13 @@ test.describe('Keyboard Navigation Support (SC-007)', () => {
     for (const element of interactiveElements) {
       await element.focus()
 
-      const hasFocusIndicator = await element.evaluate((el) => {
+      await element.evaluate((el) => {
         const styles = window.getComputedStyle(el)
         // Check for outline or box-shadow (focus indicators)
-        return styles.outline !== 'none' && styles.outline !== '' ||
-               styles.boxShadow !== 'none' && styles.boxShadow !== ''
+        return (
+          (styles.outline !== 'none' && styles.outline !== '') ||
+          (styles.boxShadow !== 'none' && styles.boxShadow !== '')
+        )
       })
 
       // At least some focus indicator should be present
@@ -204,7 +212,7 @@ test.describe('Color Contrast Compliance (FR-027)', () => {
       .options({ rules: { 'color-contrast': { enabled: true } } })
       .analyze()
 
-    const contrastViolations = results.violations.filter(v => v.id === 'color-contrast')
+    const contrastViolations = results.violations.filter((v) => v.id === 'color-contrast')
     expect(contrastViolations).toEqual([])
   })
 
@@ -213,12 +221,13 @@ test.describe('Color Contrast Compliance (FR-027)', () => {
     await page.waitForLoadState('networkidle')
 
     // Toggle to dark mode
-    const themeToggle = page.locator('[data-testid="theme-toggle"]')
+    const themeToggle = page
+      .locator('[data-testid="theme-toggle"]')
       .or(page.locator('button:has-text("Dark")'))
       .or(page.locator('button[aria-label*="theme" i]'))
       .first()
 
-    if (await themeToggle.count() > 0) {
+    if ((await themeToggle.count()) > 0) {
       await themeToggle.click()
       await page.waitForTimeout(500) // Wait for theme transition
 
@@ -228,13 +237,13 @@ test.describe('Color Contrast Compliance (FR-027)', () => {
         .options({ rules: { 'color-contrast': { enabled: true } } })
         .analyze()
 
-      const contrastViolations = results.violations.filter(v => v.id === 'color-contrast')
+      const contrastViolations = results.violations.filter((v) => v.id === 'color-contrast')
 
       if (contrastViolations.length > 0) {
         console.log('\nDark mode color contrast violations:')
-        contrastViolations.forEach(violation => {
+        contrastViolations.forEach((violation) => {
           console.log(`  ${violation.description}`)
-          violation.nodes.forEach(node => {
+          violation.nodes.forEach((node) => {
             console.log(`    ${node.html}`)
           })
         })
@@ -253,14 +262,16 @@ test.describe('Form Accessibility (FR-020, FR-021)', () => {
     // Run axe-core with label rules
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a'])
-      .options({ rules: { 'label': { enabled: true } } })
+      .options({ rules: { label: { enabled: true } } })
       .analyze()
 
-    const labelViolations = results.violations.filter(v => v.id === 'label')
+    const labelViolations = results.violations.filter((v) => v.id === 'label')
     expect(labelViolations).toEqual([])
   })
 
-  test('Email and password fields should have autocomplete attributes (FR-021)', async ({ page }) => {
+  test('Email and password fields should have autocomplete attributes (FR-021)', async ({
+    page
+  }) => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
 
@@ -289,7 +300,9 @@ test.describe('Mobile Touch Targets (FR-028)', () => {
     await page.waitForLoadState('networkidle')
 
     // Get all interactive elements
-    const interactiveElements = await page.$$('button, a[href], input, select, textarea, [role="button"]')
+    const interactiveElements = await page.$$(
+      'button, a[href], input, select, textarea, [role="button"]'
+    )
 
     for (const element of interactiveElements) {
       const box = await element.boundingBox()
@@ -299,12 +312,14 @@ test.describe('Mobile Touch Targets (FR-028)', () => {
         const isAccessibleSize = box.width >= 40 && box.height >= 40
 
         if (!isAccessibleSize) {
-          const elementInfo = await element.evaluate(el => ({
+          const elementInfo = await element.evaluate((el) => ({
             tag: el.tagName,
             text: el.textContent?.substring(0, 50),
             role: el.getAttribute('role')
           }))
-          console.log(`Small touch target: ${elementInfo.tag} "${elementInfo.text}" (${Math.round(box.width)}x${Math.round(box.height)}px)`)
+          console.log(
+            `Small touch target: ${elementInfo.tag} "${elementInfo.text}" (${Math.round(box.width)}x${Math.round(box.height)}px)`
+          )
         }
 
         // Most elements should be at least 44x44, but we'll allow some leeway

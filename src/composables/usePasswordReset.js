@@ -156,7 +156,8 @@ export const usePasswordReset = () => {
 
     // Generic fallback
     return (
-      err.message || 'An unexpected error occurred. Please try again or contact support if the issue persists.'
+      err.message ||
+      'An unexpected error occurred. Please try again or contact support if the issue persists.'
     )
   }
 

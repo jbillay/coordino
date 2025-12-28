@@ -4,7 +4,7 @@
  * Tests timezone conversion, validation, and formatting utilities
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import {
   getAvailableTimezones,
   isValidTimezone,
@@ -278,7 +278,7 @@ describe('Timezone Utilities', () => {
       const grouped = getTimezonesByRegion()
 
       expect(grouped.Americas.length).toBeGreaterThan(0)
-      grouped.Americas.forEach(tz => {
+      grouped.Americas.forEach((tz) => {
         expect(tz).toMatch(/^America\//)
       })
     })
@@ -287,7 +287,7 @@ describe('Timezone Utilities', () => {
       const grouped = getTimezonesByRegion()
 
       expect(grouped.Europe.length).toBeGreaterThan(0)
-      grouped.Europe.forEach(tz => {
+      grouped.Europe.forEach((tz) => {
         expect(tz).toMatch(/^Europe\//)
       })
     })
@@ -348,11 +348,10 @@ describe('Timezone Utilities', () => {
     })
 
     it('should accept custom business hours', () => {
-      const overlap = getBusinessHoursOverlap(
-        'America/New_York',
-        'America/Los_Angeles',
-        { start: 8, end: 18 }
-      )
+      const overlap = getBusinessHoursOverlap('America/New_York', 'America/Los_Angeles', {
+        start: 8,
+        end: 18
+      })
 
       expect(overlap).toHaveProperty('overlapHours')
       expect(overlap.overlapHours).toBeGreaterThanOrEqual(0)

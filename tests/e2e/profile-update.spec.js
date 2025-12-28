@@ -284,6 +284,6 @@ test.describe('Profile Update Journey', () => {
     // Dates should be displayed in DD/MM/YYYY format
     // (This assumes tasks have dates displayed)
     const dateRegex = /\d{2}\/\d{2}\/\d{4}/
-    await expect(page.locator('text=' + dateRegex)).toBeVisible({ timeout: 5000 })
+    await expect(page.locator(`text=${dateRegex}`)).toBeVisible({ timeout: 5000 })
   })
 })

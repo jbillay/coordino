@@ -153,7 +153,10 @@ router.beforeEach(async (to, from, next) => {
     // Redirect to login with return URL
     next({ name: 'login', query: { redirect: to.fullPath } })
   } else if (
-    (to.name === 'landing' || to.name === 'login' || to.name === 'signup' || to.name === 'reset-password') &&
+    (to.name === 'landing' ||
+      to.name === 'login' ||
+      to.name === 'signup' ||
+      to.name === 'reset-password') &&
     authStore.isAuthenticated
   ) {
     // Redirect authenticated users away from landing and auth pages

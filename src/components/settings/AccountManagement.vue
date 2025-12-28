@@ -105,7 +105,8 @@ const handleDeleteCancel = () => {
     <div class="space-y-4">
       <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Active Sessions</h3>
       <Message severity="info" :closable="false">
-        Active session management will be implemented in a future update. You will be able to view and manage devices where you're currently signed in.
+        Active session management will be implemented in a future update. You will be able to view
+        and manage devices where you're currently signed in.
       </Message>
     </div>
 
@@ -113,7 +114,8 @@ const handleDeleteCancel = () => {
     <div class="space-y-4">
       <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Two-Factor Authentication</h3>
       <Message severity="info" :closable="false">
-        Two-factor authentication will be implemented in a future update. This will add an extra layer of security to your account.
+        Two-factor authentication will be implemented in a future update. This will add an extra
+        layer of security to your account.
       </Message>
     </div>
 
@@ -122,7 +124,9 @@ const handleDeleteCancel = () => {
       <div class="space-y-4">
         <h3 class="text-lg font-semibold text-red-600 dark:text-red-400">Danger Zone</h3>
 
-        <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <div
+          class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+        >
           <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Delete Account</h4>
           <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
             Permanently delete your account and all associated data. This action cannot be undone.
@@ -133,8 +137,8 @@ const handleDeleteCancel = () => {
             icon="pi pi-trash"
             severity="danger"
             outlined
-            @click="handleDeleteAccount"
             aria-label="Delete your account permanently"
+            @click="handleDeleteAccount"
           />
         </div>
       </div>
@@ -145,10 +149,10 @@ const handleDeleteCancel = () => {
       v-model:visible="showDeleteWarning"
       header="Warning: Account Deletion"
       severity="danger"
-      confirmType="type-text"
-      confirmText="DELETE"
-      confirmLabel="Continue"
-      cancelLabel="Cancel"
+      confirm-type="type-text"
+      confirm-text="DELETE"
+      confirm-label="Continue"
+      cancel-label="Cancel"
       :message="`⚠️ This action is IRREVERSIBLE!
 
 All your data will be permanently deleted:
@@ -169,9 +173,9 @@ Type DELETE to continue with account deletion.`"
       v-model:visible="showDeleteConfirm"
       header="Final Confirmation"
       severity="danger"
-      confirmType="password"
-      confirmLabel="Permanently Delete Account"
-      cancelLabel="Cancel"
+      confirm-type="password"
+      confirm-label="Permanently Delete Account"
+      cancel-label="Cancel"
       :loading="isDeletingAccount"
       :error="deleteError"
       :message="`Enter your password to permanently delete your account.

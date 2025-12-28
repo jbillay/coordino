@@ -15,7 +15,6 @@
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'primevue/usetoast'
-import { sanitizeDisplayName } from '@/utils/sanitization'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
@@ -47,9 +46,7 @@ const passwordLoading = ref(false)
 const passwordMismatch = ref(false)
 
 // Computed
-const hasChanges = computed(() => {
-  return displayName.value !== originalDisplayName.value
-})
+const hasChanges = computed(() => displayName.value !== originalDisplayName.value)
 
 const currentUser = computed(() => authStore.user)
 
@@ -97,7 +94,7 @@ const handleSave = async () => {
         life: 5000
       })
     }
-  } catch (err) {
+  } catch (error) {
     error.value = 'An unexpected error occurred'
     toast.add({
       severity: 'error',
@@ -246,8 +243,8 @@ const closePasswordDialog = () => {
           label="Change"
           icon="pi pi-pencil"
           outlined
-          @click="showEmailDialog = true"
           aria-label="Change email address"
+          @click="showEmailDialog = true"
         />
       </div>
       <small class="text-gray-600 dark:text-gray-400">
@@ -270,8 +267,8 @@ const closePasswordDialog = () => {
           label="Change"
           icon="pi pi-lock"
           outlined
-          @click="showPasswordDialog = true"
           aria-label="Change password"
+          @click="showPasswordDialog = true"
         />
       </div>
     </div>
@@ -332,12 +329,18 @@ const closePasswordDialog = () => {
             :feedback="false"
             toggle-mask
             class="w-full"
-            :pt="{ root: { class: 'w-full' }, input: { class: 'w-full', autocomplete: 'current-password', 'aria-required': 'true', 'aria-label': 'Current password for verification' } }"
+            :pt="{
+              root: { class: 'w-full' },
+              input: {
+                class: 'w-full',
+                autocomplete: 'current-password',
+                'aria-required': 'true',
+                'aria-label': 'Current password for verification'
+              }
+            }"
             required
           />
-          <small class="text-gray-600 dark:text-gray-400">
-            Required to confirm this change
-          </small>
+          <small class="text-gray-600 dark:text-gray-400">Required to confirm this change</small>
         </div>
       </div>
 
@@ -346,14 +349,10 @@ const closePasswordDialog = () => {
           label="Cancel"
           severity="secondary"
           outlined
-          @click="closeEmailDialog"
           :disabled="emailLoading"
+          @click="closeEmailDialog"
         />
-        <Button
-          label="Update Email"
-          :loading="emailLoading"
-          @click="handleEmailChange"
-        />
+        <Button label="Update Email" :loading="emailLoading" @click="handleEmailChange" />
       </template>
     </Dialog>
 
@@ -375,7 +374,15 @@ const closePasswordDialog = () => {
             :feedback="false"
             toggle-mask
             class="w-full"
-            :pt="{ root: { class: 'w-full' }, input: { class: 'w-full', autocomplete: 'current-password', 'aria-required': 'true', 'aria-label': 'Current password' } }"
+            :pt="{
+              root: { class: 'w-full' },
+              input: {
+                class: 'w-full',
+                autocomplete: 'current-password',
+                'aria-required': 'true',
+                'aria-label': 'Current password'
+              }
+            }"
             required
           />
         </div>
@@ -388,7 +395,15 @@ const closePasswordDialog = () => {
             placeholder="Enter new password"
             toggle-mask
             class="w-full"
-            :pt="{ root: { class: 'w-full' }, input: { class: 'w-full', autocomplete: 'new-password', 'aria-required': 'true', 'aria-label': 'New password' } }"
+            :pt="{
+              root: { class: 'w-full' },
+              input: {
+                class: 'w-full',
+                autocomplete: 'new-password',
+                'aria-required': 'true',
+                'aria-label': 'New password'
+              }
+            }"
             required
             aria-describedby="new-password-help"
           />
@@ -407,7 +422,16 @@ const closePasswordDialog = () => {
             toggle-mask
             class="w-full"
             :class="{ 'p-invalid': passwordMismatch }"
-            :pt="{ root: { class: 'w-full' }, input: { class: 'w-full', autocomplete: 'new-password', 'aria-required': 'true', 'aria-label': 'Confirm new password', 'aria-invalid': passwordMismatch ? 'true' : 'false' } }"
+            :pt="{
+              root: { class: 'w-full' },
+              input: {
+                class: 'w-full',
+                autocomplete: 'new-password',
+                'aria-required': 'true',
+                'aria-label': 'Confirm new password',
+                'aria-invalid': passwordMismatch ? 'true' : 'false'
+              }
+            }"
             required
             aria-describedby="confirm-password-error"
           />
@@ -422,14 +446,10 @@ const closePasswordDialog = () => {
           label="Cancel"
           severity="secondary"
           outlined
-          @click="closePasswordDialog"
           :disabled="passwordLoading"
+          @click="closePasswordDialog"
         />
-        <Button
-          label="Update Password"
-          :loading="passwordLoading"
-          @click="handlePasswordChange"
-        />
+        <Button label="Update Password" :loading="passwordLoading" @click="handlePasswordChange" />
       </template>
     </Dialog>
   </div>

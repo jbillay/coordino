@@ -410,8 +410,8 @@ describe('theme.js store', () => {
       const store = useThemeStore()
       store.init()
 
-      // Should still set the theme even if it's invalid
-      expect(store.currentTheme).toBe('invalid-theme')
+      // Should fall back to light theme when invalid theme is stored
+      expect(store.currentTheme).toBe('light')
     })
 
     it('handles empty string from localStorage', () => {

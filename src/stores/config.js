@@ -134,7 +134,7 @@ export const useConfigStore = defineStore('config', () => {
 
     try {
       // Remove tour from completed list
-      const updatedTours = completedTours.value.filter(id => id !== tourId)
+      const updatedTours = completedTours.value.filter((id) => id !== tourId)
 
       // Update database
       const { error: updateError } = await supabase
@@ -210,17 +210,13 @@ export const useConfigStore = defineStore('config', () => {
    * @param {string} tourId - ID of the tour to check
    * @returns {boolean} True if tour is completed
    */
-  const isTourCompleted = (tourId) => {
-    return completedTours.value.includes(tourId)
-  }
+  const isTourCompleted = (tourId) => completedTours.value.includes(tourId)
 
   /**
    * Get all completed tour IDs
    * @returns {string[]} Array of completed tour IDs
    */
-  const getCompletedTours = () => {
-    return [...completedTours.value]
-  }
+  const getCompletedTours = () => [...completedTours.value]
 
   /**
    * Clear all configuration state

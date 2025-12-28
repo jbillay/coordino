@@ -62,12 +62,11 @@ export const sanitizeContent = (content, options = {}) => {
  * @param {string} name - User's display name
  * @returns {string} Sanitized name
  */
-export const sanitizeDisplayName = (name) => {
-  return sanitizeContent(name, {
+export const sanitizeDisplayName = (name) =>
+  sanitizeContent(name, {
     allowHTML: false,
     maxLength: 100
   })
-}
 
 /**
  * Sanitizes note content
@@ -76,12 +75,11 @@ export const sanitizeDisplayName = (name) => {
  * @param {string} content - Note content
  * @returns {string} Sanitized content
  */
-export const sanitizeNoteContent = (content) => {
-  return sanitizeContent(content, {
+export const sanitizeNoteContent = (content) =>
+  sanitizeContent(content, {
     allowHTML: true,
     maxLength: 50000 // ~50KB of text
   })
-}
 
 /**
  * Sanitizes task title
@@ -90,12 +88,11 @@ export const sanitizeNoteContent = (content) => {
  * @param {string} title - Task title
  * @returns {string} Sanitized title
  */
-export const sanitizeTaskTitle = (title) => {
-  return sanitizeContent(title, {
+export const sanitizeTaskTitle = (title) =>
+  sanitizeContent(title, {
     allowHTML: false,
     maxLength: 500
   })
-}
 
 /**
  * Escapes special characters for use in regex patterns

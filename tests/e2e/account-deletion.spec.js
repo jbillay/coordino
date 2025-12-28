@@ -106,7 +106,7 @@ test.describe('Account Deletion Workflow', () => {
     // Verify still on settings page
     await expect(page).toHaveURL('/settings')
     // Verify user is still logged in
-    await expect(page.locator('text=' + testUser.displayName)).toBeVisible()
+    await expect(page.locator(`text=${testUser.displayName}`)).toBeVisible()
   })
 
   test('should cancel deletion if "DELETE" is not typed correctly', async ({ page }) => {
@@ -143,7 +143,6 @@ test.describe('Account Deletion Workflow', () => {
   test('should handle deletion failures gracefully with retry option', async ({ page: _page }) => {
     // This test would require mocking a server error
     // For now, it documents the requirement
-
     // TODO: Mock Supabase to return error during deletion
     // Verify error message is shown
     // Verify "Retry" button is available
@@ -158,7 +157,6 @@ test.describe('Account Deletion - Data Cascade Verification', () => {
     // 1. Create test tasks, notes, meetings for the user
     // 2. Delete the account
     // 3. Query the database to verify all related data is gone
-
     // This is documented as a requirement for implementation
     // Actual verification requires database access in test environment
   })

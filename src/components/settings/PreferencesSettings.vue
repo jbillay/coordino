@@ -63,12 +63,9 @@ const timezoneOptions = ref([
 ])
 
 // Computed
-const hasChanges = computed(() => {
-  return (
-    timezone.value !== originalTimezone.value ||
-    dateFormat.value !== originalDateFormat.value
-  )
-})
+const hasChanges = computed(
+  () => timezone.value !== originalTimezone.value || dateFormat.value !== originalDateFormat.value
+)
 
 const currentTheme = computed({
   get: () => themeStore.theme,
@@ -127,7 +124,7 @@ const handleSave = async () => {
       life: 3000
     })
     emit('saved')
-  } catch (err) {
+  } catch (error) {
     error.value = 'Failed to save preferences'
     toast.add({
       severity: 'error',
@@ -170,9 +167,7 @@ const formatDatePreview = (date) => {
     <!-- Header -->
     <div>
       <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-1">Preferences</h2>
-      <p class="text-sm text-gray-600 dark:text-gray-400">
-        Customize your application experience
-      </p>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Customize your application experience</p>
     </div>
 
     <!-- Error Message -->
@@ -244,7 +239,11 @@ const formatDatePreview = (date) => {
     </div>
 
     <!-- Preview Section -->
-    <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" aria-live="polite" aria-atomic="true">
+    <div
+      class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">Preview</h3>
       <div class="space-y-2 text-sm">
         <div class="flex justify-between">
@@ -275,8 +274,8 @@ const formatDatePreview = (date) => {
         icon="pi pi-check"
         :loading="isLoading"
         :disabled="!hasChanges"
-        @click="handleSave"
         aria-label="Save preference changes"
+        @click="handleSave"
       />
       <Button
         label="Cancel"
@@ -284,8 +283,8 @@ const formatDatePreview = (date) => {
         severity="secondary"
         outlined
         :disabled="!hasChanges || isLoading"
-        @click="handleCancel"
         aria-label="Cancel preference changes"
+        @click="handleCancel"
       />
     </div>
   </div>

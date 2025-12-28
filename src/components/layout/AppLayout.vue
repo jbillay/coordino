@@ -136,7 +136,9 @@ const closeMobileMenu = () => {
  * @param {KeyboardEvent} event - Keyboard event
  */
 const handleMobileFocusTrap = (event) => {
-  if (!showMobileMenu.value || !mobileMenuRef.value) return
+  if (!showMobileMenu.value || !mobileMenuRef.value) {
+    return
+  }
 
   const { key, shiftKey } = event
 
@@ -154,7 +156,9 @@ const handleMobileFocusTrap = (event) => {
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     )
 
-    if (focusableElements.length === 0) return
+    if (focusableElements.length === 0) {
+      return
+    }
 
     const firstFocusable = focusableElements[0]
     const lastFocusable = focusableElements[focusableElements.length - 1]
@@ -163,9 +167,7 @@ const handleMobileFocusTrap = (event) => {
     if (shiftKey && document.activeElement === firstFocusable) {
       event.preventDefault()
       lastFocusable.focus()
-    }
-    // Tab on last element: wrap to first element
-    else if (!shiftKey && document.activeElement === lastFocusable) {
+    } else if (!shiftKey && document.activeElement === lastFocusable) {
       event.preventDefault()
       firstFocusable.focus()
     }

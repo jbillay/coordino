@@ -73,7 +73,9 @@ const setNoteRef = (el, index) => {
 
 // Handle keyboard navigation
 const handleKeyDown = (event) => {
-  if (allNotes.value.length === 0) return
+  if (allNotes.value.length === 0) {
+    return
+  }
 
   const { key } = event
 

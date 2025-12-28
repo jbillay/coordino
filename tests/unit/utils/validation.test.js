@@ -44,7 +44,7 @@ describe('validateEmail', () => {
   })
 
   it('should reject emails exceeding 254 characters', () => {
-    const longEmail = 'a'.repeat(250) + '@test.com'
+    const longEmail = `${'a'.repeat(250)}@test.com`
     const result = validateEmail(longEmail)
     expect(result.valid).toBe(false)
     expect(result.error).toContain('maximum length')
@@ -93,7 +93,7 @@ describe('validatePasswordStrength', () => {
   })
 
   it('should reject passwords exceeding 128 characters', () => {
-    const longPassword = 'A1!' + 'a'.repeat(126)
+    const longPassword = `A1!${'a'.repeat(126)}`
     const result = validatePasswordStrength(longPassword)
     expect(result.valid).toBe(false)
     expect(result.errors).toContain('Password exceeds maximum length (128 characters)')

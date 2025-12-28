@@ -572,7 +572,7 @@ export const useSchedulingStore = defineStore('scheduling', () => {
     error.value = null
     try {
       // Check current participant count (FR-010a)
-      const { data: existingCount, error: countError } = await supabase
+      const { count, error: countError } = await supabase
         .from('meeting_participants')
         .select('participant_id', { count: 'exact', head: true })
         .eq('meeting_id', meetingId)
@@ -581,7 +581,7 @@ export const useSchedulingStore = defineStore('scheduling', () => {
         throw countError
       }
 
-      if (existingCount && existingCount.length >= 50) {
+      if (count !== null && count >= 50) {
         throw new Error('Maximum of 50 participants per meeting exceeded')
       }
 

@@ -13,7 +13,12 @@
 export const getAvailableTimezones = () => {
   // Using Intl.supportedValuesOf if available (modern browsers)
   if (Intl.supportedValuesOf) {
-    return Intl.supportedValuesOf('timeZone')
+    const timezones = Intl.supportedValuesOf('timeZone')
+    // Ensure UTC is always included (it might be missing or be Etc/UTC)
+    if (!timezones.includes('UTC')) {
+      return ['UTC', ...timezones]
+    }
+    return timezones
   }
 
   // Fallback to common timezones
@@ -62,11 +67,17 @@ export const isValidTimezone = (timezone) => {
     return false
   }
 
+  // Reject common timezone abbreviations (they're not IANA identifiers)
+  const abbreviations = ['EST', 'EDT', 'CST', 'CDT', 'MST', 'MDT', 'PST', 'PDT', 'GMT', 'BST']
+  if (abbreviations.includes(timezone.toUpperCase())) {
+    return false
+  }
+
   try {
     // Try to create a DateTimeFormat with the timezone
     Intl.DateTimeFormat(undefined, { timeZone: timezone })
     return true
-  } catch (error) {
+  } catch {
     return false
   }
 }
@@ -75,9 +86,7 @@ export const isValidTimezone = (timezone) => {
  * Get the user's current timezone
  * @returns {string} IANA timezone identifier
  */
-export const getCurrentTimezone = () => {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone
-}
+export const getCurrentTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone
 
 /**
  * Convert a date from one timezone to another
@@ -97,6 +106,11 @@ export const convertTimezone = (date, fromTimezone, toTimezone) => {
 
   if (!isValidTimezone(toTimezone)) {
     throw new Error(`Invalid target timezone: ${toTimezone}`)
+  }
+
+  // If same timezone, return a copy of the original date
+  if (fromTimezone === toTimezone) {
+    return new Date(date.getTime())
   }
 
   // Get the date string in the source timezone
@@ -222,7 +236,7 @@ export const getTimezonesByRegion = () => {
     Pacific: []
   }
 
-  timezones.forEach(tz => {
+  timezones.forEach((tz) => {
     if (tz === 'UTC') {
       grouped.UTC.push(tz)
     } else if (tz.startsWith('America/')) {

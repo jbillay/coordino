@@ -107,7 +107,7 @@ vi.mock('../../../src/utils/validation.js', () => ({
     if (!/[0-9]/.test(password)) {
       errors.push('Password must contain at least one number')
     }
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
       errors.push('Password must contain at least one special character (!@#$%^&* etc.)')
     }
     return { valid: errors.length === 0, errors }
@@ -197,7 +197,9 @@ describe('Profile Update Integration', () => {
         }))
       })
 
-      const result = await authStore.updateProfile({ displayName: 'John <script>alert("xss")</script>' })
+      const result = await authStore.updateProfile({
+        displayName: 'John <script>alert("xss")</script>'
+      })
 
       expect(result.success).toBe(true)
       // Display name should be sanitized (no HTML tags)

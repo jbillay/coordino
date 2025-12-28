@@ -203,7 +203,7 @@ export const validatePasswordStrength = (password) => {
   }
 
   // Must contain special character
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
     errors.push('Password must contain at least one special character (!@#$%^&* etc.)')
   }
 
@@ -236,7 +236,7 @@ export const validateTimezone = (timezone) => {
   try {
     Intl.DateTimeFormat(undefined, { timeZone: timezone })
     return { valid: true }
-  } catch (error) {
+  } catch {
     return { valid: false, error: 'Invalid timezone identifier' }
   }
 }

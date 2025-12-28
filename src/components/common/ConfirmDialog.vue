@@ -140,7 +140,9 @@ const passwordInput = ref('')
 
 // Computed
 const isConfirmDisabled = computed(() => {
-  if (props.loading) return true
+  if (props.loading) {
+    return true
+  }
 
   if (props.confirmType === 'type-text') {
     return typedText.value !== props.confirmText
@@ -186,11 +188,14 @@ const resetForm = () => {
 }
 
 // Watch for dialog close
-watch(() => props.visible, (newVal) => {
-  if (!newVal) {
-    resetForm()
+watch(
+  () => props.visible,
+  (newVal) => {
+    if (!newVal) {
+      resetForm()
+    }
   }
-})
+)
 </script>
 
 <template>
@@ -210,8 +215,12 @@ watch(() => props.visible, (newVal) => {
         <i
           :class="[
             'text-2xl',
-            severity === 'danger' ? 'pi pi-exclamation-triangle text-red-500 dark:text-red-400' : '',
-            severity === 'warning' ? 'pi pi-exclamation-circle text-yellow-500 dark:text-yellow-400' : '',
+            severity === 'danger'
+              ? 'pi pi-exclamation-triangle text-red-500 dark:text-red-400'
+              : '',
+            severity === 'warning'
+              ? 'pi pi-exclamation-circle text-yellow-500 dark:text-yellow-400'
+              : '',
             severity === 'info' ? 'pi pi-info-circle text-blue-500 dark:text-blue-400' : ''
           ]"
           aria-hidden="true"
@@ -231,8 +240,13 @@ watch(() => props.visible, (newVal) => {
 
       <!-- Type Text Confirmation -->
       <div v-if="confirmType === 'type-text'" class="space-y-2">
-        <label for="confirm-text-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Type <strong class="text-red-600 dark:text-red-400">{{ confirmText }}</strong> to confirm
+        <label
+          for="confirm-text-input"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Type
+          <strong class="text-red-600 dark:text-red-400">{{ confirmText }}</strong>
+          to confirm
         </label>
         <InputText
           id="confirm-text-input"
@@ -250,7 +264,10 @@ watch(() => props.visible, (newVal) => {
 
       <!-- Password Confirmation -->
       <div v-if="confirmType === 'password'" class="space-y-2">
-        <label for="confirm-password-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label
+          for="confirm-password-input"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Enter your password to confirm
         </label>
         <Password

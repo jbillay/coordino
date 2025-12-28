@@ -23,7 +23,7 @@ const handleExportJSON = async () => {
 
   try {
     // TODO: Implement actual data export in Phase 7
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     toast.add({
       severity: 'info',
@@ -41,7 +41,7 @@ const handleExportCSV = async () => {
 
   try {
     // TODO: Implement actual data export in Phase 7
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     toast.add({
       severity: 'info',
@@ -102,8 +102,8 @@ const handleExportCSV = async () => {
             label="Export JSON"
             icon="pi pi-download"
             :loading="isExporting"
-            @click="handleExportJSON"
             class="ml-4"
+            @click="handleExportJSON"
           />
         </div>
       </div>
@@ -134,21 +134,25 @@ const handleExportCSV = async () => {
             label="Export CSV"
             icon="pi pi-download"
             :loading="isExporting"
-            @click="handleExportCSV"
             class="ml-4"
+            @click="handleExportCSV"
           />
         </div>
       </div>
     </div>
 
     <!-- GDPR Notice -->
-    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+    <div
+      class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
+    >
       <div class="flex items-start gap-3">
         <i class="pi pi-info-circle text-blue-600 dark:text-blue-400 mt-0.5"></i>
         <div class="flex-1">
           <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-1">Data Privacy</h4>
           <p class="text-sm text-blue-800 dark:text-blue-200">
-            Your data export includes all information associated with your account. This feature is provided in compliance with GDPR data portability requirements. Exported data may contain personal information, so please store it securely.
+            Your data export includes all information associated with your account. This feature is
+            provided in compliance with GDPR data portability requirements. Exported data may
+            contain personal information, so please store it securely.
           </p>
         </div>
       </div>

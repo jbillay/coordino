@@ -75,9 +75,9 @@ test.describe('Password Reset Flow', () => {
       await submitButton.click()
 
       // Should show success message
-      await expect(
-        page.getByText(/password (updated|changed) successfully/i)
-      ).toBeVisible({ timeout: 5000 })
+      await expect(page.getByText(/password (updated|changed) successfully/i)).toBeVisible({
+        timeout: 5000
+      })
     })
 
     // Step 6: Verify redirect to login and session invalidation (FR-004)
