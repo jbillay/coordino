@@ -82,10 +82,13 @@ describe('useTimezone', () => {
       const time = new Date('2025-12-12T14:00:00.000Z')
       const formatted = formatWithTimezone(time, 'America/New_York')
 
-      // Should include time, timezone offset (UTC±N), and timezone identifier
+      // Should include time, AM/PM, and timezone identifier
       expect(formatted).toContain('AM')
-      expect(formatted).toContain('UTC') // GMT offset format like UTC−5
       expect(formatted).toContain('America/New_York')
+      // Should include either timezone abbreviation (EST/EDT) or UTC offset (UTC-5/UTC−5)
+      // The format varies by system locale and IANA timezone data version
+      // Note: date-fns-tz uses Unicode minus sign (−) not hyphen-minus (-)
+      expect(formatted).toMatch(/EST|EDT|UTC[+\-−]\d+/)
     })
   })
 
