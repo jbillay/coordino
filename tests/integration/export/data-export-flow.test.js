@@ -54,10 +54,6 @@ describe('Data Export Flow Integration (T064)', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
 
-    // Reset modules to ensure fresh import of file-saver mock
-    // This prevents test isolation issues when test count/order changes
-    vi.resetModules()
-
     // Import the mocked saveAs function
     const fileSaver = await import('file-saver')
     mockSaveAs = fileSaver.saveAs
