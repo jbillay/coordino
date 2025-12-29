@@ -131,6 +131,7 @@ const router = createRouter({
  *
  * Handles route protection and redirects based on authentication state:
  * - Initializes auth on first navigation
+ * - Checks session validity on navigation to protected routes (FR-042)
  * - Redirects unauthenticated users to login page
  * - Redirects authenticated users away from auth pages
  * - Preserves intended destination in query params
@@ -148,6 +149,44 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const requiresAuth = to.meta.requiresAuth !== false
+
+  // Session validity check for protected routes (FR-042)
+  if (requiresAuth && authStore.isAuthenticated) {
+    try {
+      const {
+        data: { session },
+        error: sessionError
+      } = await authStore.supabase.auth.getSession()
+
+      // If session is invalid or expired, redirect to login
+      if (sessionError || !session) {
+        // Clear auth state
+        await authStore.signOut()
+
+        // Redirect to login with session expired message
+        next({
+          name: 'login',
+          query: {
+            reason: 'session-expired',
+            redirect: to.fullPath
+          }
+        })
+        return
+      }
+    } catch (error) {
+      // If session check fails, redirect to login
+      console.error('Session validation error:', error)
+      await authStore.signOut()
+      next({
+        name: 'login',
+        query: {
+          reason: 'session-error',
+          redirect: to.fullPath
+        }
+      })
+      return
+    }
+  }
 
   if (requiresAuth && !authStore.isAuthenticated) {
     // Redirect to login with return URL

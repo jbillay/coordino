@@ -237,14 +237,20 @@ export const useAuthStore = defineStore('auth', () => {
    * @param {string} password - User's password
    * @returns {Promise<Object>} Result object with success status and error if any
    */
-  const signIn = async (email, password) => {
+  const signIn = async (email, password, rememberMe = false) => {
     loading.value = true
     error.value = null
 
     try {
+      // Configure session persistence based on Remember Me (FR-041, SC-010)
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
+        options: {
+          // If rememberMe is true, persist session across browser restarts
+          // If false, session expires when browser is closed
+          persistSession: rememberMe
+        }
       })
 
       if (signInError) {
@@ -253,6 +259,11 @@ export const useAuthStore = defineStore('auth', () => {
 
       user.value = data.user
       await ensureUserProfile()
+
+      // Start automatic token refresh if Remember Me is enabled (FR-038)
+      if (rememberMe) {
+        startAutoTokenRefresh()
+      }
 
       return { success: true }
     } catch (e) {
@@ -319,6 +330,98 @@ export const useAuthStore = defineStore('auth', () => {
       cleanupProfileSync()
       user.value = null
       userProfile.value = null
+    }
+  }
+
+  /**
+   * Logout (alias for signOut for consistency)
+   */
+  const logout = signOut
+
+  /**
+   * Extend session by refreshing the authentication token (FR-040)
+   * Called when user extends session from timeout warning
+   */
+  const extendSession = async () => {
+    try {
+      const {
+        data: { session },
+        error: refreshError
+      } = await supabase.auth.refreshSession()
+
+      if (refreshError) {
+        logger.error('Error extending session:', refreshError)
+        throw refreshError
+      }
+
+      if (session) {
+        user.value = session.user
+        logger.debug('Session extended successfully')
+      }
+
+      return { success: true }
+    } catch (e) {
+      logger.error('Failed to extend session:', e)
+      return { success: false, error: getErrorMessage(e) }
+    }
+  }
+
+  /**
+   * Automatic token refresh (FR-038)
+   * Refreshes the session token automatically before it expires
+   * Supabase client handles this automatically, but we can manually trigger if needed
+   */
+  const refreshAuthToken = async () => {
+    try {
+      const {
+        data: { session },
+        error: refreshError
+      } = await supabase.auth.refreshSession()
+
+      if (refreshError) {
+        throw refreshError
+      }
+
+      if (session) {
+        user.value = session.user
+        logger.debug('Auth token refreshed successfully')
+      }
+
+      return { success: true }
+    } catch (e) {
+      logger.error('Failed to refresh auth token:', e)
+      return { success: false, error: getErrorMessage(e) }
+    }
+  }
+
+  /**
+   * Set up automatic token refresh interval (FR-038)
+   * Refreshes token every 50 minutes (tokens expire after 60 minutes)
+   */
+  let tokenRefreshInterval = null
+
+  const startAutoTokenRefresh = () => {
+    // Clear any existing interval
+    if (tokenRefreshInterval) {
+      clearInterval(tokenRefreshInterval)
+    }
+
+    // Refresh every 50 minutes (3000000 ms)
+    // Supabase tokens typically expire after 60 minutes
+    tokenRefreshInterval = setInterval(async () => {
+      if (isAuthenticated.value) {
+        await refreshAuthToken()
+      }
+    }, 50 * 60 * 1000)
+  }
+
+  /**
+   * Stop automatic token refresh
+   */
+  const stopAutoTokenRefresh = () => {
+    if (tokenRefreshInterval) {
+      clearInterval(tokenRefreshInterval)
+      tokenRefreshInterval = null
     }
   }
 
@@ -568,6 +671,11 @@ export const useAuthStore = defineStore('auth', () => {
     signIn,
     signInWithMagicLink,
     signOut,
+    logout,
+    extendSession,
+    refreshAuthToken,
+    startAutoTokenRefresh,
+    stopAutoTokenRefresh,
     updateProfile,
     changeEmail,
     changePassword,

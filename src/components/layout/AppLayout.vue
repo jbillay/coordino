@@ -22,13 +22,24 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
+import { useSessionTimeout } from '@/composables/useSessionTimeout'
 import GlobalFAB from '@/components/global/GlobalFAB.vue'
 import CommandPalette from '@/components/global/CommandPalette.vue'
+import SessionTimeoutWarning from '@/components/layout/SessionTimeoutWarning.vue'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
+
+// Session timeout tracking (FR-039, FR-040, SC-011)
+const {
+  isWarningVisible,
+  remainingTimeFormatted,
+  extendSession,
+  startTracking,
+  stopTracking
+} = useSessionTimeout()
 
 /** @type {import('vue').Ref<boolean>} User dropdown menu visibility */
 const showUserMenu = ref(false)
@@ -180,8 +191,25 @@ const handleMobileFocusTrap = (event) => {
  */
 const handleSignOut = async () => {
   showUserMenu.value = false
+  stopTracking() // Stop session timeout tracking
   await authStore.signOut()
   router.push('/login')
+}
+
+/**
+ * Handles session extension from timeout warning (FR-040)
+ */
+const handleExtendSession = async () => {
+  await extendSession()
+}
+
+/**
+ * Handles logout from session timeout warning
+ */
+const handleSessionLogout = async () => {
+  stopTracking()
+  await authStore.logout()
+  router.push({ name: 'login', query: { reason: 'timeout' } })
 }
 
 /**
@@ -204,11 +232,17 @@ const handleClickOutside = (event) => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleMobileFocusTrap)
+
+  // Start session timeout tracking (FR-039, SC-011)
+  startTracking()
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleMobileFocusTrap)
+
+  // Stop session timeout tracking
+  stopTracking()
 })
 </script>
 
@@ -378,6 +412,14 @@ onUnmounted(() => {
 
     <!-- Global FAB for quick actions -->
     <GlobalFAB />
+
+    <!-- Session Timeout Warning (FR-039, FR-040, SC-011) -->
+    <SessionTimeoutWarning
+      v-model:visible="isWarningVisible"
+      :remaining-time="remainingTimeFormatted"
+      @extend="handleExtendSession"
+      @logout="handleSessionLogout"
+    />
   </div>
 </template>
 
