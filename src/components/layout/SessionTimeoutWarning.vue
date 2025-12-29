@@ -63,7 +63,8 @@ const handleLogout = () => {
             <p class="font-semibold mb-2">Your session is about to expire</p>
             <p class="text-sm">
               You have been inactive for a while. Your session will expire in
-              <strong>{{ remainingTime }}</strong> due to inactivity.
+              <strong>{{ remainingTime }}</strong>
+              due to inactivity.
             </p>
           </div>
         </div>
@@ -71,7 +72,9 @@ const handleLogout = () => {
 
       <!-- Informational Text -->
       <div class="text-sm text-gray-600 dark:text-gray-400">
-        <p class="mb-2">For your security, we automatically log you out after 30 minutes of inactivity.</p>
+        <p class="mb-2">
+          For your security, we automatically log you out after 30 minutes of inactivity.
+        </p>
         <p>Would you like to continue your session?</p>
       </div>
 
@@ -82,16 +85,16 @@ const handleLogout = () => {
           severity="secondary"
           outlined
           icon="pi pi-sign-out"
-          @click="handleLogout"
           data-testid="logout-button"
+          @click="handleLogout"
         />
         <Button
           label="Stay Logged In"
           severity="info"
           icon="pi pi-refresh"
-          @click="handleExtend"
           data-testid="extend-session-button"
           autofocus
+          @click="handleExtend"
         />
       </div>
     </div>

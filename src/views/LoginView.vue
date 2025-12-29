@@ -36,7 +36,7 @@ const toast = useToast()
 
 // Check for session expiration or error messages from router (FR-042)
 onMounted(() => {
-  const reason = route.query.reason
+  const { reason } = route.query
   if (reason === 'session-expired') {
     toast.add({
       severity: 'warn',

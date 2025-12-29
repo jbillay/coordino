@@ -33,13 +33,8 @@ const authStore = useAuthStore()
 const themeStore = useThemeStore()
 
 // Session timeout tracking (FR-039, FR-040, SC-011)
-const {
-  isWarningVisible,
-  remainingTimeFormatted,
-  extendSession,
-  startTracking,
-  stopTracking
-} = useSessionTimeout()
+const { isWarningVisible, remainingTimeFormatted, extendSession, startTracking, stopTracking } =
+  useSessionTimeout()
 
 /** @type {import('vue').Ref<boolean>} User dropdown menu visibility */
 const showUserMenu = ref(false)

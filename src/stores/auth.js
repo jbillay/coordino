@@ -408,11 +408,14 @@ export const useAuthStore = defineStore('auth', () => {
 
     // Refresh every 50 minutes (3000000 ms)
     // Supabase tokens typically expire after 60 minutes
-    tokenRefreshInterval = setInterval(async () => {
-      if (isAuthenticated.value) {
-        await refreshAuthToken()
-      }
-    }, 50 * 60 * 1000)
+    tokenRefreshInterval = setInterval(
+      async () => {
+        if (isAuthenticated.value) {
+          await refreshAuthToken()
+        }
+      },
+      50 * 60 * 1000
+    )
   }
 
   /**

@@ -38,9 +38,7 @@ export function useSessionTimeout() {
   /**
    * Get time since last activity in milliseconds
    */
-  const timeSinceLastActivity = computed(() => {
-    return Date.now() - lastActivityTime.value
-  })
+  const timeSinceLastActivity = computed(() => Date.now() - lastActivityTime.value)
 
   /**
    * Get remaining time until logout in seconds
