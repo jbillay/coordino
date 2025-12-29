@@ -18,8 +18,8 @@
  * - Responsive design with branded left panel
  * - WCAG 2.1 Level AA compliant
  */
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'primevue/usetoast'
 import { isValidEmail } from '@/utils/validation'
@@ -27,10 +27,39 @@ import { isValidEmail } from '@/utils/validation'
 // Import PrimeVue components locally for code splitting
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
+import Checkbox from 'primevue/checkbox'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const toast = useToast()
+
+// Check for session expiration or error messages from router (FR-042)
+onMounted(() => {
+  const { reason } = route.query
+  if (reason === 'session-expired') {
+    toast.add({
+      severity: 'warn',
+      summary: 'Session Expired',
+      detail: 'Your session has expired due to inactivity. Please log in again.',
+      life: 5000
+    })
+  } else if (reason === 'session-error') {
+    toast.add({
+      severity: 'error',
+      summary: 'Session Error',
+      detail: 'There was an error with your session. Please log in again.',
+      life: 5000
+    })
+  } else if (reason === 'timeout') {
+    toast.add({
+      severity: 'warn',
+      summary: 'Session Timeout',
+      detail: 'You were logged out after 30 minutes of inactivity.',
+      life: 5000
+    })
+  }
+})
 
 /** @type {import('vue').Ref<string>} User's email address */
 const email = ref('')
@@ -43,6 +72,9 @@ const magicEmail = ref('')
 
 /** @type {import('vue').Ref<boolean>} Toggle visibility of magic link form */
 const showMagicLink = ref(false)
+
+/** @type {import('vue').Ref<boolean>} Remember Me checkbox state (FR-041, SC-010) */
+const rememberMe = ref(false)
 
 /** @type {import('vue').Ref<Object>} Form validation errors keyed by field name */
 const errors = ref({})
@@ -78,7 +110,7 @@ const handleSignIn = async () => {
     return
   }
 
-  const result = await authStore.signIn(email.value, password.value)
+  const result = await authStore.signIn(email.value, password.value, rememberMe.value)
 
   if (result.success) {
     toast.add({
@@ -296,6 +328,22 @@ const handleMagicLink = async () => {
               >
                 {{ errors.password }}
               </small>
+            </div>
+
+            <!-- Remember Me Checkbox (FR-041, SC-010) -->
+            <div class="flex items-center">
+              <Checkbox
+                id="remember-me"
+                v-model="rememberMe"
+                :binary="true"
+                data-testid="remember-me-checkbox"
+              />
+              <label
+                for="remember-me"
+                class="ml-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none"
+              >
+                Remember me on this device
+              </label>
             </div>
 
             <!-- Sign In Button -->

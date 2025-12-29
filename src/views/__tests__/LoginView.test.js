@@ -11,6 +11,9 @@ import { nextTick } from 'vue'
 vi.mock('vue-router', () => ({
   useRouter: vi.fn(() => ({
     push: vi.fn()
+  })),
+  useRoute: vi.fn(() => ({
+    query: {}
   }))
 }))
 
@@ -109,7 +112,7 @@ describe('LoginView.vue', () => {
     await wrapper.find('input[type="password"]').setValue('password')
     await wrapper.find('form').trigger('submit.prevent')
 
-    expect(authStore.signIn).toHaveBeenCalledWith('test@example.com', 'password')
+    expect(authStore.signIn).toHaveBeenCalledWith('test@example.com', 'password', false)
   })
 
   it('redirects to dashboard on successful sign-in', async () => {
