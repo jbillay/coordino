@@ -74,13 +74,13 @@
 ### Implementation for User Story 1
 
 - [X] T018 [US1] Create src/composables/usePasswordReset.js - implement password reset flow (resetPassword, updatePassword, error handling)
-- [ ] T019 [US1] Add "Forgot Password" link to login view (modify existing LoginView.vue)
-- [ ] T020 [US1] Create src/views/ResetPasswordView.vue - password reset form with validation
-- [ ] T021 [US1] Add /reset-password route to src/router/index.js
-- [ ] T022 [US1] Integrate usePasswordReset composable in ResetPasswordView with email delivery and token verification
-- [ ] T023 [US1] Add client-side password strength validation UI with real-time feedback
-- [ ] T024 [US1] Implement session invalidation after password reset (modify src/stores/auth.js)
-- [ ] T025 [US1] Add error handling for expired/invalid tokens with retry option
+- [X] T019 [US1] Add "Forgot Password" link to login view (modify existing LoginView.vue)
+- [X] T020 [US1] Create src/views/ResetPasswordView.vue - password reset form with validation
+- [X] T021 [US1] Add /reset-password route to src/router/index.js
+- [X] T022 [US1] Integrate usePasswordReset composable in ResetPasswordView with email delivery and token verification
+- [X] T023 [US1] Add client-side password strength validation UI with real-time feedback
+- [X] T024 [US1] Implement session invalidation after password reset (modify src/stores/auth.js)
+- [X] T025 [US1] Add error handling for expired/invalid tokens with retry option
 
 **Checkpoint**: Password reset fully functional - users can reset forgotten passwords independently (SC-001, SC-002)
 
@@ -94,23 +94,23 @@
 
 ### Tests for User Story 2 (REQUIRED - write FIRST, ensure FAIL)
 
-- [ ] T026 [P] [US2] Create tests/integration/settings/profile-update.test.js - test profile update + store + RLS policy
-- [ ] T027 [P] [US2] Create tests/integration/settings/theme-persistence.test.js - test theme toggle + localStorage persistence
-- [ ] T028 [P] [US2] Create tests/e2e/profile-update.spec.js - test profile update journey (SC-003: <5 sec reflection)
+- [X] T026 [P] [US2] Create tests/integration/settings/profile-update.test.js - test profile update + store + RLS policy
+- [X] T027 [P] [US2] Create tests/integration/settings/theme-persistence.test.js - test theme toggle + localStorage persistence
+- [X] T028 [P] [US2] Create tests/e2e/profile-update.spec.js - test profile update journey (SC-003: <5 sec reflection)
 
 ### Implementation for User Story 2
 
-- [ ] T029 [P] [US2] Create src/views/SettingsView.vue - main settings container with tab navigation (Profile, Preferences, Account, Data Export)
-- [ ] T030 [P] [US2] Create src/components/settings/ProfileSettings.vue - profile editing (display name, email change with re-auth)
-- [ ] T031 [P] [US2] Create src/components/settings/PreferencesSettings.vue - preferences editing (timezone, theme, date format)
-- [ ] T032 [US2] Create src/utils/timezone.js - timezone conversion and validation utilities
-- [ ] T033 [US2] Create tests/unit/utils/timezone.test.js - test timezone conversion (WRITE FIRST, ENSURE FAILS)
-- [ ] T034 [US2] Extend src/stores/auth.js with updateProfile(), changeEmail(), changePassword() methods
-- [ ] T035 [US2] Extend src/stores/config.js to load/save completed_tours array
-- [ ] T036 [US2] Implement real-time profile sync (Supabase realtime subscription in config store)
-- [ ] T037 [US2] Implement localStorage persistence for theme preference
-- [ ] T038 [US2] Add validation for email format, timezone (IANA), and theme enum
-- [ ] T039 [US2] Add re-authentication flow for email/password changes (current password required)
+- [X] T029 [P] [US2] Create src/views/SettingsView.vue - main settings container with tab navigation (Profile, Preferences, Account, Data Export)
+- [X] T030 [P] [US2] Create src/components/settings/ProfileSettings.vue - profile editing (display name, email change with re-auth)
+- [X] T031 [P] [US2] Create src/components/settings/PreferencesSettings.vue - preferences editing (timezone, theme, date format)
+- [X] T032 [US2] Create src/utils/timezone.js - timezone conversion and validation utilities
+- [X] T033 [US2] Create tests/unit/utils/timezone.test.js - test timezone conversion (WRITE FIRST, ENSURE FAILS)
+- [X] T034 [US2] Extend src/stores/auth.js with updateProfile(), changeEmail(), changePassword() methods
+- [X] T035 [US2] Extend src/stores/config.js to load/save completed_tours array
+- [X] T036 [US2] Implement real-time profile sync (Supabase realtime subscription in config store)
+- [X] T037 [US2] Implement localStorage persistence for theme preference
+- [X] T038 [US2] Add validation for email format, timezone (IANA), and theme enum
+- [X] T039 [US2] Add re-authentication flow for email/password changes (current password required)
 
 **Checkpoint**: Profile & preferences fully functional - users can customize their account and preferences (SC-003, FR-006 to FR-009)
 
@@ -124,22 +124,22 @@
 
 ### Tests for User Story 5 (REQUIRED - write FIRST, ensure FAIL)
 
-- [ ] T040 [US5] Create automated accessibility test script using axe-core in tests/e2e/accessibility.spec.js
-- [ ] T041 [US5] Document manual keyboard navigation test checklist in tests/e2e/accessibility-manual.md
+- [X] T040 [US5] Create automated accessibility test script using axe-core in tests/e2e/accessibility.spec.js
+- [X] T041 [US5] Document manual keyboard navigation test checklist in tests/e2e/accessibility-manual.md
 
 ### Implementation for User Story 5
 
-- [ ] T042 [P] [US5] Add ARIA labels to all form inputs in ProfileSettings.vue (FR-020)
-- [ ] T043 [P] [US5] Add ARIA labels to all form inputs in PreferencesSettings.vue (FR-020)
-- [ ] T044 [P] [US5] Add autocomplete attributes to email/password fields (FR-021)
-- [ ] T045 [P] [US5] Ensure logical tab order in SettingsView tab navigation (FR-022)
-- [ ] T046 [P] [US5] Add visible focus indicators (2px solid outline, 2px offset) to all interactive elements (FR-023)
-- [ ] T047 [US5] Verify color contrast ratios in dark mode meet WCAG 2.1 AA (4.5:1 normal, 3:1 large) (FR-027)
-- [ ] T048 [US5] Add ARIA live region for search results in NotesView (FR-025)
-- [ ] T049 [US5] Implement arrow key navigation for NoteList component (FR-026)
-- [ ] T050 [US5] Implement focus trap for mobile menu (FR-024)
-- [ ] T051 [US5] Ensure touch targets are minimum 44x44 pixels on mobile (FR-028)
-- [ ] T052 [US5] Run axe-core automated accessibility scan and fix all critical violations (SC-006)
+- [X] T042 [P] [US5] Add ARIA labels to all form inputs in ProfileSettings.vue (FR-020)
+- [X] T043 [P] [US5] Add ARIA labels to all form inputs in PreferencesSettings.vue (FR-020)
+- [X] T044 [P] [US5] Add autocomplete attributes to email/password fields (FR-021)
+- [X] T045 [P] [US5] Ensure logical tab order in SettingsView tab navigation (FR-022)
+- [X] T046 [P] [US5] Add visible focus indicators (2px solid outline, 2px offset) to all interactive elements (FR-023)
+- [X] T047 [US5] Verify color contrast ratios in dark mode meet WCAG 2.1 AA (4.5:1 normal, 3:1 large) (FR-027)
+- [X] T048 [US5] Add ARIA live region for search results in NotesView (FR-025)
+- [X] T049 [US5] Implement arrow key navigation for NoteList component (FR-026)
+- [X] T050 [US5] Implement focus trap for mobile menu (FR-024)
+- [X] T051 [US5] Ensure touch targets are minimum 44x44 pixels on mobile (FR-028)
+- [X] T052 [US5] Run axe-core automated accessibility scan and fix all critical violations (SC-006)
 
 **Checkpoint**: WCAG 2.1 AA compliance achieved - application fully accessible (SC-006, SC-007, FR-020 to FR-028)
 
@@ -153,18 +153,18 @@
 
 ### Tests for User Story 3 (REQUIRED - write FIRST, ensure FAIL)
 
-- [ ] T053 [P] [US3] Create tests/integration/settings/account-deletion.test.js - test deletion flow + confirmation
-- [ ] T054 [P] [US3] Create tests/e2e/account-deletion.spec.js - test account deletion workflow (SC-004: <10 sec completion)
+- [X] T053 [P] [US3] Create tests/integration/settings/account-deletion.test.js - test deletion flow + confirmation
+- [X] T054 [P] [US3] Create tests/e2e/account-deletion.spec.js - test account deletion workflow (SC-004: <10 sec completion)
 
 ### Implementation for User Story 3
 
-- [ ] T055 [P] [US3] Create src/components/common/ConfirmDialog.vue - reusable confirmation dialog component
-- [ ] T056 [US3] Create src/components/settings/AccountManagement.vue - password change and account deletion interface
-- [ ] T057 [US3] Implement multi-step confirmation (warning dialog → type "DELETE" → final confirm) (FR-011)
-- [ ] T058 [US3] Add deleteAccount() method to src/stores/auth.js with Supabase Auth admin.deleteUser()
-- [ ] T059 [US3] Verify CASCADE delete removes all user data (tasks, notes, topics, meetings, users_extended) (FR-012)
-- [ ] T060 [US3] Implement logout and redirect to login page after successful deletion (FR-013)
-- [ ] T061 [US3] Add error handling for deletion failures with retry option
+- [X] T055 [P] [US3] Create src/components/common/ConfirmDialog.vue - reusable confirmation dialog component
+- [X] T056 [US3] Create src/components/settings/AccountManagement.vue - password change and account deletion interface
+- [X] T057 [US3] Implement multi-step confirmation (warning dialog → type "DELETE" → final confirm) (FR-011)
+- [X] T058 [US3] Add deleteAccount() method to src/stores/auth.js with Supabase Auth admin.deleteUser()
+- [X] T059 [US3] Verify CASCADE delete removes all user data (tasks, notes, topics, meetings, users_extended) (FR-012)
+- [X] T060 [US3] Implement logout and redirect to login page after successful deletion (FR-013)
+- [X] T061 [US3] Add error handling for deletion failures with retry option
 
 **Checkpoint**: Account deletion fully functional - users can permanently delete accounts with data removal verification (SC-004, FR-010 to FR-013)
 
@@ -178,24 +178,24 @@
 
 ### Tests for User Story 4 (REQUIRED - write FIRST, ensure FAIL)
 
-- [ ] T062 [P] [US4] Create tests/unit/utils/export.test.js - test JSON/CSV formatting and flattening logic
-- [ ] T063 [P] [US4] Create tests/unit/composables/useDataExport.test.js - test export orchestration
-- [ ] T064 [P] [US4] Create tests/integration/export/data-export-flow.test.js - test export trigger + archive generation
-- [ ] T065 [P] [US4] Create tests/e2e/data-export.spec.js - test data export end-to-end (SC-005: <30 sec for 1000 records)
+- [X] T062 [P] [US4] Create tests/unit/utils/export.test.js - test JSON/CSV formatting and flattening logic
+- [X] T063 [P] [US4] Create tests/unit/composables/useDataExport.test.js - test export orchestration
+- [X] T064 [P] [US4] Create tests/integration/export/data-export-flow.test.js - test export trigger + archive generation
+- [X] T065 [P] [US4] Create tests/e2e/data-export.spec.js - test data export end-to-end (SC-005: <30 sec for 1000 records)
 
 ### Implementation for User Story 4
 
-- [ ] T066 [P] [US4] Create src/utils/export.js - JSON/CSV formatting, flattening, and ZIP archive generation
-- [ ] T067 [P] [US4] Create src/composables/useDataExport.js - export orchestration with progress tracking
-- [ ] T068 [P] [US4] Create src/stores/export.js - data export state management
-- [ ] T069 [US4] Create src/components/settings/DataExport.vue - export interface with loading state
-- [ ] T070 [US4] Implement fetchAllData() to query all user entities (tasks, notes, topics, locations, meetings, categories, statuses)
-- [ ] T071 [US4] Implement generateJSON() with metadata (exportedAt, version, schema) (FR-016)
-- [ ] T072 [US4] Implement generateCSV() for each entity type with Papa.unparse (FR-017)
-- [ ] T073 [US4] Implement createZipArchive() with JSZip (json/, csv/, README.txt structure) (FR-015)
-- [ ] T074 [US4] Add chunking for large datasets (>1000 records) with progress indicator (FR-019)
-- [ ] T075 [US4] Implement download trigger with file-saver.saveAs()
-- [ ] T076 [US4] Add error handling with retry logic and user-friendly messages
+- [X] T066 [P] [US4] Create src/utils/export.js - JSON/CSV formatting, flattening, and ZIP archive generation
+- [X] T067 [P] [US4] Create src/composables/useDataExport.js - export orchestration with progress tracking
+- [X] T068 [P] [US4] Create src/stores/export.js - data export state management
+- [X] T069 [US4] Create src/components/settings/DataExport.vue - export interface with loading state
+- [X] T070 [US4] Implement fetchAllData() to query all user entities (tasks, notes, topics, locations, meetings, categories, statuses)
+- [X] T071 [US4] Implement generateJSON() with metadata (exportedAt, version, schema) (FR-016)
+- [X] T072 [US4] Implement generateCSV() for each entity type with Papa.unparse (FR-017)
+- [X] T073 [US4] Implement createZipArchive() with JSZip (json/, csv/, README.txt structure) (FR-015)
+- [X] T074 [US4] Add chunking for large datasets (>1000 records) with progress indicator (FR-019)
+- [X] T075 [US4] Implement download trigger with file-saver.saveAs()
+- [X] T076 [US4] Add error handling with retry logic and user-friendly messages
 
 **Checkpoint**: Data export fully functional - users can download all data in dual formats (SC-005, FR-014 to FR-019)
 
@@ -209,19 +209,19 @@
 
 ### Tests for User Story 6 (REQUIRED - write FIRST, ensure FAIL)
 
-- [ ] T077 [US6] Create performance benchmark test in tests/e2e/performance.spec.js - verify 60fps scrolling with 1000+ items
+- [X] T077 [US6] Create performance benchmark test in tests/e2e/performance.spec.js - verify 60fps scrolling with 1000+ items
 
 ### Implementation for User Story 6
 
-- [ ] T078 [US6] Install and configure vue-virtual-scroller (already done in T001, verify integration)
-- [ ] T079 [P] [US6] Implement virtual scrolling in TasksView with RecycleScroller for >100 tasks (FR-029)
-- [ ] T080 [P] [US6] Implement virtual scrolling in NotesView with RecycleScroller for >100 notes (FR-030)
-- [ ] T081 [US6] Add data volume warning logic in task/note stores (90% threshold at 4,500 tasks, 2,700 notes) (FR-035, FR-036)
-- [ ] T082 [US6] Create warning banner component for data volume limits with export recommendation
-- [ ] T083 [US6] Memoize expensive computations in task/note components (FR-031)
-- [ ] T084 [US6] Implement batch updates for topic reordering (FR-032)
-- [ ] T085 [US6] Optimize real-time subscriptions to avoid N+1 queries (FR-033)
-- [ ] T086 [US6] Verify time-to-interactive <3 seconds with Lighthouse audit (FR-034, SC-008, SC-009)
+- [X] T078 [US6] Install and configure vue-virtual-scroller (already done in T001, verify integration)
+- [X] T079 [P] [US6] Implement virtual scrolling in TasksView with RecycleScroller for >100 tasks (FR-029)
+- [X] T080 [P] [US6] Implement virtual scrolling in NotesView with RecycleScroller for >100 notes (FR-030)
+- [X] T081 [US6] Add data volume warning logic in task/note stores (90% threshold at 4,500 tasks, 2,700 notes) (FR-035, FR-036)
+- [X] T082 [US6] Create warning banner component for data volume limits with export recommendation
+- [X] T083 [US6] Memoize expensive computations in task/note components (FR-031)
+- [X] T084 [US6] Implement batch updates for topic reordering (FR-032)
+- [X] T085 [US6] Optimize real-time subscriptions to avoid N+1 queries (FR-033)
+- [X] T086 [US6] Verify time-to-interactive <3 seconds with Lighthouse audit (FR-034, SC-008, SC-009)
 
 **Checkpoint**: Performance optimizations complete - smooth 60fps scrolling with 1000+ items (SC-008, SC-009, FR-029 to FR-037)
 
@@ -235,20 +235,20 @@
 
 ### Tests for User Story 7 (REQUIRED - write FIRST, ensure FAIL)
 
-- [ ] T087 [P] [US7] Create tests/unit/composables/useSessionTimeout.test.js - test inactivity tracking and warning logic
-- [ ] T088 [P] [US7] Create tests/e2e/session-timeout.spec.js - test session timeout scenario (SC-011: warning at 28 min)
+- [X] T087 [P] [US7] Create tests/unit/composables/useSessionTimeout.test.js - test inactivity tracking and warning logic
+- [X] T088 [P] [US7] Create tests/e2e/session-timeout.spec.js - test session timeout scenario (SC-011: warning at 28 min)
 
 ### Implementation for User Story 7
 
-- [ ] T089 [US7] Create src/composables/useSessionTimeout.js - inactivity detection, warning trigger, extend session
-- [ ] T090 [US7] Create src/components/layout/SessionTimeout.vue - session timeout warning modal
-- [ ] T091 [US7] Implement event listeners for user activity (mousemove, keydown, click, scroll, touch) (FR-039)
-- [ ] T092 [US7] Implement inactivity timer with 28-minute warning threshold, 30-minute logout (FR-039)
-- [ ] T093 [US7] Add localStorage sync for multi-tab session coordination
-- [ ] T094 [US7] Implement extendSession() function in auth store (FR-040)
-- [ ] T095 [US7] Add automatic token refresh in auth store (FR-038)
-- [ ] T096 [US7] Implement "Remember Me" checkbox in LoginView with persistent session (FR-041)
-- [ ] T097 [US7] Add session validity check on route navigation with re-auth prompt (FR-042)
+- [X] T089 [US7] Create src/composables/useSessionTimeout.js - inactivity detection, warning trigger, extend session
+- [X] T090 [US7] Create src/components/layout/SessionTimeout.vue - session timeout warning modal
+- [X] T091 [US7] Implement event listeners for user activity (mousemove, keydown, click, scroll, touch) (FR-039)
+- [X] T092 [US7] Implement inactivity timer with 28-minute warning threshold, 30-minute logout (FR-039)
+- [X] T093 [US7] Add localStorage sync for multi-tab session coordination
+- [X] T094 [US7] Implement extendSession() function in auth store (FR-040)
+- [X] T095 [US7] Add automatic token refresh in auth store (FR-038)
+- [X] T096 [US7] Implement "Remember Me" checkbox in LoginView with persistent session (FR-041)
+- [X] T097 [US7] Add session validity check on route navigation with re-auth prompt (FR-042)
 
 **Checkpoint**: Session management complete - automatic refresh, inactivity warnings, persistent sessions (SC-010, SC-011, FR-038 to FR-042)
 
@@ -262,18 +262,18 @@
 
 ### Tests for User Story 8 (REQUIRED - write FIRST, ensure FAIL)
 
-- [ ] T098 [US8] Create tests/integration/error-handling.test.js - verify all error scenarios display user-friendly messages
+- [X] T098 [US8] Create tests/integration/error-handling.test.js - verify all error scenarios display user-friendly messages
 
 ### Implementation for User Story 8
 
-- [ ] T099 [P] [US8] Wrap all async operations in try-catch blocks across all stores (FR-043)
-- [ ] T100 [P] [US8] Create error message mapping utility in src/utils/errors.js (technical → user-friendly)
-- [ ] T101 [US8] Implement global error handler in main.js to catch Vue errors (FR-044)
-- [ ] T102 [US8] Add inline validation error display to all forms (ProfileSettings, PreferencesSettings, AccountManagement) (FR-045)
-- [ ] T103 [US8] Add hex color format validation in PreferencesSettings (FR-046)
-- [ ] T104 [US8] Implement content sanitization before database writes (FR-047)
-- [ ] T105 [US8] Add error logging with console.error including timestamp, user_id, error type, operation (FR-048, FR-049)
-- [ ] T106 [US8] Verify no stack traces are displayed to users in production mode (SC-012)
+- [X] T099 [P] [US8] Wrap all async operations in try-catch blocks across all stores (FR-043)
+- [X] T100 [P] [US8] Create error message mapping utility in src/utils/errors.js (technical → user-friendly)
+- [X] T101 [US8] Implement global error handler in main.js to catch Vue errors (FR-044)
+- [X] T102 [US8] Add inline validation error display to all forms (ProfileSettings, PreferencesSettings, AccountManagement) (FR-045)
+- [X] T103 [US8] Add hex color format validation in PreferencesSettings (FR-046)
+- [X] T104 [US8] Implement content sanitization before database writes (FR-047)
+- [X] T105 [US8] Add error logging with console.error including timestamp, user_id, error type, operation (FR-048, FR-049)
+- [X] T106 [US8] Verify no stack traces are displayed to users in production mode (SC-012)
 
 **Checkpoint**: Error handling complete - all errors handled gracefully with user-friendly messages (SC-012, FR-043 to FR-049)
 
@@ -287,20 +287,20 @@
 
 ### Tests for User Story 9 (REQUIRED - write FIRST, ensure FAIL)
 
-- [ ] T107 [P] [US9] Create tests/unit/composables/useFeatureTour.test.js - test tour completion tracking
-- [ ] T108 [P] [US9] Create tests/e2e/onboarding.spec.js - test empty states and feature tours (SC-013, SC-014)
+- [X] T107 [P] [US9] Create tests/unit/composables/useFeatureTour.test.js - test tour completion tracking
+- [X] T108 [P] [US9] Create tests/e2e/onboarding.spec.js - test empty states and feature tours (SC-013, SC-014)
 
 ### Implementation for User Story 9
 
-- [ ] T109 [P] [US9] Create src/components/common/EmptyState.vue - reusable empty state component (icon, message, CTA)
-- [ ] T110 [P] [US9] Create src/components/common/FeatureTour.vue - contextual tour overlay component
-- [ ] T111 [P] [US9] Create src/composables/useFeatureTour.js - tour completion tracking (completed_tours array)
-- [ ] T112 [P] [US9] Add EmptyState to TasksView for new users with "Create Your First Task" CTA (FR-050, FR-051)
-- [ ] T113 [P] [US9] Add EmptyState to NotesView for new users with "Write Your First Note" CTA (FR-050, FR-051)
-- [ ] T114 [P] [US9] Add EmptyState to SchedulingView for new users with "Schedule First Meeting" CTA (FR-050, FR-051)
-- [ ] T115 [US9] Implement tour display logic (check completed_tours array, show if not completed) (FR-052)
-- [ ] T116 [US9] Implement tour completion persistence (append tour ID to completed_tours array in database) (FR-053)
-- [ ] T117 [US9] Add "Replay Tours" option in Settings > Help section (FR-054)
+- [X] T109 [P] [US9] Create src/components/common/EmptyState.vue - reusable empty state component (icon, message, CTA)
+- [X] T110 [P] [US9] Create src/components/common/FeatureTour.vue - contextual tour overlay component
+- [X] T111 [P] [US9] Create src/composables/useFeatureTour.js - tour completion tracking (completed_tours array)
+- [X] T112 [P] [US9] Add EmptyState to TasksView for new users with "Create Your First Task" CTA (FR-050, FR-051)
+- [X] T113 [P] [US9] Add EmptyState to NotesView for new users with "Write Your First Note" CTA (FR-050, FR-051)
+- [X] T114 [P] [US9] Add EmptyState to SchedulingView for new users with "Schedule First Meeting" CTA (FR-050, FR-051)
+- [X] T115 [US9] Implement tour display logic (check completed_tours array, show if not completed) (FR-052)
+- [X] T116 [US9] Implement tour completion persistence (append tour ID to completed_tours array in database) (FR-053)
+- [X] T117 [US9] Add "Replay Tours" option in Settings > Help section (FR-054)
 
 **Checkpoint**: Onboarding complete - new users guided with empty states and contextual tours (SC-013, SC-014, FR-050 to FR-054)
 

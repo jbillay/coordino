@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useTaskStore } from '../store'
-import { mapSupabaseError } from '@/utils/errors'
 
 // Mock dependencies
 const mockSupabase = {
@@ -49,7 +48,7 @@ describe('Task Store - Task Operations', () => {
       range.mockResolvedValue({ data: null, error: mockError })
       const store = useTaskStore()
       await store.fetchTasks()
-      expect(store.error).toBe(mapSupabaseError(mockError, 'tasks'))
+      expect(store.error).toBe('Failed to load tasks. Please refresh the page and try again.')
     })
   })
 

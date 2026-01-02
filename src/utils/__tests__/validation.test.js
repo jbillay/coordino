@@ -10,7 +10,9 @@ import {
   validatePassword,
   isNotEmpty,
   hasMinLength,
-  hasMaxLength
+  hasMaxLength,
+  validateUUID,
+  isUUID
 } from '../validation'
 
 describe('isValidEmail', () => {
@@ -287,5 +289,236 @@ describe('hasMaxLength', () => {
 
   it('accepts null', () => {
     expect(hasMaxLength(null, 5)).toBe(true)
+  })
+})
+
+describe('validateUUID', () => {
+  describe('valid UUIDs', () => {
+    it('accepts valid v4 UUID', () => {
+      const result = validateUUID('123e4567-e89b-42d3-a456-426614174000')
+      expect(result.valid).toBe(true)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('accepts v4 UUID with uppercase letters', () => {
+      const result = validateUUID('123E4567-E89B-42D3-A456-426614174000')
+      expect(result.valid).toBe(true)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('accepts v4 UUID with mixed case', () => {
+      const result = validateUUID('a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6')
+      expect(result.valid).toBe(true)
+    })
+
+    it('accepts v4 UUID with all lowercase', () => {
+      const result = validateUUID('550e8400-e29b-41d4-a716-446655440000')
+      expect(result.valid).toBe(true)
+    })
+
+    it('accepts v4 UUID with valid variant bits (8, 9, a, b)', () => {
+      expect(validateUUID('123e4567-e89b-42d3-8456-426614174000').valid).toBe(true)
+      expect(validateUUID('123e4567-e89b-42d3-9456-426614174000').valid).toBe(true)
+      expect(validateUUID('123e4567-e89b-42d3-a456-426614174000').valid).toBe(true)
+      expect(validateUUID('123e4567-e89b-42d3-b456-426614174000').valid).toBe(true)
+    })
+  })
+
+  describe('invalid UUIDs', () => {
+    it('rejects UUID with wrong version (not v4)', () => {
+      const result = validateUUID('123e4567-e89b-12d3-a456-426614174000')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+
+    it('rejects UUID with wrong version (v1)', () => {
+      const result = validateUUID('123e4567-e89b-11d3-a456-426614174000')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+
+    it('rejects UUID with invalid variant bits', () => {
+      const result = validateUUID('123e4567-e89b-42d3-c456-426614174000')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+
+    it('rejects UUID without hyphens', () => {
+      const result = validateUUID('123e4567e89b42d3a456426614174000')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+
+    it('rejects UUID with wrong hyphen positions', () => {
+      const result = validateUUID('123e4567-e89b42-d3a4-56426614174000')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+
+    it('rejects UUID with invalid characters', () => {
+      const result = validateUUID('123e4567-e89g-42d3-a456-426614174000')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+
+    it('rejects UUID with wrong length', () => {
+      const result = validateUUID('123e4567-e89b-42d3-a456-42661417400')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+
+    it('rejects completely invalid format', () => {
+      const result = validateUUID('not-a-uuid')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+
+    it('rejects random string', () => {
+      const result = validateUUID('invalid-uuid-format-string')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+  })
+
+  describe('edge cases', () => {
+    it('handles null input', () => {
+      const result = validateUUID(null)
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('UUID is required')
+    })
+
+    it('handles undefined input', () => {
+      const result = validateUUID(undefined)
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('UUID is required')
+    })
+
+    it('handles empty string', () => {
+      const result = validateUUID('')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('UUID is required')
+    })
+
+    it('handles non-string input (number)', () => {
+      const result = validateUUID(123)
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('UUID must be a string')
+    })
+
+    it('handles non-string input (object)', () => {
+      const result = validateUUID({})
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('UUID must be a string')
+    })
+
+    it('handles non-string input (array)', () => {
+      const result = validateUUID([])
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('UUID must be a string')
+    })
+
+    it('handles whitespace-only string', () => {
+      const result = validateUUID('   ')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+
+    it('handles UUID with leading/trailing whitespace', () => {
+      const result = validateUUID('  123e4567-e89b-42d3-a456-426614174000  ')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Invalid UUID format')
+    })
+  })
+})
+
+describe('isUUID', () => {
+  describe('valid UUIDs', () => {
+    it('accepts valid v4 UUID', () => {
+      expect(isUUID('123e4567-e89b-42d3-a456-426614174000')).toBe(true)
+    })
+
+    it('accepts valid v1 UUID', () => {
+      expect(isUUID('123e4567-e89b-11d3-a456-426614174000')).toBe(true)
+    })
+
+    it('accepts valid v3 UUID', () => {
+      expect(isUUID('123e4567-e89b-31d3-a456-426614174000')).toBe(true)
+    })
+
+    it('accepts valid v5 UUID', () => {
+      expect(isUUID('123e4567-e89b-51d3-a456-426614174000')).toBe(true)
+    })
+
+    it('accepts UUID with uppercase letters', () => {
+      expect(isUUID('123E4567-E89B-42D3-A456-426614174000')).toBe(true)
+    })
+
+    it('accepts UUID with mixed case', () => {
+      expect(isUUID('a1B2c3D4-e5F6-47A8-b9C0-d1E2f3A4b5C6')).toBe(true)
+    })
+
+    it('accepts UUID with all lowercase', () => {
+      expect(isUUID('550e8400-e29b-41d4-a716-446655440000')).toBe(true)
+    })
+  })
+
+  describe('invalid UUIDs', () => {
+    it('rejects UUID without hyphens', () => {
+      expect(isUUID('123e4567e89b42d3a456426614174000')).toBe(false)
+    })
+
+    it('rejects UUID with wrong hyphen positions', () => {
+      expect(isUUID('123e4567-e89b42-d3a4-56426614174000')).toBe(false)
+    })
+
+    it('rejects UUID with invalid characters', () => {
+      expect(isUUID('123e4567-e89g-42d3-a456-426614174000')).toBe(false)
+    })
+
+    it('rejects UUID with wrong length', () => {
+      expect(isUUID('123e4567-e89b-42d3-a456-42661417400')).toBe(false)
+    })
+
+    it('rejects completely invalid format', () => {
+      expect(isUUID('not-a-uuid')).toBe(false)
+    })
+
+    it('rejects random string', () => {
+      expect(isUUID('invalid-uuid-format-string')).toBe(false)
+    })
+
+    it('rejects empty string', () => {
+      expect(isUUID('')).toBe(false)
+    })
+  })
+
+  describe('edge cases', () => {
+    it('handles null input', () => {
+      expect(isUUID(null)).toBe(false)
+    })
+
+    it('handles undefined input', () => {
+      expect(isUUID(undefined)).toBe(false)
+    })
+
+    it('handles non-string input (number)', () => {
+      expect(isUUID(123)).toBe(false)
+    })
+
+    it('handles non-string input (object)', () => {
+      expect(isUUID({})).toBe(false)
+    })
+
+    it('handles non-string input (array)', () => {
+      expect(isUUID([])).toBe(false)
+    })
+
+    it('handles whitespace-only string', () => {
+      expect(isUUID('   ')).toBe(false)
+    })
+
+    it('handles UUID with leading/trailing whitespace', () => {
+      expect(isUUID('  123e4567-e89b-42d3-a456-426614174000  ')).toBe(false)
+    })
   })
 })

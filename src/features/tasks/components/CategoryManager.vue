@@ -9,6 +9,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import { useTaskStore } from '../store'
 import { useToast } from 'primevue/usetoast'
 import { generateRandomColor } from '../utils'
+import { validateHexColor } from '@/utils/validation'
 
 /**
  * CategoryManager Component
@@ -36,6 +37,7 @@ const adding = ref(false)
 const deleting = ref(null)
 const showDeleteConfirm = ref(false)
 const categoryToDelete = ref(null)
+const errors = ref({})
 
 const newCategory = ref({
   name: '',
@@ -46,7 +48,26 @@ const newCategory = ref({
  * Add new category
  */
 const handleAddCategory = async () => {
-  if (!newCategory.value.name || !newCategory.value.color) {
+  // Clear previous errors
+  errors.value = {}
+
+  // Basic validation
+  if (!newCategory.value.name) {
+    errors.value.name = 'Category name is required'
+    return
+  }
+
+  if (!newCategory.value.color) {
+    errors.value.color = 'Color is required'
+    return
+  }
+
+  // Validate color format (US8: Comprehensive Error Handling - FR-048)
+  const colorToValidate = `#${newCategory.value.color}`
+  const colorValidation = validateHexColor(colorToValidate)
+
+  if (!colorValidation.valid) {
+    errors.value.color = colorValidation.error
     return
   }
 
@@ -54,7 +75,7 @@ const handleAddCategory = async () => {
 
   const result = await taskStore.createCategory({
     name: newCategory.value.name.trim(),
-    color: `#${newCategory.value.color}`,
+    color: colorToValidate,
     display_order: taskStore.categories.length + 1
   })
 
@@ -73,6 +94,7 @@ const handleAddCategory = async () => {
       name: '',
       color: generateRandomColor().replace('#', '')
     }
+    errors.value = {}
   } else {
     toast.add({
       severity: 'error',
@@ -80,6 +102,15 @@ const handleAddCategory = async () => {
       detail: result.error || 'Failed to create category',
       life: 5000
     })
+  }
+}
+
+/**
+ * Clear validation error for a field
+ */
+const clearError = (field) => {
+  if (errors.value[field]) {
+    delete errors.value[field]
   }
 }
 
@@ -154,11 +185,21 @@ const confirmDelete = async () => {
                 v-model="newCategory.name"
                 placeholder="Category name"
                 class="w-full"
+                :class="{ 'p-invalid': errors.name }"
+                @input="clearError('name')"
                 @keyup.enter="handleAddCategory"
               />
+              <small v-if="errors.name" class="p-error">{{ errors.name }}</small>
             </div>
             <div>
-              <ColorPicker v-model="newCategory.color" format="hex" class="w-full" />
+              <ColorPicker
+                v-model="newCategory.color"
+                format="hex"
+                class="w-full"
+                :class="{ 'p-invalid': errors.color }"
+                @update:model-value="clearError('color')"
+              />
+              <small v-if="errors.color" class="p-error">{{ errors.color }}</small>
             </div>
             <div>
               <Button

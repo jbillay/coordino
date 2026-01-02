@@ -5,6 +5,9 @@ import AppLayout from '@/components/layout/AppLayout.vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import Toast from 'primevue/toast'
+import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import FeatureTour from '@/components/common/FeatureTour.vue'
 import TaskFilters from '@/features/tasks/components/TaskFilters.vue'
 import TaskList from '@/features/tasks/components/TaskList.vue'
 import TaskDialog from '@/features/tasks/components/TaskDialog.vue'
@@ -208,130 +211,143 @@ onBeforeUnmount(async () => {
         </div>
       </div>
 
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
-        <Card class="stat-card">
-          <template #content>
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Active Tasks</p>
-                <p class="text-lg font-bold text-gray-900 dark:text-white">
-                  {{ taskStats.active }}
-                </p>
+      <!-- Error Boundary wraps main content area (US8: Comprehensive Error Handling) -->
+      <ErrorBoundary>
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
+          <Card class="stat-card">
+            <template #content>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Active Tasks</p>
+                  <p class="text-lg font-bold text-gray-900 dark:text-white">
+                    {{ taskStats.active }}
+                  </p>
+                </div>
+                <div
+                  class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center"
+                >
+                  <i class="pi pi-list text-blue-600 dark:text-blue-400 text-xl"></i>
+                </div>
               </div>
-              <div
-                class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center"
-              >
-                <i class="pi pi-list text-blue-600 dark:text-blue-400 text-xl"></i>
+            </template>
+          </Card>
+
+          <Card class="stat-card">
+            <template #content>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Completed</p>
+                  <p class="text-lg font-bold text-gray-900 dark:text-white">
+                    {{ taskStats.completed }}
+                  </p>
+                </div>
+                <div
+                  class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center"
+                >
+                  <i class="pi pi-check-circle text-green-600 dark:text-green-400 text-xl"></i>
+                </div>
               </div>
-            </div>
-          </template>
-        </Card>
+            </template>
+          </Card>
 
-        <Card class="stat-card">
-          <template #content>
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Completed</p>
-                <p class="text-lg font-bold text-gray-900 dark:text-white">
-                  {{ taskStats.completed }}
-                </p>
+          <Card class="stat-card">
+            <template #content>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Overdue</p>
+                  <p class="text-lg font-bold text-gray-900 dark:text-white">
+                    {{ taskStats.overdue }}
+                  </p>
+                </div>
+                <div
+                  class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center"
+                >
+                  <i class="pi pi-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
+                </div>
               </div>
-              <div
-                class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center"
-              >
-                <i class="pi pi-check-circle text-green-600 dark:text-green-400 text-xl"></i>
+            </template>
+          </Card>
+
+          <Card class="stat-card">
+            <template #content>
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Completion Rate</p>
+                  <p class="text-lg font-bold text-gray-900 dark:text-white">
+                    {{ taskStats.completionRate }}%
+                  </p>
+                </div>
+                <div
+                  class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center"
+                >
+                  <i class="pi pi-chart-bar text-purple-600 dark:text-purple-400 text-xl"></i>
+                </div>
               </div>
-            </div>
-          </template>
-        </Card>
+            </template>
+          </Card>
+        </div>
 
-        <Card class="stat-card">
-          <template #content>
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Overdue</p>
-                <p class="text-lg font-bold text-gray-900 dark:text-white">
-                  {{ taskStats.overdue }}
-                </p>
-              </div>
-              <div
-                class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center"
-              >
-                <i class="pi pi-exclamation-triangle text-red-600 dark:text-red-400 text-xl"></i>
-              </div>
-            </div>
-          </template>
-        </Card>
+        <!-- Data Volume Warning (FR-035, FR-036) -->
+        <DataVolumeWarning type="tasks" :count="taskStore.totalTasks" />
 
-        <Card class="stat-card">
-          <template #content>
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Completion Rate</p>
-                <p class="text-lg font-bold text-gray-900 dark:text-white">
-                  {{ taskStats.completionRate }}%
-                </p>
-              </div>
-              <div
-                class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center"
-              >
-                <i class="pi pi-chart-bar text-purple-600 dark:text-purple-400 text-xl"></i>
-              </div>
-            </div>
-          </template>
-        </Card>
-      </div>
+        <!-- Filters -->
+        <TaskFilters v-model="filters" v-model:sort-by="sortBy" v-model:group-by="groupBy" />
 
-      <!-- Data Volume Warning (FR-035, FR-036) -->
-      <DataVolumeWarning type="tasks" :count="taskStore.totalTasks" />
+        <!-- Loading State -->
+        <TaskSkeleton v-if="taskStore.loading" :count="8" />
 
-      <!-- Filters -->
-      <TaskFilters v-model="filters" v-model:sort-by="sortBy" v-model:group-by="groupBy" />
+        <!-- Error State -->
+        <div v-else-if="taskStore.error" class="text-center py-12">
+          <i class="pi pi-exclamation-circle text-4xl text-red-500 mb-4"></i>
+          <p class="text-red-600 dark:text-red-400 mb-4">{{ taskStore.error }}</p>
+          <Button label="Retry" icon="pi pi-refresh" @click="taskStore.initialize()" />
+        </div>
 
-      <!-- Loading State -->
-      <TaskSkeleton v-if="taskStore.loading" :count="8" />
-
-      <!-- Error State -->
-      <div v-else-if="taskStore.error" class="text-center py-12">
-        <i class="pi pi-exclamation-circle text-4xl text-red-500 mb-4"></i>
-        <p class="text-red-600 dark:text-red-400 mb-4">{{ taskStore.error }}</p>
-        <Button label="Retry" icon="pi pi-refresh" @click="taskStore.initialize()" />
-      </div>
-
-      <!-- Task List -->
-      <TaskList
-        v-else
-        :tasks="displayedTasks"
-        :group-by="groupBy"
-        :empty-message="getEmptyMessage"
-        @edit="handleEditTask"
-        @delete="handleDeleteTask"
-        @toggle-complete="handleToggleComplete"
-        @create-task="handleCreateTask"
-        @click="handleTaskClick"
-      />
-
-      <!-- Load More Button -->
-      <div
-        v-if="taskStore.hasMore && !taskStore.loading && displayedTasks.length > 0"
-        class="flex justify-center mt-6"
-      >
-        <Button
-          label="Load More Tasks"
-          icon="pi pi-arrow-down"
-          class="p-button-outlined"
-          @click="taskStore.loadMoreTasks()"
+        <!-- Empty State (US9: First-Time User Experience) -->
+        <EmptyState
+          v-else-if="taskStore.tasks.length === 0"
+          icon="pi pi-check-square"
+          title="No tasks yet"
+          message="Create your first task to get started organizing your work. Track progress, set priorities, and stay on top of your to-do list."
+          cta-label="Create Your First Task"
+          @cta-click="handleCreateTask"
         />
-      </div>
 
-      <!-- Pagination Info -->
-      <div
-        v-if="taskStore.totalTasks > 0"
-        class="text-center text-sm text-gray-500 dark:text-gray-400 mt-4"
-      >
-        Showing {{ taskStore.tasks.length }} of {{ taskStore.totalTasks }} tasks
-      </div>
+        <!-- Task List -->
+        <TaskList
+          v-else
+          :tasks="displayedTasks"
+          :group-by="groupBy"
+          :empty-message="getEmptyMessage"
+          @edit="handleEditTask"
+          @delete="handleDeleteTask"
+          @toggle-complete="handleToggleComplete"
+          @create-task="handleCreateTask"
+          @click="handleTaskClick"
+        />
+
+        <!-- Load More Button -->
+        <div
+          v-if="taskStore.hasMore && !taskStore.loading && displayedTasks.length > 0"
+          class="flex justify-center mt-6"
+        >
+          <Button
+            label="Load More Tasks"
+            icon="pi pi-arrow-down"
+            class="p-button-outlined"
+            @click="taskStore.loadMoreTasks()"
+          />
+        </div>
+
+        <!-- Pagination Info -->
+        <div
+          v-if="taskStore.totalTasks > 0"
+          class="text-center text-sm text-gray-500 dark:text-gray-400 mt-4"
+        >
+          Showing {{ taskStore.tasks.length }} of {{ taskStore.totalTasks }} tasks
+        </div>
+      </ErrorBoundary>
 
       <!-- Task Dialog -->
       <TaskDialog v-model:visible="showTaskDialog" :task="selectedTask" @saved="handleTaskSaved" />
@@ -352,6 +368,20 @@ onBeforeUnmount(async () => {
         confirm-icon="pi pi-trash"
         @confirm="confirmDelete"
       />
+
+      <!-- Feature Tour (US9: First-Time User Experience) -->
+      <FeatureTour tour-id="tasks-intro" title="Welcome to Tasks">
+        <p class="mb-3">
+          Welcome to your task management hub! Here you can organize all your work and stay
+          productive.
+        </p>
+        <ul class="list-disc list-inside space-y-2 text-sm">
+          <li>Create tasks with custom statuses and categories</li>
+          <li>Set priorities and due dates to stay on track</li>
+          <li>Filter and sort tasks to focus on what matters</li>
+          <li>Track completion progress with statistics</li>
+        </ul>
+      </FeatureTour>
 
       <!-- Toast for notifications -->
       <Toast />

@@ -362,7 +362,7 @@ describe('Notes Store', () => {
         await store.fetchTopics()
 
         expect(store.loading).toBe(false)
-        expect(store.error).toBe('Database error')
+        expect(store.error).toBe('Failed to load topics. Please refresh the page and try again.')
         expect(store.topics).toEqual([])
         expect(logger.error).toHaveBeenCalledWith('Error fetching topics:', expect.any(Object))
       })
@@ -467,7 +467,7 @@ describe('Notes Store', () => {
         const result = await store.createTopic(newTopic)
 
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Create failed')
+        expect(result.error).toBe('Failed to create topic. Please try again.')
         expect(store.topics).toHaveLength(0)
       })
 
@@ -481,7 +481,9 @@ describe('Notes Store', () => {
         const result = await store.createTopic(newTopic)
 
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Network error')
+        expect(result.error).toBe(
+          'Network error. Please check your internet connection and try again.'
+        )
       })
     })
 
@@ -560,7 +562,7 @@ describe('Notes Store', () => {
         const result = await store.updateTopic('t1', { name: 'Updated' })
 
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Update failed')
+        expect(result.error).toBe('Failed to update topic. Please try again.')
       })
     })
 
@@ -628,7 +630,7 @@ describe('Notes Store', () => {
         const result = await store.deleteTopic('t1')
 
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Delete failed')
+        expect(result.error).toBe('Failed to delete topic. Please try again.')
         expect(store.topics).toHaveLength(1)
       })
     })
@@ -674,7 +676,7 @@ describe('Notes Store', () => {
         const result = await store.reorderTopics(topics)
 
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Update failed')
+        expect(result.error).toBe('Failed to update topic. Please try again.')
       })
     })
   })
@@ -723,7 +725,7 @@ describe('Notes Store', () => {
         await store.fetchNotes()
 
         expect(store.loading).toBe(false)
-        expect(store.error).toBe('Fetch error')
+        expect(store.error).toBe('Failed to load notes. Please refresh the page and try again.')
         expect(logger.error).toHaveBeenCalledWith('Error fetching notes:', expect.any(Object))
       })
     })
@@ -824,7 +826,7 @@ describe('Notes Store', () => {
         const result = await store.createNote(newNote)
 
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Create failed')
+        expect(result.error).toBe('Failed to create note. Please try again.')
         expect(store.notes).toHaveLength(0)
       })
     })
@@ -920,7 +922,7 @@ describe('Notes Store', () => {
         const result = await store.updateNote('n1', { title: 'Updated' })
 
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Update failed')
+        expect(result.error).toBe('Failed to update note. Please try again.')
       })
     })
 
@@ -1006,7 +1008,7 @@ describe('Notes Store', () => {
         const result = await store.deleteNote('n1')
 
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Delete failed')
+        expect(result.error).toBe('Failed to delete note. Please try again.')
         expect(store.notes).toHaveLength(1)
       })
     })
@@ -1052,7 +1054,9 @@ describe('Notes Store', () => {
         const result = await store.togglePin('nonexistent')
 
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Note not found')
+        expect(result.error).toBe(
+          'Note not found. It may have been deleted. Please refresh and try again.'
+        )
       })
     })
 
@@ -1102,7 +1106,9 @@ describe('Notes Store', () => {
         const result = await store.toggleArchive('nonexistent')
 
         expect(result.success).toBe(false)
-        expect(result.error).toBe('Note not found')
+        expect(result.error).toBe(
+          'Note not found. It may have been deleted. Please refresh and try again.'
+        )
       })
     })
   })

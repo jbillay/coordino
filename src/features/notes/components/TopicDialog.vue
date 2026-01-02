@@ -3,8 +3,10 @@ import { ref, computed, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import Button from 'primevue/button'
 import { useNotesStore } from '../store'
 import { validateTopicName, getPresetColors } from '../utils'
+import { validateHexColor } from '@/utils/validation'
 import { useToast } from 'primevue/usetoast'
 
 const props = defineProps({
@@ -74,6 +76,13 @@ const validateForm = () => {
     errors.value.name = nameValidation.error
   }
 
+  // Validate color (US8: Comprehensive Error Handling - FR-048)
+  const colorValidation = validateHexColor(formData.value.color)
+
+  if (!colorValidation.valid) {
+    errors.value.color = colorValidation.error
+  }
+
   return Object.keys(errors.value).length === 0
 }
 
@@ -124,6 +133,11 @@ const handleCancel = () => {
   emit('update:visible', false)
   resetForm()
 }
+
+const selectColor = (color) => {
+  formData.value.color = color
+  clearError('color')
+}
 </script>
 
 <template>
@@ -170,7 +184,10 @@ const handleCancel = () => {
 
       <!-- Color Picker -->
       <div>
-        <label class="block text-sm font-medium mb-2">Color</label>
+        <label class="block text-sm font-medium mb-2">
+          Color
+          <span class="text-red-500">*</span>
+        </label>
         <div class="flex items-center space-x-2">
           <!-- Preset Colors -->
           <div class="flex flex-wrap gap-2">
@@ -185,7 +202,7 @@ const handleCancel = () => {
               }"
               :style="{ backgroundColor: color }"
               :aria-label="`Select ${color}`"
-              @click="formData.color = color"
+              @click="selectColor(color)"
             ></button>
           </div>
 
@@ -195,11 +212,14 @@ const handleCancel = () => {
               v-model="formData.color"
               type="color"
               class="w-10 h-8 rounded cursor-pointer"
+              :class="{ 'border-2 border-red-500': errors.color }"
               title="Custom color"
+              @input="clearError('color')"
             />
             <span class="text-xs text-gray-500">{{ formData.color }}</span>
           </div>
         </div>
+        <small v-if="errors.color" class="p-error">{{ errors.color }}</small>
       </div>
     </div>
 

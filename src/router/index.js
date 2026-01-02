@@ -12,6 +12,7 @@
  */
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { isUUID } from '@/utils/validation'
 
 /**
  * Router instance with route definitions
@@ -201,6 +202,32 @@ router.beforeEach(async (to, from, next) => {
     // Redirect authenticated users away from landing and auth pages
     next({ name: 'dashboard' })
   } else {
+    // URL parameter validation (US8: Comprehensive Error Handling - FR-048)
+    // Validate UUID parameters in routes
+    if (to.params.id && !isUUID(to.params.id)) {
+      console.error('Invalid UUID in route parameter:', to.params.id)
+
+      // Redirect to appropriate list view based on route
+      if (to.name === 'notes-edit') {
+        next({
+          name: 'notes',
+          query: { error: 'invalid-note-id' }
+        })
+      } else if (to.name === 'scheduling-detail') {
+        next({
+          name: 'scheduling',
+          query: { error: 'invalid-meeting-id' }
+        })
+      } else {
+        // For any other route with invalid ID, go to dashboard
+        next({
+          name: 'dashboard',
+          query: { error: 'invalid-id' }
+        })
+      }
+      return
+    }
+
     // Allow navigation
     next()
   }

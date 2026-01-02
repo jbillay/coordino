@@ -94,7 +94,10 @@
       "Bash(npm run test:a11y:*)",
       "Bash(npx lighthouse:*)",
       "Bash(start lighthouse-report.report.html)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(powershell:*)",
+      "mcp__context7__query-docs",
+      "Bash(npm run test:ci:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
