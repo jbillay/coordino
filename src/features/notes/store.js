@@ -4,6 +4,7 @@ import { useSupabase } from '@/composables/useSupabase'
 import { useAuthStore } from '@/stores/auth'
 import { sanitizeHTML } from './utils'
 import { logger } from '@/utils/logger'
+import { NOTE_ERRORS } from '@/utils/errors'
 
 export const useNotesStore = defineStore('notes', () => {
   const { supabase } = useSupabase()
@@ -95,7 +96,14 @@ export const useNotesStore = defineStore('notes', () => {
         notes: undefined // Remove the notes array
       }))
     } catch (e) {
-      error.value = e.message
+      // Check for specific error types
+      if (e.message?.toLowerCase().includes('network')) {
+        error.value = NOTE_ERRORS.FETCH_NETWORK_ERROR
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        error.value = NOTE_ERRORS.FETCH_PERMISSION_DENIED
+      } else {
+        error.value = NOTE_ERRORS.FETCH_TOPIC_FAILED
+      }
       logger.error('Error fetching topics:', e)
     } finally {
       loading.value = false
@@ -124,7 +132,25 @@ export const useNotesStore = defineStore('notes', () => {
       topics.value.push({ ...data, note_count: 0 })
       return { success: true, data }
     } catch (e) {
-      return { success: false, error: e.message }
+      logger.error('Error creating topic:', e)
+
+      // Check for specific error codes and conditions
+      if (e.code === '23505') {
+        // Unique violation - duplicate name
+        return { success: false, error: NOTE_ERRORS.TOPIC_CREATE_DUPLICATE }
+      } else if (e.code === '23502') {
+        // Not null violation
+        if (e.message?.includes('name')) {
+          return { success: false, error: NOTE_ERRORS.TOPIC_CREATE_MISSING_NAME }
+        }
+      } else if (e.message?.toLowerCase().includes('network')) {
+        return { success: false, error: NOTE_ERRORS.NETWORK_ERROR }
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        return { success: false, error: NOTE_ERRORS.CREATE_PERMISSION_DENIED }
+      }
+
+      // Fallback to generic error
+      return { success: false, error: NOTE_ERRORS.TOPIC_CREATE_FAILED }
     }
   }
 
@@ -148,7 +174,28 @@ export const useNotesStore = defineStore('notes', () => {
 
       return { success: true, data }
     } catch (e) {
-      return { success: false, error: e.message }
+      logger.error('Error updating topic:', e)
+
+      // Check for specific error codes and conditions
+      if (e.code === 'PGRST116') {
+        // Result contains 0 rows - topic not found
+        return { success: false, error: NOTE_ERRORS.TOPIC_UPDATE_NOT_FOUND }
+      } else if (e.code === '23505') {
+        // Unique violation - duplicate name
+        return { success: false, error: NOTE_ERRORS.TOPIC_UPDATE_DUPLICATE }
+      } else if (e.code === '23502') {
+        // Not null violation
+        if (e.message?.includes('name')) {
+          return { success: false, error: NOTE_ERRORS.TOPIC_UPDATE_MISSING_NAME }
+        }
+      } else if (e.message?.toLowerCase().includes('network')) {
+        return { success: false, error: NOTE_ERRORS.NETWORK_ERROR }
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        return { success: false, error: NOTE_ERRORS.UPDATE_PERMISSION_DENIED }
+      }
+
+      // Fallback to generic error
+      return { success: false, error: NOTE_ERRORS.TOPIC_UPDATE_FAILED }
     }
   }
 
@@ -169,7 +216,23 @@ export const useNotesStore = defineStore('notes', () => {
 
       return { success: true }
     } catch (e) {
-      return { success: false, error: e.message }
+      logger.error('Error deleting topic:', e)
+
+      // Check for specific error conditions
+      if (e.code === 'PGRST116') {
+        // Result contains 0 rows - topic not found
+        return { success: false, error: NOTE_ERRORS.TOPIC_DELETE_NOT_FOUND }
+      } else if (e.code === '23503') {
+        // Foreign key violation - has notes
+        return { success: false, error: NOTE_ERRORS.TOPIC_DELETE_HAS_NOTES }
+      } else if (e.message?.toLowerCase().includes('network')) {
+        return { success: false, error: NOTE_ERRORS.NETWORK_ERROR }
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        return { success: false, error: NOTE_ERRORS.DELETE_PERMISSION_DENIED }
+      }
+
+      // Fallback to generic error
+      return { success: false, error: NOTE_ERRORS.TOPIC_DELETE_FAILED }
     }
   }
 
@@ -195,8 +258,8 @@ export const useNotesStore = defineStore('notes', () => {
       topics.value = newOrder
 
       return { success: true }
-    } catch (e) {
-      return { success: false, error: e.message }
+    } catch {
+      return { success: false, error: NOTE_ERRORS.TOPIC_UPDATE_FAILED }
     }
   }
 
@@ -228,7 +291,14 @@ export const useNotesStore = defineStore('notes', () => {
 
       notes.value = data
     } catch (e) {
-      error.value = e.message
+      // Check for specific error types
+      if (e.message?.toLowerCase().includes('network')) {
+        error.value = NOTE_ERRORS.FETCH_NETWORK_ERROR
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        error.value = NOTE_ERRORS.FETCH_PERMISSION_DENIED
+      } else {
+        error.value = NOTE_ERRORS.FETCH_NOTE_FAILED
+      }
       logger.error('Error fetching notes:', e)
     } finally {
       loading.value = false
@@ -271,7 +341,31 @@ export const useNotesStore = defineStore('notes', () => {
 
       return { success: true, data }
     } catch (e) {
-      return { success: false, error: e.message }
+      logger.error('Error creating note:', e)
+
+      // Check for specific error codes and conditions
+      if (e.code === '23502') {
+        // Not null violation
+        if (e.message?.includes('topic_id')) {
+          return { success: false, error: NOTE_ERRORS.CREATE_MISSING_TOPIC }
+        } else if (e.message?.includes('title')) {
+          return { success: false, error: NOTE_ERRORS.CREATE_MISSING_TITLE }
+        } else if (e.message?.includes('content')) {
+          return { success: false, error: NOTE_ERRORS.CREATE_MISSING_CONTENT }
+        }
+      } else if (e.code === '23503') {
+        // Foreign key violation - invalid topic
+        if (e.message?.includes('topic')) {
+          return { success: false, error: NOTE_ERRORS.CREATE_INVALID_TOPIC }
+        }
+      } else if (e.message?.toLowerCase().includes('network')) {
+        return { success: false, error: NOTE_ERRORS.NETWORK_ERROR }
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        return { success: false, error: NOTE_ERRORS.CREATE_PERMISSION_DENIED }
+      }
+
+      // Fallback to generic error
+      return { success: false, error: NOTE_ERRORS.CREATE_FAILED }
     }
   }
 
@@ -309,7 +403,30 @@ export const useNotesStore = defineStore('notes', () => {
 
       return { success: true, data }
     } catch (e) {
-      return { success: false, error: e.message }
+      logger.error('Error updating note:', e)
+
+      // Check for specific error codes and conditions
+      if (e.code === 'PGRST116') {
+        // Result contains 0 rows - note not found
+        return { success: false, error: NOTE_ERRORS.UPDATE_NOT_FOUND }
+      } else if (e.code === '23502') {
+        // Not null violation
+        if (e.message?.includes('content')) {
+          return { success: false, error: NOTE_ERRORS.UPDATE_MISSING_CONTENT }
+        }
+      } else if (e.code === '23503') {
+        // Foreign key violation - invalid topic
+        if (e.message?.includes('topic')) {
+          return { success: false, error: NOTE_ERRORS.UPDATE_INVALID_TOPIC }
+        }
+      } else if (e.message?.toLowerCase().includes('network')) {
+        return { success: false, error: NOTE_ERRORS.NETWORK_ERROR }
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        return { success: false, error: NOTE_ERRORS.UPDATE_PERMISSION_DENIED }
+      }
+
+      // Fallback to generic error
+      return { success: false, error: NOTE_ERRORS.UPDATE_FAILED }
     }
   }
 
@@ -336,7 +453,20 @@ export const useNotesStore = defineStore('notes', () => {
 
       return { success: true }
     } catch (e) {
-      return { success: false, error: e.message }
+      logger.error('Error deleting note:', e)
+
+      // Check for specific error conditions
+      if (e.code === 'PGRST116') {
+        // Result contains 0 rows - note not found
+        return { success: false, error: NOTE_ERRORS.DELETE_NOT_FOUND }
+      } else if (e.message?.toLowerCase().includes('network')) {
+        return { success: false, error: NOTE_ERRORS.NETWORK_ERROR }
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        return { success: false, error: NOTE_ERRORS.DELETE_PERMISSION_DENIED }
+      }
+
+      // Fallback to generic error
+      return { success: false, error: NOTE_ERRORS.DELETE_FAILED }
     }
   }
 
@@ -344,7 +474,7 @@ export const useNotesStore = defineStore('notes', () => {
   const togglePin = async (noteId) => {
     const note = notes.value.find((n) => n.id === noteId)
     if (!note) {
-      return { success: false, error: 'Note not found' }
+      return { success: false, error: NOTE_ERRORS.UPDATE_NOT_FOUND }
     }
 
     return updateNote(noteId, { is_pinned: !note.is_pinned })
@@ -353,7 +483,7 @@ export const useNotesStore = defineStore('notes', () => {
   const toggleArchive = async (noteId) => {
     const note = notes.value.find((n) => n.id === noteId)
     if (!note) {
-      return { success: false, error: 'Note not found' }
+      return { success: false, error: NOTE_ERRORS.UPDATE_NOT_FOUND }
     }
 
     const archived_at = note.archived_at ? null : new Date().toISOString()

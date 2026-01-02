@@ -9,6 +9,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import { useTaskStore } from '../store'
 import { useToast } from 'primevue/usetoast'
 import { generateRandomColor } from '../utils'
+import { validateHexColor } from '@/utils/validation'
 
 /**
  * StatusManager Component
@@ -36,6 +37,7 @@ const adding = ref(false)
 const deleting = ref(null)
 const showDeleteConfirm = ref(false)
 const statusToDelete = ref(null)
+const errors = ref({})
 
 const newStatus = ref({
   name: '',
@@ -56,7 +58,26 @@ const customStatuses = computed(() => taskStore.statuses.filter((s) => !s.is_def
  * Add new status
  */
 const handleAddStatus = async () => {
-  if (!newStatus.value.name || !newStatus.value.color) {
+  // Clear previous errors
+  errors.value = {}
+
+  // Basic validation
+  if (!newStatus.value.name) {
+    errors.value.name = 'Status name is required'
+    return
+  }
+
+  if (!newStatus.value.color) {
+    errors.value.color = 'Color is required'
+    return
+  }
+
+  // Validate color format (US8: Comprehensive Error Handling - FR-048)
+  const colorToValidate = `#${newStatus.value.color}`
+  const colorValidation = validateHexColor(colorToValidate)
+
+  if (!colorValidation.valid) {
+    errors.value.color = colorValidation.error
     return
   }
 
@@ -64,7 +85,7 @@ const handleAddStatus = async () => {
 
   const result = await taskStore.createStatus({
     name: newStatus.value.name.trim(),
-    color: `#${newStatus.value.color}`,
+    color: colorToValidate,
     display_order: taskStore.statuses.length + 1
   })
 
@@ -83,6 +104,7 @@ const handleAddStatus = async () => {
       name: '',
       color: generateRandomColor().replace('#', '')
     }
+    errors.value = {}
   } else {
     toast.add({
       severity: 'error',
@@ -90,6 +112,15 @@ const handleAddStatus = async () => {
       detail: result.error || 'Failed to create status',
       life: 5000
     })
+  }
+}
+
+/**
+ * Clear validation error for a field
+ */
+const clearError = (field) => {
+  if (errors.value[field]) {
+    delete errors.value[field]
   }
 }
 
@@ -164,11 +195,21 @@ const confirmDelete = async () => {
                 v-model="newStatus.name"
                 placeholder="Status name"
                 class="w-full"
+                :class="{ 'p-invalid': errors.name }"
+                @input="clearError('name')"
                 @keyup.enter="handleAddStatus"
               />
+              <small v-if="errors.name" class="p-error">{{ errors.name }}</small>
             </div>
             <div>
-              <ColorPicker v-model="newStatus.color" format="hex" class="w-full" />
+              <ColorPicker
+                v-model="newStatus.color"
+                format="hex"
+                class="w-full"
+                :class="{ 'p-invalid': errors.color }"
+                @update:model-value="clearError('color')"
+              />
+              <small v-if="errors.color" class="p-error">{{ errors.color }}</small>
             </div>
             <div>
               <Button

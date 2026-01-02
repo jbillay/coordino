@@ -9,7 +9,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useSupabase } from '@/composables/useSupabase'
 import { useAuthStore } from '@/stores/auth'
-import { mapSupabaseError } from '@/utils/errors'
+import { mapSupabaseError, TASK_ERRORS } from '@/utils/errors'
 
 /**
  * Task management store
@@ -109,7 +109,15 @@ export const useTaskStore = defineStore('tasks', () => {
         tasks.value = data || []
       }
     } catch (e) {
-      error.value = mapSupabaseError(e, 'tasks')
+      // Check for specific error types
+      if (e.message?.toLowerCase().includes('network')) {
+        error.value = TASK_ERRORS.FETCH_NETWORK_ERROR
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        error.value = TASK_ERRORS.FETCH_PERMISSION_DENIED
+      } else {
+        error.value = TASK_ERRORS.FETCH_FAILED
+      }
+      console.error('Failed to fetch tasks:', e)
     } finally {
       loading.value = false
     }
@@ -205,9 +213,32 @@ export const useTaskStore = defineStore('tasks', () => {
       }
 
       tasks.value.unshift(data)
+      totalTasks.value += 1
       return { success: true, data }
     } catch (e) {
-      return { success: false, error: mapSupabaseError(e, 'task') }
+      console.error('Failed to create task:', e)
+
+      // Check for specific error codes and conditions
+      if (e.code === '23502') {
+        // Not null violation
+        if (e.message?.includes('title')) {
+          return { success: false, error: TASK_ERRORS.CREATE_MISSING_TITLE }
+        }
+      } else if (e.code === '23503') {
+        // Foreign key violation
+        if (e.message?.includes('status')) {
+          return { success: false, error: TASK_ERRORS.CREATE_INVALID_STATUS }
+        } else if (e.message?.includes('category')) {
+          return { success: false, error: TASK_ERRORS.CREATE_INVALID_CATEGORY }
+        }
+      } else if (e.message?.toLowerCase().includes('network')) {
+        return { success: false, error: TASK_ERRORS.NETWORK_ERROR }
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        return { success: false, error: TASK_ERRORS.CREATE_PERMISSION_DENIED }
+      }
+
+      // Fallback to generic error
+      return { success: false, error: TASK_ERRORS.CREATE_FAILED }
     }
   }
 
@@ -243,7 +274,32 @@ export const useTaskStore = defineStore('tasks', () => {
 
       return { success: true, data }
     } catch (e) {
-      return { success: false, error: mapSupabaseError(e, 'task') }
+      console.error('Failed to update task:', e)
+
+      // Check for specific error codes and conditions
+      if (e.code === 'PGRST116') {
+        // Result contains 0 rows - task not found
+        return { success: false, error: TASK_ERRORS.UPDATE_NOT_FOUND }
+      } else if (e.code === '23502') {
+        // Not null violation
+        if (e.message?.includes('title')) {
+          return { success: false, error: TASK_ERRORS.UPDATE_MISSING_TITLE }
+        }
+      } else if (e.code === '23503') {
+        // Foreign key violation
+        if (e.message?.includes('status')) {
+          return { success: false, error: TASK_ERRORS.UPDATE_INVALID_STATUS }
+        } else if (e.message?.includes('category')) {
+          return { success: false, error: TASK_ERRORS.UPDATE_INVALID_CATEGORY }
+        }
+      } else if (e.message?.toLowerCase().includes('network')) {
+        return { success: false, error: TASK_ERRORS.NETWORK_ERROR }
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        return { success: false, error: TASK_ERRORS.UPDATE_PERMISSION_DENIED }
+      }
+
+      // Fallback to generic error
+      return { success: false, error: TASK_ERRORS.UPDATE_FAILED }
     }
   }
 
@@ -276,9 +332,23 @@ export const useTaskStore = defineStore('tasks', () => {
       }
 
       tasks.value = tasks.value.filter((t) => t.id !== taskId)
+      totalTasks.value = Math.max(0, totalTasks.value - 1)
       return { success: true }
     } catch (e) {
-      return { success: false, error: mapSupabaseError(e, 'task') }
+      console.error('Failed to delete task:', e)
+
+      // Check for specific error conditions
+      if (e.code === 'PGRST116') {
+        // Result contains 0 rows - task not found
+        return { success: false, error: TASK_ERRORS.DELETE_NOT_FOUND }
+      } else if (e.message?.toLowerCase().includes('network')) {
+        return { success: false, error: TASK_ERRORS.NETWORK_ERROR }
+      } else if (e.message?.toLowerCase().includes('permission denied')) {
+        return { success: false, error: TASK_ERRORS.DELETE_PERMISSION_DENIED }
+      }
+
+      // Fallback to generic error
+      return { success: false, error: TASK_ERRORS.DELETE_FAILED }
     }
   }
 

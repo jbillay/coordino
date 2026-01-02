@@ -18,10 +18,12 @@ import { onBeforeRouteLeave } from 'vue-router'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
+import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
 import ProfileSettings from '@/components/settings/ProfileSettings.vue'
 import PreferencesSettings from '@/components/settings/PreferencesSettings.vue'
 import AccountSettings from '@/components/settings/AccountSettings.vue'
 import DataExportSettings from '@/components/settings/DataExportSettings.vue'
+import HelpSettings from '@/components/settings/HelpSettings.vue'
 
 // Active tab index
 const activeTab = ref(0)
@@ -81,56 +83,69 @@ const handleSaved = () => {
         </p>
       </div>
 
-      <!-- Tab Navigation -->
-      <TabView
-        v-model:active-index="activeTab"
-        class="settings-tabs"
-        aria-label="Settings sections"
-      >
-        <!-- Profile Tab -->
-        <TabPanel aria-label="Profile settings">
-          <template #header>
-            <div class="flex items-center gap-2">
-              <i class="pi pi-user" aria-hidden="true"></i>
-              <span>Profile</span>
-            </div>
-          </template>
-          <ProfileSettings @changes="handleChanges" @saved="handleSaved" />
-        </TabPanel>
+      <!-- Tab Navigation (US8: Comprehensive Error Handling) -->
+      <ErrorBoundary>
+        <TabView
+          v-model:active-index="activeTab"
+          class="settings-tabs"
+          aria-label="Settings sections"
+        >
+          <!-- Profile Tab -->
+          <TabPanel aria-label="Profile settings">
+            <template #header>
+              <div class="flex items-center gap-2">
+                <i class="pi pi-user" aria-hidden="true"></i>
+                <span>Profile</span>
+              </div>
+            </template>
+            <ProfileSettings @changes="handleChanges" @saved="handleSaved" />
+          </TabPanel>
 
-        <!-- Preferences Tab -->
-        <TabPanel aria-label="Preferences settings">
-          <template #header>
-            <div class="flex items-center gap-2">
-              <i class="pi pi-sliders-h" aria-hidden="true"></i>
-              <span>Preferences</span>
-            </div>
-          </template>
-          <PreferencesSettings @changes="handleChanges" @saved="handleSaved" />
-        </TabPanel>
+          <!-- Preferences Tab -->
+          <TabPanel aria-label="Preferences settings">
+            <template #header>
+              <div class="flex items-center gap-2">
+                <i class="pi pi-sliders-h" aria-hidden="true"></i>
+                <span>Preferences</span>
+              </div>
+            </template>
+            <PreferencesSettings @changes="handleChanges" @saved="handleSaved" />
+          </TabPanel>
 
-        <!-- Account Tab -->
-        <TabPanel aria-label="Account security settings">
-          <template #header>
-            <div class="flex items-center gap-2">
-              <i class="pi pi-shield" aria-hidden="true"></i>
-              <span>Account</span>
-            </div>
-          </template>
-          <AccountSettings @changes="handleChanges" @saved="handleSaved" />
-        </TabPanel>
+          <!-- Account Tab -->
+          <TabPanel aria-label="Account security settings">
+            <template #header>
+              <div class="flex items-center gap-2">
+                <i class="pi pi-shield" aria-hidden="true"></i>
+                <span>Account</span>
+              </div>
+            </template>
+            <AccountSettings @changes="handleChanges" @saved="handleSaved" />
+          </TabPanel>
 
-        <!-- Data Export Tab -->
-        <TabPanel aria-label="Data export settings">
-          <template #header>
-            <div class="flex items-center gap-2">
-              <i class="pi pi-download" aria-hidden="true"></i>
-              <span>Data Export</span>
-            </div>
-          </template>
-          <DataExportSettings />
-        </TabPanel>
-      </TabView>
+          <!-- Data Export Tab -->
+          <TabPanel aria-label="Data export settings">
+            <template #header>
+              <div class="flex items-center gap-2">
+                <i class="pi pi-download" aria-hidden="true"></i>
+                <span>Data Export</span>
+              </div>
+            </template>
+            <DataExportSettings />
+          </TabPanel>
+
+          <!-- Help Tab -->
+          <TabPanel aria-label="Help and support settings">
+            <template #header>
+              <div class="flex items-center gap-2">
+                <i class="pi pi-question-circle" aria-hidden="true"></i>
+                <span>Help</span>
+              </div>
+            </template>
+            <HelpSettings />
+          </TabPanel>
+        </TabView>
+      </ErrorBoundary>
 
       <!-- Unsaved Changes Indicator -->
       <div

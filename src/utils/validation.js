@@ -306,3 +306,56 @@ export const validateHexColor = (color) => {
 
   return { valid: true }
 }
+
+/**
+ * Validates UUID format (FR-048)
+ * Validates v4 UUID format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+ * where x is any hexadecimal digit and y is one of 8, 9, A, or B
+ * @param {string} uuid - UUID string to validate
+ * @returns {{valid: boolean, error?: string}} Validation result
+ *
+ * @example
+ * validateUUID('123e4567-e89b-12d3-a456-426614174000') // { valid: true }
+ * validateUUID('invalid-uuid') // { valid: false, error: '...' }
+ * validateUUID('') // { valid: false, error: 'UUID is required' }
+ */
+export const validateUUID = (uuid) => {
+  if (!uuid) {
+    return { valid: false, error: 'UUID is required' }
+  }
+
+  if (typeof uuid !== 'string') {
+    return { valid: false, error: 'UUID must be a string' }
+  }
+
+  // UUID v4 regex pattern
+  // Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+  // where x is [0-9a-f] and y is [89ab]
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+  if (!uuidRegex.test(uuid)) {
+    return { valid: false, error: 'Invalid UUID format' }
+  }
+
+  return { valid: true }
+}
+
+/**
+ * Simple UUID format check (less strict, for general use)
+ * Accepts any UUID version, not just v4
+ * @param {string} uuid - UUID string to check
+ * @returns {boolean} True if format matches UUID pattern
+ *
+ * @example
+ * isUUID('123e4567-e89b-12d3-a456-426614174000') // true
+ * isUUID('not-a-uuid') // false
+ */
+export const isUUID = (uuid) => {
+  if (!uuid || typeof uuid !== 'string') {
+    return false
+  }
+
+  // General UUID pattern (any version)
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  return uuidPattern.test(uuid)
+}

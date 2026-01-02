@@ -139,8 +139,9 @@ describe('SchedulingView.vue', () => {
       await flushPromises()
 
       expect(wrapper.find('progressspinner-stub').exists()).toBe(false)
-      expect(wrapper.findComponent({ name: 'MeetingList' }).exists()).toBe(true)
-      expect(wrapper.find('.pi-calendar-plus').exists()).toBe(true) // Empty state icon
+      // When no meetings, should show EmptyState instead of MeetingList
+      expect(wrapper.findComponent({ name: 'EmptyState' }).exists()).toBe(true)
+      expect(wrapper.find('.pi-calendar').exists()).toBe(true) // Empty state icon
     })
 
     it('should show an error message if data fetching fails', async () => {

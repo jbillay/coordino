@@ -46,35 +46,62 @@ export default defineConfig({
     timezoneId: 'America/Los_Angeles',
 
     // Emulate locale
-    locale: 'en-US',
+    locale: 'en-US'
   },
 
   // Configure projects for major browsers
   projects: [
+    // Setup project - runs first to authenticate test users
+    {
+      name: 'setup',
+      testMatch: /auth\.setup\.js/
+    },
+
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        // Use saved authentication state
+        storageState: 'tests/e2e/.auth/newuser.json'
+      },
+      dependencies: ['setup']
     },
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        storageState: 'tests/e2e/.auth/newuser.json'
+      },
+      dependencies: ['setup']
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: 'tests/e2e/.auth/newuser.json'
+      },
+      dependencies: ['setup']
     },
 
     // Mobile viewports
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      use: {
+        ...devices['Pixel 5'],
+        storageState: 'tests/e2e/.auth/newuser.json'
+      },
+      dependencies: ['setup']
     },
     {
       name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
+      use: {
+        ...devices['iPhone 12'],
+        storageState: 'tests/e2e/.auth/newuser.json'
+      },
+      dependencies: ['setup']
+    }
   ],
 
   // Run local dev server before starting the tests
@@ -82,6 +109,6 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+    timeout: 120 * 1000
+  }
 })

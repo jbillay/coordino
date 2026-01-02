@@ -3,6 +3,9 @@ import { ref, onMounted } from 'vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
+import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import FeatureTour from '@/components/common/FeatureTour.vue'
 import MeetingList from '../components/MeetingList.vue'
 import MeetingEditor from '../components/MeetingEditor.vue'
 import { useSchedulingStore } from '../store'
@@ -119,52 +122,70 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Main Content -->
-    <div v-else class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-hidden">
-      <!-- Left Panel: Meeting List (1/3 width on large screens) -->
-      <div class="lg:col-span-1 overflow-auto">
-        <MeetingList
-          :meetings="store.filteredMeetings"
-          :loading="store.loading"
-          :selected-id="selectedMeetingId"
-          @select="handleSelectMeeting"
-          @create="handleCreateMeeting"
-          @delete="handleDeleteMeeting"
-          @search="handleSearch"
-        />
-      </div>
-
-      <!-- Right Panel: Meeting Editor (2/3 width on large screens) -->
-      <div class="lg:col-span-2 overflow-auto">
-        <div v-if="showEditor" class="h-full">
-          <MeetingEditor
-            :key="editorKey"
-            :meeting-id="selectedMeetingId"
-            @saved="handleMeetingSaved"
-            @cancelled="handleEditorCancelled"
+    <!-- Main Content (US8: Comprehensive Error Handling) -->
+    <ErrorBoundary>
+      <div
+        v-if="!initialLoading"
+        class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-hidden"
+      >
+        <!-- Empty State (US9: First-Time User Experience) -->
+        <div v-if="store.meetings.length === 0" class="lg:col-span-3">
+          <EmptyState
+            icon="pi pi-calendar"
+            title="No meetings yet"
+            message="Schedule your first meeting to coordinate with international teams. Get visual feedback on optimal meeting times across timezones."
+            cta-label="Schedule Your First Meeting"
+            @cta-click="handleCreateMeeting"
           />
         </div>
 
-        <!-- Empty State -->
-        <div v-else class="h-full flex items-center justify-center">
-          <div class="text-center max-w-md">
-            <i class="pi pi-calendar-plus text-8xl text-gray-300 mb-6"></i>
-            <h2 class="text-2xl font-semibold text-gray-700 mb-3">Welcome to Meeting Scheduler</h2>
-            <p class="text-gray-500 mb-6">
-              Select a meeting from the list or create a new one to get started. Our intelligent
-              scheduling assistant helps you find optimal meeting times across international
-              timezones with color-coded equity scores.
-            </p>
-            <Button
-              label="Create Your First Meeting"
-              icon="pi pi-plus"
-              size="large"
-              @click="handleCreateMeeting"
+        <!-- Left Panel: Meeting List (1/3 width on large screens) -->
+        <div v-else class="lg:col-span-1 overflow-auto">
+          <MeetingList
+            :meetings="store.filteredMeetings"
+            :loading="store.loading"
+            :selected-id="selectedMeetingId"
+            @select="handleSelectMeeting"
+            @create="handleCreateMeeting"
+            @delete="handleDeleteMeeting"
+            @search="handleSearch"
+          />
+        </div>
+
+        <!-- Right Panel: Meeting Editor (2/3 width on large screens) -->
+        <div class="lg:col-span-2 overflow-auto">
+          <div v-if="showEditor" class="h-full">
+            <MeetingEditor
+              :key="editorKey"
+              :meeting-id="selectedMeetingId"
+              @saved="handleMeetingSaved"
+              @cancelled="handleEditorCancelled"
             />
+          </div>
+
+          <!-- Empty State -->
+          <div v-else class="h-full flex items-center justify-center">
+            <div class="text-center max-w-md">
+              <i class="pi pi-calendar-plus text-8xl text-gray-300 mb-6"></i>
+              <h2 class="text-2xl font-semibold text-gray-700 mb-3">
+                Welcome to Meeting Scheduler
+              </h2>
+              <p class="text-gray-500 mb-6">
+                Select a meeting from the list or create a new one to get started. Our intelligent
+                scheduling assistant helps you find optimal meeting times across international
+                timezones with color-coded equity scores.
+              </p>
+              <Button
+                label="Create Your First Meeting"
+                icon="pi pi-plus"
+                size="large"
+                @click="handleCreateMeeting"
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
 
     <!-- Delete Confirmation Dialog -->
     <Dialog
@@ -189,5 +210,19 @@ onMounted(async () => {
         </div>
       </template>
     </Dialog>
+
+    <!-- Feature Tour (US9: First-Time User Experience) -->
+    <FeatureTour tour-id="scheduling-intro" title="Welcome to Meeting Scheduler">
+      <p class="mb-3">
+        Welcome to the international meeting scheduler! Coordinate across timezones with ease.
+      </p>
+      <ul class="list-disc list-inside space-y-2 text-sm">
+        <li>Add participants from different timezones</li>
+        <li>Visualize meeting times across all locations</li>
+        <li>Get color-coded feedback on meeting equity</li>
+        <li>Find optimal times that work for everyone</li>
+        <li>Avoid scheduling during holidays and non-working hours</li>
+      </ul>
+    </FeatureTour>
   </div>
 </template>

@@ -174,13 +174,15 @@ describe('TaskFilters.vue', () => {
 
     it('should correctly count tasks due today', async () => {
       const today = new Date()
-      const todayString = today.toISOString()
+      // Format as YYYY-MM-DD to match date comparison logic
+      const todayString = today.toISOString().split('T')[0]
+      const futureDate = '2099-12-31' // Clearly future date
 
       mountComponent()
 
       store.tasks = [
-        { id: '1', due_date: todayString },
-        { id: '2', due_date: '2025-12-31' }
+        { id: '1', due_date: todayString, completed_at: null },
+        { id: '2', due_date: futureDate, completed_at: null }
       ]
 
       await nextTick()

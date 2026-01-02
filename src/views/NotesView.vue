@@ -5,6 +5,9 @@ import AppLayout from '@/components/layout/AppLayout.vue'
 import Toast from 'primevue/toast'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
+import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import FeatureTour from '@/components/common/FeatureTour.vue'
 import TopicList from '@/features/notes/components/TopicList.vue'
 import NoteList from '@/features/notes/components/NoteList.vue'
 import NoteEditor from '@/features/notes/components/NoteEditor.vue'
@@ -19,6 +22,7 @@ import { useActivityStore } from '@/stores/activity'
 import { useToast } from 'primevue/usetoast'
 import { useNoteKeyboardShortcuts } from '@/features/notes/composables/useNoteKeyboardShortcuts'
 import { useAccessibilityAnnouncements } from '@/features/notes/composables/useAccessibilityAnnouncements'
+import { NOTE_ERRORS } from '@/utils/errors'
 
 /**
  * NotesView
@@ -173,59 +177,79 @@ const handleSaveNote = async (noteData) => {
 }
 
 /**
- * Handle toggle pin
+ * Handle toggle pin (US8: Error handling)
  */
 const handleTogglePin = async (note) => {
-  const result = await notesStore.togglePin(note.id)
+  try {
+    const result = await notesStore.togglePin(note.id)
 
-  if (result.success) {
-    toast.add({
-      severity: 'success',
-      summary: note.is_pinned ? 'Note Unpinned' : 'Note Pinned',
-      detail: `"${note.title}" ${note.is_pinned ? 'unpinned' : 'pinned'}`,
-      life: 2000
-    })
+    if (result.success) {
+      toast.add({
+        severity: 'success',
+        summary: note.is_pinned ? 'Note Unpinned' : 'Note Pinned',
+        detail: `"${note.title}" ${note.is_pinned ? 'unpinned' : 'pinned'}`,
+        life: 2000
+      })
 
-    // Update selected note if it's the one being pinned/unpinned
-    if (selectedNote.value?.id === note.id) {
-      selectedNote.value = { ...selectedNote.value, is_pinned: !note.is_pinned }
+      // Update selected note if it's the one being pinned/unpinned
+      if (selectedNote.value?.id === note.id) {
+        selectedNote.value = { ...selectedNote.value, is_pinned: !note.is_pinned }
+      }
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: result.error || NOTE_ERRORS.UPDATE_FAILED,
+        life: 5000
+      })
     }
-  } else {
+  } catch (error) {
+    console.error('Failed to toggle pin:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: result.error || 'Failed to update note',
+      detail: NOTE_ERRORS.UPDATE_FAILED,
       life: 5000
     })
   }
 }
 
 /**
- * Handle toggle archive
+ * Handle toggle archive (US8: Error handling)
  */
 const handleToggleArchive = async (note) => {
-  const result = await notesStore.toggleArchive(note.id)
+  try {
+    const result = await notesStore.toggleArchive(note.id)
 
-  if (result.success) {
-    toast.add({
-      severity: 'success',
-      summary: note.archived_at ? 'Note Unarchived' : 'Note Archived',
-      detail: `"${note.title}" ${note.archived_at ? 'unarchived' : 'archived'}`,
-      life: 2000
-    })
+    if (result.success) {
+      toast.add({
+        severity: 'success',
+        summary: note.archived_at ? 'Note Unarchived' : 'Note Archived',
+        detail: `"${note.title}" ${note.archived_at ? 'unarchived' : 'archived'}`,
+        life: 2000
+      })
 
-    // Update selected note if it's the one being archived/unarchived
-    if (selectedNote.value?.id === note.id) {
-      selectedNote.value = {
-        ...selectedNote.value,
-        archived_at: note.archived_at ? null : new Date().toISOString()
+      // Update selected note if it's the one being archived/unarchived
+      if (selectedNote.value?.id === note.id) {
+        selectedNote.value = {
+          ...selectedNote.value,
+          archived_at: note.archived_at ? null : new Date().toISOString()
+        }
       }
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: result.error || NOTE_ERRORS.UPDATE_FAILED,
+        life: 5000
+      })
     }
-  } else {
+  } catch (error) {
+    console.error('Failed to toggle archive:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: result.error || 'Failed to update note',
+      detail: NOTE_ERRORS.UPDATE_FAILED,
       life: 5000
     })
   }
@@ -240,7 +264,7 @@ const handleDeleteNote = (note) => {
 }
 
 /**
- * Confirm delete note - actually perform deletion
+ * Confirm delete note - actually perform deletion (US8: Error handling)
  */
 const confirmDelete = async () => {
   if (!noteToDelete.value) {
@@ -248,36 +272,48 @@ const confirmDelete = async () => {
   }
 
   const note = noteToDelete.value
-  const result = await notesStore.deleteNote(note.id)
 
-  showDeleteConfirm.value = false
+  try {
+    const result = await notesStore.deleteNote(note.id)
 
-  if (result.success) {
-    toast.add({
-      severity: 'success',
-      summary: 'Note Deleted',
-      detail: `"${note.title}" has been deleted`,
-      life: 3000
-    })
+    showDeleteConfirm.value = false
 
-    // If we're viewing the deleted note, go back to list
-    if (selectedNote.value?.id === note.id) {
-      handleCloseEditor()
+    if (result.success) {
+      toast.add({
+        severity: 'success',
+        summary: 'Note Deleted',
+        detail: `"${note.title}" has been deleted`,
+        life: 3000
+      })
+
+      // If we're viewing the deleted note, go back to list
+      if (selectedNote.value?.id === note.id) {
+        handleCloseEditor()
+      }
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: result.error || NOTE_ERRORS.DELETE_FAILED,
+        life: 5000
+      })
     }
-  } else {
+  } catch (error) {
+    console.error('Failed to delete note:', error)
+    showDeleteConfirm.value = false
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: result.error || 'Failed to delete note',
+      detail: NOTE_ERRORS.DELETE_FAILED,
       life: 5000
     })
+  } finally {
+    noteToDelete.value = null
   }
-
-  noteToDelete.value = null
 }
 
 /**
- * Handle search
+ * Handle search (US8: Error handling)
  */
 const handleSearch = async (filters) => {
   if (!filters.query || filters.query.trim() === '') {
@@ -289,21 +325,33 @@ const handleSearch = async (filters) => {
   searchQuery.value = filters.query
   searchLoading.value = true
 
-  const startTime = Date.now()
+  try {
+    const startTime = Date.now()
 
-  const result = await notesStore.searchNotes(filters.query)
+    const result = await notesStore.searchNotes(filters.query)
 
-  searchTime.value = Date.now() - startTime
-  searchLoading.value = false
+    searchTime.value = Date.now() - startTime
+    searchLoading.value = false
 
-  if (result.success) {
-    searchResults.value = result.data
-    announceSearchResults(result.data.length, filters.query)
-  } else {
+    if (result.success) {
+      searchResults.value = result.data
+      announceSearchResults(result.data.length, filters.query)
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Search Error',
+        detail: result.error || NOTE_ERRORS.FETCH_FAILED,
+        life: 5000
+      })
+      searchResults.value = []
+    }
+  } catch (error) {
+    console.error('Search failed:', error)
+    searchLoading.value = false
     toast.add({
       severity: 'error',
       summary: 'Search Error',
-      detail: result.error || 'Failed to search notes',
+      detail: NOTE_ERRORS.FETCH_NETWORK_ERROR,
       life: 5000
     })
     searchResults.value = []
@@ -391,15 +439,25 @@ useNoteKeyboardShortcuts({
 })
 
 /**
- * Initialize on mount
+ * Initialize on mount (US8: Error handling)
  */
 onMounted(async () => {
-  await Promise.all([notesStore.fetchTopics(), notesStore.fetchNotes()])
+  try {
+    await Promise.all([notesStore.fetchTopics(), notesStore.fetchNotes()])
 
-  notesStore.setupRealtimeSubscriptions()
+    notesStore.setupRealtimeSubscriptions()
 
-  // Handle URL query parameters after data is loaded
-  handleRouteQuery()
+    // Handle URL query parameters after data is loaded
+    handleRouteQuery()
+  } catch (error) {
+    console.error('Failed to initialize notes view:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Initialization Error',
+      detail: NOTE_ERRORS.FETCH_FAILED,
+      life: 5000
+    })
+  }
 })
 
 /**
@@ -425,148 +483,165 @@ watch(
 <template>
   <AppLayout>
     <div class="notes-view-container">
-      <!-- Topic Sidebar -->
-      <TopicList class="notes-topic-sidebar" />
+      <!-- Error Boundary wraps all main content (US8: Comprehensive Error Handling) -->
+      <ErrorBoundary>
+        <!-- Topic Sidebar -->
+        <TopicList class="notes-topic-sidebar" />
+      </ErrorBoundary>
 
       <!-- Notes List Panel -->
-      <div class="notes-list-panel">
-        <!-- Header with Search and Actions -->
-        <div class="notes-list-header">
-          <div class="header-top">
-            <div class="header-title">
-              <h2>{{ noteListTitle }}</h2>
-              <span v-if="displayedNotes.length > 0" class="note-count">
-                {{ displayedNotes.length }} {{ displayedNotes.length === 1 ? 'note' : 'notes' }}
-              </span>
+      <ErrorBoundary>
+        <div class="notes-list-panel">
+          <!-- Header with Search and Actions -->
+          <div class="notes-list-header">
+            <div class="header-top">
+              <div class="header-title">
+                <h2>{{ noteListTitle }}</h2>
+                <span v-if="displayedNotes.length > 0" class="note-count">
+                  {{ displayedNotes.length }} {{ displayedNotes.length === 1 ? 'note' : 'notes' }}
+                </span>
+              </div>
+              <div class="header-actions">
+                <Button
+                  v-tooltip.bottom="'Keyboard Shortcuts'"
+                  icon="pi pi-question-circle"
+                  text
+                  rounded
+                  size="small"
+                  @click="showShortcutsHelp = true"
+                />
+                <Button label="New Note" icon="pi pi-plus" @click="handleCreateNote" />
+              </div>
             </div>
-            <div class="header-actions">
-              <Button
-                v-tooltip.bottom="'Keyboard Shortcuts'"
-                icon="pi pi-question-circle"
-                text
-                rounded
+
+            <!-- Search Bar -->
+            <NoteSearchBar
+              :result-count="searchActive ? searchResults.length : null"
+              :search-time="searchTime"
+              @search="handleSearch"
+              @clear="handleClearSearch"
+            />
+
+            <!-- Data Volume Warning (FR-035, FR-036) -->
+            <DataVolumeWarning type="notes" :count="totalNotesCount" />
+
+            <!-- View Controls -->
+            <div class="view-controls">
+              <!-- View Mode Toggle -->
+              <div class="view-mode-toggle">
+                <Button
+                  v-tooltip.bottom="'List view'"
+                  icon="pi pi-list"
+                  text
+                  :class="{ active: viewMode === 'list' }"
+                  @click="viewMode = 'list'"
+                />
+                <Button
+                  v-tooltip.bottom="'Grid view'"
+                  icon="pi pi-th-large"
+                  text
+                  :class="{ active: viewMode === 'grid' }"
+                  @click="viewMode = 'grid'"
+                />
+              </div>
+
+              <!-- Sort Select -->
+              <Select
+                v-model="sortBy"
+                :options="sortOptions"
+                option-label="label"
+                option-value="value"
+                placeholder="Sort by"
                 size="small"
-                @click="showShortcutsHelp = true"
-              />
-              <Button label="New Note" icon="pi pi-plus" @click="handleCreateNote" />
-            </div>
-          </div>
-
-          <!-- Search Bar -->
-          <NoteSearchBar
-            :result-count="searchActive ? searchResults.length : null"
-            :search-time="searchTime"
-            @search="handleSearch"
-            @clear="handleClearSearch"
-          />
-
-          <!-- Data Volume Warning (FR-035, FR-036) -->
-          <DataVolumeWarning type="notes" :count="totalNotesCount" />
-
-          <!-- View Controls -->
-          <div class="view-controls">
-            <!-- View Mode Toggle -->
-            <div class="view-mode-toggle">
-              <Button
-                v-tooltip.bottom="'List view'"
-                icon="pi pi-list"
-                text
-                :class="{ active: viewMode === 'list' }"
-                @click="viewMode = 'list'"
-              />
-              <Button
-                v-tooltip.bottom="'Grid view'"
-                icon="pi pi-th-large"
-                text
-                :class="{ active: viewMode === 'grid' }"
-                @click="viewMode = 'grid'"
+                class="sort-select"
               />
             </div>
+          </div>
 
-            <!-- Sort Select -->
-            <Select
-              v-model="sortBy"
-              :options="sortOptions"
-              option-label="label"
-              option-value="value"
-              placeholder="Sort by"
-              size="small"
-              class="sort-select"
+          <!-- Notes List Content -->
+          <div class="notes-list-content">
+            <!-- Loading State -->
+            <div v-if="notesStore.loading" class="loading-state">
+              <i class="pi pi-spin pi-spinner text-4xl text-primary-500 mb-4"></i>
+              <p class="text-gray-600 dark:text-gray-400">Loading notes...</p>
+            </div>
+
+            <!-- Error State -->
+            <div v-else-if="notesStore.error" class="error-state">
+              <i class="pi pi-exclamation-circle text-4xl text-red-500 mb-4"></i>
+              <p class="text-red-600 dark:text-red-400 mb-4">{{ notesStore.error }}</p>
+              <Button label="Retry" icon="pi pi-refresh" @click="notesStore.fetchNotes()" />
+            </div>
+
+            <!-- Empty State (US9: First-Time User Experience) -->
+            <EmptyState
+              v-else-if="!searchActive && notesStore.notes.length === 0"
+              icon="pi pi-book"
+              title="No notes yet"
+              message="Write your first note to capture your thoughts, ideas, and important information. Organize notes by topics and search easily."
+              cta-label="Write Your First Note"
+              @cta-click="handleCreateNote"
             />
+
+            <!-- Note List (always visible unless loading/error) -->
+            <div v-else-if="!searchActive">
+              <NoteList
+                :notes="displayedNotes"
+                :title="noteListTitle"
+                :loading="notesStore.loading"
+                :empty-state-title="emptyStateTitle"
+                :empty-state-message="emptyStateMessage"
+                :view-mode="viewMode"
+                :sort-by="sortBy"
+                @open="handleOpenNote"
+                @create="handleCreateNote"
+                @pin="handleTogglePin"
+                @archive="handleToggleArchive"
+                @delete="handleDeleteNote"
+              />
+            </div>
+
+            <!-- Search Results -->
+            <div v-else class="search-results-container">
+              <NoteSearchResults
+                :results="searchResults"
+                :loading="searchLoading"
+                :search-query="searchQuery"
+                @select="handleOpenNote"
+              />
+            </div>
           </div>
         </div>
-
-        <!-- Notes List Content -->
-        <div class="notes-list-content">
-          <!-- Loading State -->
-          <div v-if="notesStore.loading" class="loading-state">
-            <i class="pi pi-spin pi-spinner text-4xl text-primary-500 mb-4"></i>
-            <p class="text-gray-600 dark:text-gray-400">Loading notes...</p>
-          </div>
-
-          <!-- Error State -->
-          <div v-else-if="notesStore.error" class="error-state">
-            <i class="pi pi-exclamation-circle text-4xl text-red-500 mb-4"></i>
-            <p class="text-red-600 dark:text-red-400 mb-4">{{ notesStore.error }}</p>
-            <Button label="Retry" icon="pi pi-refresh" @click="notesStore.fetchNotes()" />
-          </div>
-
-          <!-- Note List (always visible unless loading/error) -->
-          <div v-else-if="!searchActive">
-            <NoteList
-              :notes="displayedNotes"
-              :title="noteListTitle"
-              :loading="notesStore.loading"
-              :empty-state-title="emptyStateTitle"
-              :empty-state-message="emptyStateMessage"
-              :view-mode="viewMode"
-              :sort-by="sortBy"
-              @open="handleOpenNote"
-              @create="handleCreateNote"
-              @pin="handleTogglePin"
-              @archive="handleToggleArchive"
-              @delete="handleDeleteNote"
-            />
-          </div>
-
-          <!-- Search Results -->
-          <div v-else class="search-results-container">
-            <NoteSearchResults
-              :results="searchResults"
-              :loading="searchLoading"
-              :search-query="searchQuery"
-              @select="handleOpenNote"
-            />
-          </div>
-        </div>
-      </div>
+      </ErrorBoundary>
 
       <!-- Editor Panel (side-by-side with list) -->
-      <div class="notes-editor-panel">
-        <!-- Empty State -->
-        <div v-if="currentView !== 'editor' && !selectedNote" class="editor-empty-state">
-          <i class="pi pi-file-edit text-6xl opacity-30 mb-4"></i>
-          <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            No note selected
-          </h3>
-          <p class="text-gray-500 dark:text-gray-400">
-            Select a note from the list or create a new one
-          </p>
-        </div>
+      <ErrorBoundary>
+        <div class="notes-editor-panel">
+          <!-- Empty State -->
+          <div v-if="currentView !== 'editor' && !selectedNote" class="editor-empty-state">
+            <i class="pi pi-file-edit text-6xl opacity-30 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              No note selected
+            </h3>
+            <p class="text-gray-500 dark:text-gray-400">
+              Select a note from the list or create a new one
+            </p>
+          </div>
 
-        <!-- Note Editor -->
-        <div v-else class="note-editor-container">
-          <NoteEditor
-            :note="selectedNote"
-            :topic-id="notesStore.selectedTopicId"
-            @close="handleCloseEditor"
-            @save="handleSaveNote"
-            @pin="handleTogglePin(selectedNote)"
-            @archive="handleToggleArchive(selectedNote)"
-            @delete="handleDeleteNote(selectedNote)"
-          />
+          <!-- Note Editor -->
+          <div v-else class="note-editor-container">
+            <NoteEditor
+              :note="selectedNote"
+              :topic-id="notesStore.selectedTopicId"
+              @close="handleCloseEditor"
+              @save="handleSaveNote"
+              @pin="handleTogglePin(selectedNote)"
+              @archive="handleToggleArchive(selectedNote)"
+              @delete="handleDeleteNote(selectedNote)"
+            />
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
 
       <!-- Confirm Delete Dialog -->
       <ConfirmDialog
@@ -581,6 +656,20 @@ watch(
 
       <!-- Keyboard Shortcuts Help Dialog -->
       <KeyboardShortcutsHelp v-model:visible="showShortcutsHelp" />
+
+      <!-- Feature Tour (US9: First-Time User Experience) -->
+      <FeatureTour tour-id="notes-intro" title="Welcome to Notes">
+        <p class="mb-3">
+          Welcome to your note-taking workspace! Capture thoughts, ideas, and important information.
+        </p>
+        <ul class="list-disc list-inside space-y-2 text-sm">
+          <li>Create notes with rich text formatting</li>
+          <li>Organize notes by topics for easy access</li>
+          <li>Pin important notes to keep them at the top</li>
+          <li>Use powerful search to find any note instantly</li>
+          <li>Keyboard shortcuts for efficient note-taking</li>
+        </ul>
+      </FeatureTour>
 
       <!-- Accessibility Announcements -->
       <AriaLiveRegion :message="announcement" :priority="announcementPriority" />

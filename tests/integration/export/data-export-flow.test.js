@@ -22,6 +22,16 @@ vi.mock('file-saver', () => ({
 // Variable to hold the mock after import
 let mockSaveAs
 
+// Mock export utilities
+vi.mock('@/utils/export', () => ({
+  generateJSON: vi.fn((data) => JSON.stringify(data)),
+  generateCSV: vi.fn((entityType, _data) => `csv content for ${entityType}`),
+  createZipArchive: vi.fn(() =>
+    Promise.resolve(new Blob(['mock zip'], { type: 'application/zip' }))
+  ),
+  generateReadme: vi.fn(() => 'README content')
+}))
+
 // Mock Supabase client
 const mockSupabaseClient = {
   from: vi.fn()
