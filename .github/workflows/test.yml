@@ -100,7 +100,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Archive coverage report
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage/
@@ -136,7 +136,7 @@ jobs:
           du -sh dist/
 
       - name: Archive build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
