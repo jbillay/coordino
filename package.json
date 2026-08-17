@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
-    "@pinia/testing": "^1.0.3",
+    "@pinia/testing": "^2.0.1",
     "@playwright/test": "^1.62.1",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-v8": "^4.1.10",
